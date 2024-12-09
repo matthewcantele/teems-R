@@ -1,0 +1,31 @@
+Package: teems
+Title: Trade and Environment Equilibrium Modeling System
+Version: 0.0.0.91
+Authors@R: 
+    person("Matthew", "Cantele",
+    email = "m.cantele@unimelb.edu.au",
+    role = c("aut", "cre"),
+    comment = c(ORCID = "0000-0003-3729-1764"))
+Description: A comprehensive modeling system for preparing and running all aspects of a 
+    Computable General Equillibrium (CGE) model using GTAP data and 'targets' 
+    pipeline software. The package converts HAR files, parses TABLO model 
+    files, calculates aggregation-specific parameter values, aggregates data to 
+    set specifications, compiles shocks and closures, and solves the model 
+    according to a wide variety of parameters. 
+License: GPL (>= 3)
+Encoding: UTF-8
+Roxygen: list(markdown = TRUE)
+RoxygenNote: 7.3.1
+Imports: 
+    data.table,
+    purrr,
+    rlang,
+    targets,
+    tibble
+Suggests: 
+    knitr,
+    rmarkdown
+VignetteBuilder: knitr
+Depends: 
+    R (>= 4.0)
+LazyData: true
