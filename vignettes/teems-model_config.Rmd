@@ -1,0 +1,25 @@
+---
+title: "Loading general model configuration"
+date: "`r Sys.Date()`"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Loading input files}
+  %\VignetteEngine{knitr::rmarkdown}
+  \usepackage[utf8]{inputenc}
+---
+
+```{r init, include = FALSE}
+require(teems)
+knitr::opts_chunk$set(
+  comment = "#",
+    error = FALSE,
+     tidy = FALSE,
+    cache = FALSE,
+ collapse = TRUE
+)
+```
+
+## Introduction
+
+
+## Tablo files

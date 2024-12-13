@@ -11,10 +11,15 @@
 #' @examples
 #' teems_example()
 #' teems_example("user_model.tab")
-teems_example <- function(path = NULL) {
-  if (is.null(x = path)) {
-    file.path(dir(path = system.file("extdata", package = "teems")))
-  } else {
-    system.file("extdata", path, package = "teems", mustWork = TRUE)
+teems_example <- function(file) {
+  temp_dir <- tools::R_user_dir(package = "teems", which = "cache")
+  if (!dir.exists(temp_dir)) {
+    dir.create(temp_dir)
   }
+
+  origin <- system.file("extdata", file, package = "teems", mustWork = TRUE)
+  file.copy(from = origin,
+            to = temp_dir)
+
+  file.path(temp_dir, file)
 }

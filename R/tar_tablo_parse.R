@@ -13,7 +13,8 @@
 #'   and the file name.
 #' @keywords internal
 #' @noRd
-.parse_tablo <- function(tab_file) {
+.parse_tablo <- function(tab_file,
+                         data_format) {
   # to do:
   # extract all extract components from tablo file (currently compatible with
   # v62 and v7) Will break Tablo file down into all statements "kStatements"
@@ -33,6 +34,17 @@
   } else {
     tab <- internal_tab[[tab_file]]
     tab_file <- paste0(tab_file, ".tab")
+  }
+
+  if (is.null(x = data_format)) {
+  # get tab data format (first 200 char)
+  tab_preface <- substring(text = tab, first = 3, last = 200)
+  # extract the line containing the version number
+  lines <- unlist(strsplit(tab_preface, "\n"))
+  version_line <- grep(pattern = "Version", x = lines, value = TRUE)
+  data_format <- sub(pattern = ".*Version ([0-9]+\\.[0-9]+).*",
+                     replacement = "\\1",
+                     x = version_line)
   }
 
   # remove comments
@@ -76,7 +88,8 @@
 
   tablo <- list(tab_file = tab_file,
                 extract = extract,
-                tab = tab)
+                tab = tab,
+                data_format = data_format)
   return(tablo)
 
   # will finish this later

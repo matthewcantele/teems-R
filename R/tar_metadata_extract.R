@@ -9,7 +9,8 @@
 #'   data_type from "dat"
 #' @keywords internal
 #' @noRd
-.extract_metadata <- function(ls_array) {
+.extract_metadata <- function(ls_array,
+                              tab_data_format) {
     metadata <- attr(x = ls_array, which = "metadata")
     names(x = metadata) <- gsub(pattern = "\\.", replacement = "_", names(x = metadata))
 
@@ -17,6 +18,12 @@
     metadata[["database_version"]] <- gsub(pattern = "(\\d.*?)[A-Za-z]",
                                            replacement = "\\1",
                                            x = metadata[["database_version"]])
+
+    if (identical(x = tab_data_format, y = "7.0")) {
+      tab_data_format <- "7"
+    }
+
+    metadata[["tab_data_format"]] <- paste0("v", tab_data_format)
 
     return(metadata)
 }

@@ -4,9 +4,8 @@ targets::tar_config_set(store = "./data-raw/_targets")
 
 # Set target options:
 targets::tar_option_set(
-  packages = c("data.table", "usethis", "purrr"),
-  format = "qs",
-  cue = tar_cue("always")
+  packages = c("data.table", "usethis", "purrr", "tabulapdf", "dplyr"),
+  format = "qs"
 )
 
 
@@ -64,7 +63,8 @@ list(
              command = {
                lapply(X = tab_files,
                       FUN = function(tab) {
-                        tablo <- teems:::.parse_tablo(tab)
+                        tablo <- teems:::.parse_tablo(tab,
+                                                      data_format = NULL)
                         tablo[["extract"]]
                       })
              }),
@@ -351,6 +351,99 @@ list(
              },
              format = "file"),
 
+  # v6.2 <> v7 conversion
+  tar_target(name = GTAPv7_manual,
+             command = "./data-raw/aux/Corong and Tsigas - 2017 - The Standard GTAP Model, Version 7.pdf",
+             format = "file"),
+
+  # tables here are not even concordance, just semi related lists
+  tar_target(name = set_conversion,
+             command = {
+               set_table <- tabulapdf::extract_tables(file = GTAPv7_manual,
+                                                      pages = 83)
+               c_names <- c("name", "header", "description")
+
+               v62_sets <- set_table[[1]][, c(1:4)]
+               colnames(x = v62_sets) <- c("idx", paste0("v62", c_names))
+               v7_sets <- set_table[[1]][, c(5:8)]
+               colnames(x = v7_sets) <- c("idx", paste0("v7", c_names))
+
+               # always inconsistencies in GTAP outputs
+               v7_sets[5:13, "idx"] <- 5:13
+               v7_sets[12:13, "idx"] <- 13:14
+
+               sets <- merge(v62_sets,
+                             v7_sets,
+                             by = "idx",
+                             all = TRUE)
+             }),
+
+  tar_target(name = param_conversion,
+             command = {
+               param_table <- tabulapdf::extract_tables(file = GTAPv7_manual,
+                                                        pages = 84)
+
+               v7_param <- param_table[[1]][, c(5:8)]
+
+               v7_param <- .table_fix(single = c(11, 12),
+                                      double = c(1, 3, 5, 7, 9, 13, 15, 17, 19, 25),
+                                      trebble = c(19, 22),
+                                      table = v7_param,
+                                      prefix = "v7",
+                                      data_type = "par")
+
+               v7_param[10:13, "idx"] <- 11:14
+
+               v62_param <- param_table[[1]][, c(1:4)]
+
+               v62_param <- .table_fix(single = c(11, 12),
+                                       double = c(1, 3, 5, 7, 9, 13, 15, 17),
+                                       table = v62_param,
+                                       prefix = "v62",
+                                       data_type = "par")
+
+               param <- merge(v62_param,
+                              v7_param,
+                              by = "idx",
+                              all = TRUE)
+             }),
+
+  tar_target(name = base_conversion,
+             command = {
+               coeff_table <- tabulapdf::extract_tables(file = GTAPv7_manual,
+                                                        pages = 85:86)
+
+               coeff_table <- data.table::rbindlist(l = coeff_table)
+
+               v7_coeff <- coeff_table[, c(4:6)]
+               double <- c(3, 18, 20, 22, 24, 26, 30, 32, 35, 37, 41, 49, 51, 54)
+               single <- setdiff(seq(1, nrow(v7_coeff)), double)
+               NAs <- which(is.na(v7_coeff[,1]))
+               single <- setdiff(single, NAs)
+               v7_coeff <- .table_fix(single = single,
+                                      double = double,
+                                      table = v7_coeff,
+                                      prefix = "v7",
+                                      data_type = "dat")
+
+               v62_coeff <- coeff_table[, c(1:3)]
+               double <- c(18, 20, 22, 24, 26, 30, 32, 35, 37, 41)
+               single <- setdiff(seq(1, nrow(v62_coeff)), double)
+
+               NAs <- which(is.na(v62_coeff[,1]))
+               single <- setdiff(single, NAs)
+               v62_coeff <- .table_fix(single = single,
+                                       double = double,
+                                       table = v62_coeff,
+                                       prefix = "v62",
+                                       data_type = "dat")
+browser()
+               coeff <- merge(v62_coeff,
+                              v7_coeff,
+                              by = "idx",
+                              all = TRUE)
+
+             }),
   # internal data ====================================================
   tar_target(name = internal_data,
              command = {
@@ -360,6 +453,9 @@ list(
                                  param_weights,
                                  int_params,
                                  closures,
+                                 set_conversion,
+                                 param_conversion,
+                                 base_conversion,
                                  overwrite = TRUE,
                                  internal = TRUE)
              })

@@ -78,17 +78,21 @@
     }
   }
 
+  if (!identical(x = metadata[["data_format"]],
+                 y = metadata[["tab_data_format"]])) {
+    conversion <- TRUE
+  } else {
+    conversion <- FALSE
+  }
+
   # add our package type specific set names
   if (!is.element(el = data_type, set = "set")) {
-    r_idx <- match(
-      x = names(x = ls_array),
-      table = coeff_extract[["header"]]
-    )
+    r_idx <- match(x = names(x = ls_array), table = coeff_extract[["header"]])
     ls_array <- purrr::map2(
       .x = ls_array,
       .y = r_idx,
       .f = function(header, idx) {
-        if (!is.na(idx)) {
+        if (!is.na(idx) && !conversion) {
           new_names <- setdiff(x = purrr::pluck(coeff_extract, "ls_mixed_idx", idx),
                                y = "ALLTIMEt")
           if (!identical(x = new_names, y = "null_set")) {
@@ -97,39 +101,51 @@
         } else {
           dimnames_header <- dimnames(x = header[["data"]])
           dim_names <- names(x = dimnames_header)
-
-          if (identical(x = sum(grepl(pattern = "REG", x = dim_names), na.rm = TRUE),
-                        y = as.integer(x = 2))) {
+          if (identical(x = sum(grepl(pattern = "REG", x = dim_names), na.rm = TRUE), y = 2L)) {
             dim_names[duplicated(x = dim_names)] <- "REGs"
-            dim_names <- sub(pattern = "^REG$", replacement = "REGr", x =dim_names)
-          } else if (identical(x = sum(grepl(pattern = "REG", x = dim_names), na.rm = TRUE),
-                               y = as.integer(x = 1))) {
-            dim_names <- sub(pattern = "^REG$", replacement = "REGr", x = dim_names)
+            dim_names <- sub(pattern = "^REG$",
+                             replacement = "REGr",
+                             x = dim_names)
+          } else if (identical(x = sum(grepl(pattern = "REG", x = dim_names), na.rm = TRUE), y = 1L)) {
+            dim_names <- sub(pattern = "^REG$",
+                             replacement = "REGr",
+                             x = dim_names)
           }
 
           # Format-specific transformations
           if (identical(x = metadata[["data_format"]], y = "v6.2")) {
-            replace_patterns <- list("TRAD_COMM" = "TRAD_COMMi",
-                                     "PROD_COMM" = "PROD_COMMj",
-                                     "ENDW_COMM" = "ENDW_COMMi")
-          } else if (identical(x = metadata[["data_format"]], y ="v7")) {
-            replace_patterns <- list("ACTS" = "ACTSa",
-                                     "COMM" = "COMMc",
-                                     "DIR" = "DIRd")
-          }
-
-          # Apply replacements
-          if (exists("replace_patterns")) {
-            for (pattern in names(x = replace_patterns)) {
-              if (is.element(el = pattern, set = dim_names)) {
-                dim_names <- sub(pattern = pattern,
-                                 replacement = replace_patterns[[pattern]],
-                                 x = dim_names)
+            if (identical(x = metadata[["tab_data_format"]], y = "v6.2")) {
+              replace_patterns <- list(
+                "TRAD_COMM" = "TRAD_COMMi",
+                "PROD_COMM" = "PROD_COMMj",
+                "ENDW_COMM" = "ENDW_COMMi"
+              )
+            } else if (identical(x = metadata[["tab_data_format"]], y = "v7")) {
+              browser()
+            }
+          } else if (identical(x = metadata[["data_format"]], y = "v7")) {
+              if (identical(x = metadata[["tab_data_format"]], y = "v7")) {
+                replace_patterns <- list(
+                  "ACTS" = "ACTSa",
+                  "COMM" = "COMMc",
+                  "DIR" = "DIRd",
+                  "ENDW" = "ENDWe"
+                )
+              } else if (identical(x = metadata[["tab_data_format"]], y = "v6.2")) {
+                replace_patterns <- list("ACTS" = "PROD_COMMj",
+                                         "COMM" = "TRAD_COMMi",
+                                         "ENDW" = "ENDW_COMMi",
+                                         "MARG" = "MARG_COMMm")
               }
             }
-          }
 
-          # Assign updated names
+          origin <- names(x = replace_patterns)
+          r_idx <- match(x = dim_names, table = origin)
+          dim_names <- ifelse(test = is.element(el = dim_names, set = origin),
+                              yes = replace_patterns[r_idx],
+                              no = dim_names)
+
+          # updated names
           names(x = dimnames_header) <- dim_names
           dimnames(x = header[["data"]]) <- dimnames_header
         }
@@ -145,7 +161,7 @@
     # set file
     if (identical(
       x = length(x = dimnames(x = header[["data"]])),
-      y = as.integer(0)
+      y = 0L
     )) {
       header[["dt"]] <- data.table::as.data.table(x = header[["data"]])
       if (!identical(x = data_type, y = "set")) {
@@ -155,7 +171,7 @@
       }
     } else if (identical(
       x = length(x = dimnames(x = header[["data"]])),
-      y = as.integer(1)
+      y = 1L
     )) {
       header[["dt"]] <- data.table::as.data.table(
         x = cbind(Value = as.list(x = header[["data"]])),
@@ -163,7 +179,7 @@
       )
     } else if (identical(
       x = length(x = dimnames(x = header[["data"]])),
-      y = as.integer(2)
+      y = 2L
     )) {
       # 2 dimension header (e.g., VST etc.)
       header[["dt"]] <- data.table::as.data.table(x = as.table(x = header[["data"]]))
@@ -183,6 +199,15 @@
     return(header)
   })
 
+  # if tab file format data format mismatch convert data
+  if (!identical(x = metadata[["data_format"]],
+                 y = metadata[["tab_data_format"]])) {
+    ls_array <- .convert_data_format(data = ls_array,
+                                     data_format = metadata[["data_format"]],
+                                     data_type = data_type)
+  }
+
+browser()
   # optional transformations
   # all set elements to lowercase
   if (lowercase) {
@@ -203,7 +228,8 @@
   }
 
   # 'CGDS/cgds' to 'zCGDS' (see arguments)
-  if (zCGDS && identical(x = metadata[["data_format"]], y = "v6.2")) {
+  if (zCGDS && is.element(el = "v6.2",
+                          set = c(metadata[["data_format"]], metadata[["tab_data_format"]]))) {
     ls_array <- lapply(X = ls_array, FUN = function(header) {
       col_names <- colnames(x = header[["dt"]])
 

@@ -20,4 +20,13 @@ knitr::opts_chunk$set(
 ```
 
 ## Introduction
+`teems` in its current beta release is geared exclusively toward running CGE models based on GTAP Databases and GTAP models. Eventually, however, the package is intended to be database and model agnostic. Indeed we view the development of opensource alternatives as a requisite for this niche area of modelling to be better understood by a wide range of scientists who would be capable of elaborating within the model according to their expertise.
 
+As such, input files within the current `teems` version refer to basedata, parameter, and set header array (HAR) files which are required inputs for all GTAP-based CGE models. GTAP offers their databases to the public once a database is two versions out. Hence GTAP Database 9 is publicly available and once registered with GTAP, users are able to download the "FlexAgg" [version](https://www.gtap.agecon.purdue.edu/private/secured.asp?Sec_ID=1164) compatible with `teems`. For users that have purchased a GTAP database, the "FlexAgg" versions of GTAP Database 9, 10, and 11 are currently compatible with `teems`. 
+
+## Loading base data
+Base data refers to reference-year specific baseline data which includes value in million USD as per the reference year chosen. GTAP file naming in not consistent throughout releases and currently the base data file has taken on "gddat.har" (GTAP Database 9), "gsddat.har" (GTAP Database 10), and "gsdfdat.har" (GTAP Database 11). There are currently 2 distinct data formats, "v6.2" and "v7". GTAP Database 9 and 10 come in the "classic" v6.2 format while GTAP Database 11 was released in the newer "standard" format.  
+
+## Loading parameter data
+
+## Loading sets

@@ -44,7 +44,8 @@
   target_branched_metadata <- rlang::expr(targets::tar_target_raw(
     name = "metadata",
     command = expression(.extract_metadata(
-      ls_array = base_array
+      ls_array = base_array,
+      tab_data_format = parsed.tablo[["data_format"]]
     ))
   ))
 

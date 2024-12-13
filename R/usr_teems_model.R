@@ -9,8 +9,14 @@
 #'   in `vignette("something")`
 #'
 #' @param tab_file Character of length 1, path to a local Tablo model
-#'   file or selection of an internal Tablo file. Internally available
-#'   Tablo files currently include GTAP-INTv1, GTAPv62, and GTAPv7.
+#' file or selection of an internal Tablo file. Internally available
+#' Tablo files currently include GTAP-INTv1, GTAPv62, and GTAPv7.
+#' @param data_format Character of length 1 (default is `NULL`), GTAP
+#'   model data format corresponding to the selected Tablo model file.
+#'   Note that this is distinct from the data format of input data
+#'   files. If `NULL`, the first 200 characters of the Tablo file will
+#'   be parsed with `data_format` assigned the value following
+#'   "Version".
 #' @param ndigits Integer (default is `6`). Exact number of digits to
 #'   the right of the decimal point to be written to file for numeric
 #'   type double (GEMPack equivalent "real"). This value is passed to
@@ -109,6 +115,7 @@
 #'
 #' @export
 teems_model <- function(tab_file,
+                        data_format = NULL,
                         ndigits = 6,
                         full_exclude = c("DREL", "DVER", "XXCR", "XXCD", "XXCP", "SLUG"),
                         notes = NULL,
