@@ -26,22 +26,23 @@
   # the chances of someone providing all parameter values is low so we will
   # do the weighted mappings and then swap out final dts for any user-specific
   if (identical(x = data_format, y = "v6.2")) {
-    weight_map <- param_weights[["v62"]]
-  } else if (identical(x = data_format, y = "v7")) {
-    weight_map <- param_weights[["v7"]]
+    weight_map <- param_weights[["v6.2"]]
+  } else if (identical(x = data_format, y = "v7.0")) {
+    weight_map <- param_weights[["v7.0"]]
   }
 
   # get all headers used for weights and drop "-"
   weight_headers <- gsub(pattern = "-", "", unique(x = unlist(x = weight_map)))
 
   # get weight header data
-  weights <- subset(x = weights, is.element(el = header, set = weight_headers))
+  weights <- subset(x = weights,
+                    subset = {is.element(el = header, set = weight_headers)})
 
   # merge weights into parameter tibble
   # no idea why setnames will not work here
   # data.table::setnames(weights[['dt']][['ISEP']], 'COMM', 'ACTS')
   # ISEP ACTS to COMM for parameter weighting (data not read into model)
-  if (identical(x = data_format, y = "v7")) {
+  if (identical(x = data_format, y = "v7.0")) {
     colnames(x = purrr::pluck(.x = weights, "dt", "ISEP"))[which(colnames(x = purrr::pluck(.x = weights, "dt", "ISEP")) == "COMMc")] <- "ACTSa"
   }
 

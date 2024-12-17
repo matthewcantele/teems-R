@@ -5,6 +5,8 @@
 #' statements, and processes the data to identify types, qualifiers, and other
 #' attributes.
 #'
+#' @inheritParams teems_model
+#'
 #' @param tab_file The path to the Tablo file to be parsed.
 #'
 #' @importFrom tibble tibble
@@ -14,7 +16,7 @@
 #' @keywords internal
 #' @noRd
 .parse_tablo <- function(tab_file,
-                         data_format) {
+                         model_version) {
   # to do:
   # extract all extract components from tablo file (currently compatible with
   # v62 and v7) Will break Tablo file down into all statements "kStatements"
@@ -36,15 +38,17 @@
     tab_file <- paste0(tab_file, ".tab")
   }
 
-  if (is.null(x = data_format)) {
+  if (is.null(x = model_version)) {
   # get tab data format (first 200 char)
   tab_preface <- substring(text = tab, first = 3, last = 200)
   # extract the line containing the version number
   lines <- unlist(strsplit(tab_preface, "\n"))
   version_line <- grep(pattern = "Version", x = lines, value = TRUE)
-  data_format <- sub(pattern = ".*Version ([0-9]+\\.[0-9]+).*",
+  model_version <- sub(pattern = ".*Version ([0-9]+\\.[0-9]+).*",
                      replacement = "\\1",
                      x = version_line)
+
+  model_version <- paste0("v", model_version)
   }
 
   # remove comments
@@ -89,7 +93,7 @@
   tablo <- list(tab_file = tab_file,
                 extract = extract,
                 tab = tab,
-                data_format = data_format)
+                model_version = model_version)
   return(tablo)
 
   # will finish this later

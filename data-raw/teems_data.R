@@ -5,7 +5,8 @@ targets::tar_config_set(store = "./data-raw/_targets")
 # Set target options:
 targets::tar_option_set(
   packages = c("data.table", "usethis", "purrr", "tabulapdf", "dplyr"),
-  format = "qs"
+  format = "qs",
+  cue = tar_cue("always")
 )
 
 
@@ -16,6 +17,8 @@ targets::tar_source("./data-raw/R")
 list(
   tar_target(name = db_version,
              command = c("v9", "v10", "v11")),
+  tar_target(name = data_format,
+             command = c("v6.2", "v7.0")),
   # mapping related --------------------------------------------------
   tar_target(name = mapping_files,
              command = {
@@ -28,7 +31,8 @@ list(
 
   tar_target(name = mappings,
              command = process_mappings(path = mapping_files,
-                                        db_version = db_version)),
+                                        db_version = db_version,
+                                        data_format = data_format)),
   # tab related ------------------------------------------------------
   tar_target(name = tab_files,
              command = {
@@ -64,7 +68,7 @@ list(
                lapply(X = tab_files,
                       FUN = function(tab) {
                         tablo <- teems:::.parse_tablo(tab,
-                                                      data_format = NULL)
+                                                      model_version = NULL)
                         tablo[["extract"]]
                       })
              }),
@@ -101,7 +105,7 @@ list(
 
   tar_target(name = param_weights,
              command = {
-               list(v62 = v62_weights, v7 = v7_weights)
+               list(v6.2 = v62_weights, v7.0 = v7_weights)
              }),
 
   # intertemporal ====================================================
@@ -195,7 +199,7 @@ list(
              format = "file"),
 
   tar_target(name = reg_big3_file,
-             command = "./data-raw/mappings/v9/REG/big3.csv",
+             command = "./data-raw/mappings/v9/v6.2/REG/big3.csv",
              format = "file"),
 
   tar_target(name = reg_big3,
@@ -239,7 +243,7 @@ list(
              format = "file"),
 
   tar_target(name = sector_macro_file,
-             command = "./data-raw/mappings/v9/TRAD_COMM/macro_sector.csv",
+             command = "./data-raw/mappings/v9/v6.2/TRAD_COMM/macro_sector.csv",
              format = "file"),
 
   tar_target(name = sector_macro,
@@ -268,7 +272,7 @@ list(
              format = "file"),
 
   tar_target(name = endw_labagg_file,
-             command = "./data-raw/mappings/v9/ENDW_COMM/labor_agg.csv",
+             command = "./data-raw/mappings/v9/v6.2/ENDW_COMM/labor_agg.csv",
              format = "file"),
 
   tar_target(name = endw_labagg,
@@ -312,7 +316,7 @@ list(
 
   # teems_closure()
   tar_target(name = GTAPv62_cls_file,
-             command = "./data-raw/closures/GTAPv62.cls",
+             command = "./data-raw/closures/GTAPv6.2.cls",
              format = "file"),
 
   tar_target(name = GTAPv62_cls,
@@ -364,9 +368,9 @@ list(
                c_names <- c("name", "header", "description")
 
                v62_sets <- set_table[[1]][, c(1:4)]
-               colnames(x = v62_sets) <- c("idx", paste0("v62", c_names))
+               colnames(x = v62_sets) <- c("idx", paste0("v6.2", c_names))
                v7_sets <- set_table[[1]][, c(5:8)]
-               colnames(x = v7_sets) <- c("idx", paste0("v7", c_names))
+               colnames(x = v7_sets) <- c("idx", paste0("v7.0", c_names))
 
                # always inconsistencies in GTAP outputs
                v7_sets[5:13, "idx"] <- 5:13
@@ -389,7 +393,7 @@ list(
                                       double = c(1, 3, 5, 7, 9, 13, 15, 17, 19, 25),
                                       trebble = c(19, 22),
                                       table = v7_param,
-                                      prefix = "v7",
+                                      prefix = "v7.0",
                                       data_type = "par")
 
                v7_param[10:13, "idx"] <- 11:14
@@ -399,7 +403,7 @@ list(
                v62_param <- .table_fix(single = c(11, 12),
                                        double = c(1, 3, 5, 7, 9, 13, 15, 17),
                                        table = v62_param,
-                                       prefix = "v62",
+                                       prefix = "v6.2",
                                        data_type = "par")
 
                param <- merge(v62_param,
@@ -423,7 +427,7 @@ list(
                v7_coeff <- .table_fix(single = single,
                                       double = double,
                                       table = v7_coeff,
-                                      prefix = "v7",
+                                      prefix = "v7.0",
                                       data_type = "dat")
 
                v62_coeff <- coeff_table[, c(1:3)]
@@ -435,9 +439,9 @@ list(
                v62_coeff <- .table_fix(single = single,
                                        double = double,
                                        table = v62_coeff,
-                                       prefix = "v62",
+                                       prefix = "v6.2",
                                        data_type = "dat")
-browser()
+
                coeff <- merge(v62_coeff,
                               v7_coeff,
                               by = "idx",

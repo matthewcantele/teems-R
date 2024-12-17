@@ -107,7 +107,7 @@
       region_mapping = !!config[["region_mapping"]],
       sector_mapping = !!config[["sector_mapping"]],
       endowment_mapping = !!config[["endowment_mapping"]],
-      data_format = metadata[["data_format"]]
+      data_format = metadata[["model_version"]]
     )),
     cue = targets::tar_cue(mode = "always")
   ))
@@ -125,7 +125,8 @@
       set_mappings = set_mappings,
       nonint_sets = init.set_tib,
       model_sets = tablo_sets[["sets"]],
-      database_version = metadata[["database_version"]]
+      database_version = metadata[["database_version"]],
+      data_format = metadata[["model_version"]]
     ))
   ))
 

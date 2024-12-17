@@ -45,7 +45,7 @@
     name = "metadata",
     command = expression(.extract_metadata(
       ls_array = base_array,
-      tab_data_format = parsed.tablo[["data_format"]]
+      model_version = parsed.tablo[["model_version"]]
     ))
   ))
 

@@ -11,12 +11,16 @@
 #' @param tab_file Character of length 1, path to a local Tablo model
 #' file or selection of an internal Tablo file. Internally available
 #' Tablo files currently include GTAP-INTv1, GTAPv62, and GTAPv7.
-#' @param data_format Character of length 1 (default is `NULL`), GTAP
-#'   model data format corresponding to the selected Tablo model file.
-#'   Note that this is distinct from the data format of input data
-#'   files. If `NULL`, the first 200 characters of the Tablo file will
-#'   be parsed with `data_format` assigned the value following
-#'   "Version".
+#' @param model_version Character of length 1 (default is `NULL`),
+#'   GTAP model base version corresponding to the selected Tablo model
+#'   file. Note that this is distinct from the data format of input
+#'   data files. If `NULL`, the first 200 characters of the Tablo file
+#'   will be parsed with `model_version` assigned the value following
+#'   "Version". Choices:
+#'   * `"v6.2"`: Classic GTAP model version 6.2 and models based off
+#'   this version. See: https://www.gtap.agecon.purdue.edu/resources/res_display.asp?RecordID=2458
+#'   * `"v7.0"`: Standard GTAP model version 7 and models based off this
+#'   version. See: https://jgea.org/ojs/index.php/jgea/article/view/47
 #' @param ndigits Integer (default is `6`). Exact number of digits to
 #'   the right of the decimal point to be written to file for numeric
 #'   type double (GEMPack equivalent "real"). This value is passed to
@@ -115,7 +119,7 @@
 #'
 #' @export
 teems_model <- function(tab_file,
-                        data_format = NULL,
+                        model_version = NULL,
                         ndigits = 6,
                         full_exclude = c("DREL", "DVER", "XXCR", "XXCD", "XXCP", "SLUG"),
                         notes = NULL,
@@ -163,16 +167,30 @@ if (any(grepl(pattern = "(intertemporal)",
       }
     }
   }
+if (!is.null(x = model_version)) {
+  model_version <- match.arg(arg = model_version,
+                             choices = c("v6.2", "v7.0"))
+} else {
+  model_version <- .get_tab_format(tab_file = tab_file)
+  if (!is.element(el = model_version, set = c("v6.2", "v7.0"))) {
+    stop("Determined model version does not correspond to either `v6.2` or `v7.0`.",
+         "Adjust the header of the Tablo file or explicitly set `model_version`.")
+  }
+
+  if (verbose)
+  {message(paste("Model version for the provided Tablo file has been determined as:",
+                 model_version))}
+}
 stopifnot(is.numeric(x = floor(x = ndigits)))
 if (identical(x = temporal_dynamics, y = "intertemporal"))
   {args_list[["full_exclude"]] <- as.call(x = c(as.list(x = args_list$full_exclude), c("RDLT", "RFLX")))}
 if (verbose)
-  {message(paste("Temporal dynamics have been determined as:",
-            temporal_dynamics,
-            ifelse(test = identical(x = temporal_dynamics, y = "intertemporal"),
-                   yes = paste("\nFor intertemporal model run specifications, see",
-                               dQuote(x = 'help("teems_time")')),
-                   no = "")))}
+{message(paste("Temporal dynamics have been determined as:",
+                temporal_dynamics,
+                ifelse(test = identical(x = temporal_dynamics, y = "intertemporal"),
+                       yes = paste("\nFor intertemporal model run specifications, see",
+                                   dQuote(x = 'help("teems_time")')),
+                       no = "")))}
 args_list_append <- list(temporal_dynamics = temporal_dynamics)
 config <- c(args_list, args_list_append)
 config

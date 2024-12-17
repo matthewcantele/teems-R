@@ -69,7 +69,7 @@
           weights = init.base_tib,
           RDLT = !!config[["RORDELTA"]],
           par = init.par_tib,
-          data_format = metadata[["data_format"]]
+          data_format = metadata[["model_version"]]
         )
       )
     ))

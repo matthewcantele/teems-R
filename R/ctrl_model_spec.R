@@ -38,7 +38,8 @@
   # produce Tablo file extract
   target_tablo <- rlang::expr(targets::tar_target_raw(
     name = "parsed.tablo",
-    command = expression(.parse_tablo(tab_file = tracked_tab_file))
+    command = expression(.parse_tablo(tab_file = tracked_tab_file,
+                                      model_version = !!config[["model_version"]]))
   ))
 
   } else {
@@ -51,7 +52,7 @@
     target_tablo <- rlang::expr(targets::tar_target_raw(
       name = "parsed.tablo",
       command = expression(.parse_tablo(tab_file = internal_tab_file,
-                                        data_format = !!config[["data_format"]]))
+                                        model_version = !!config[["model_version"]]))
     ))
   }
 

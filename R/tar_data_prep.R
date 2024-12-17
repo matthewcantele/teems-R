@@ -10,7 +10,7 @@
 #' @param tib_data A tibble. The data to be aggregated produced by
 #'   \code{.build_tibble()}.
 #' @param data_format Character string. The format of GTAP data, either "v6.2"
-#'   or "v7".
+#'   or "v7.0".
 #' @param coeff_list A list of model coefficients produced by \code{.parse_tablo()}.
 #'
 #' @importFrom purrr pluck

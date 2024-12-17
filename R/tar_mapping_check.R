@@ -58,7 +58,8 @@
   r_idx <- match(x = c1, table = sets[["header"]])
   sets[["full_sets"]] <- model_sets[r_idx]
 
-
+browser()
+# here sets[["dt"]] with unconverted names
   # check that mappings include all associated elements
   purrr::pmap(
     .l = list(

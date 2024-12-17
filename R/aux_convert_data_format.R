@@ -4,7 +4,7 @@
 
   if (identical(x = data_format, y = "v6.2")) {
     browser()
-  } else if (identical(x = data_format, y = "v7")) {
+  } else if (identical(x = data_format, y = "v7.0")) {
     if (identical(x = data_type, y = "set")) {
       # v7 to v62 on sets involves changing set names
       data <- lapply(
@@ -18,6 +18,13 @@
           return(header)
         }
       )
+
+      # add missing v6.2 set
+      missing_v62 <- list(H9 = list(header_name = "H9",
+                                    information = "Set CGDS_COMM  capital goods commodities",
+                                    dt = data.table::data.table(H9 = "cgds")))
+
+      data <- c(data, missing_v62)
       names(x = data) <- sapply(X = data,
                                 FUN = function(x){x[["header_name"]]})
     } else if (identical(x = data_type, y = "par")) {
@@ -57,6 +64,7 @@
           return(header)
         }
       )
+
     } else if (identical(x = data_type, y = "dat")) {
       # v7 to v62 on base involves changing names, adding cgds, and other op
       data <- lapply(
@@ -77,19 +85,19 @@
           if (identical(x = nme, y = "VDFB")) {
             cgds <- data.table::copy(purrr::pluck(data, "VDIB", "dt"))
             cgds[, let(PROD_COMMj = "cgds")]
-            dt <- data.table::rbindlist(l = list(dt, cgds), use.names = TRUE)
+            new_dt <- data.table::rbindlist(l = list(dt, cgds), use.names = TRUE)
           } else if (identical(x = nme, y = "VDFP")) {
             cgds <- data.table::copy(purrr::pluck(data, "VDIP", "dt"))
             cgds[, let(PROD_COMMj = "cgds")]
-            dt <- data.table::rbindlist(l = list(dt, cgds), use.names = TRUE)
+            new_dt <- data.table::rbindlist(l = list(dt, cgds), use.names = TRUE)
           } else if (identical(x = nme, y = "VMFB")) {
             cgds <- data.table::copy(purrr::pluck(data, "VMIB", "dt"))
             cgds[, let(PROD_COMMj = "cgds")]
-            dt <- data.table::rbindlist(l = list(dt, cgds), use.names = TRUE)
+            new_dt <- data.table::rbindlist(l = list(dt, cgds), use.names = TRUE)
           } else if (identical(x = nme, y = "VMFP")) {
             cgds <- data.table::copy(x = purrr::pluck(data, "VMIP", "dt"))
             cgds[, let(PROD_COMMj = "cgds")]
-            dt <- data.table::rbindlist(l = list(dt, cgds), use.names = TRUE)
+            new_dt <- data.table::rbindlist(l = list(dt, cgds), use.names = TRUE)
           } else if (is.element(el = nme,
                                 set = c("EVFB", "EVFP", "FBEP", "FTRV"))) {
             cgds <- data.table::CJ(
@@ -98,20 +106,42 @@
               REGr = unique(dt[["REGr"]]),
               Value = 0
             )
-            dt <- data.table::rbindlist(l = list(dt, cgds))
+            new_dt <- data.table::rbindlist(l = list(dt, cgds))
           } else if (identical(x = nme, y = "EVOS")) {
-            dt <- dt[, .(Value = sum(Value)), by = c("ENDW_COMMi", "REGr")]
+            new_dt <- dt[, .(Value = sum(Value)), by = c("ENDW_COMMi", "REGr")]
           } else if (identical(x = nme, y = "ISEP")) {
             cgds <- data.table::copy(x = dt)
             cgds[, let(PROD_COMMj = "cgds", Value = Value * -1)]
             dt <- data.table::copy(purrr::pluck(data, "CSEP", "dt"))
             dt[, let(Value = Value * -1)]
-            dt <- data.table::rbindlist(l = list(dt, cgds), use.names = TRUE)
+            new_dt <- data.table::rbindlist(l = list(dt, cgds), use.names = TRUE)
+          }
+
+          if (exists(x = "new_dt")) {
+          header[["dt"]] <- dt
+          }
+
+          return(header)
+        }
+      )
+
+      data <- lapply(
+        X = data,
+        FUN = function(header) {
+          new_name <- base_conversion[grep(pattern = header[["header_name"]],
+                                            x = base_conversion[["v7header"]]), "v62header"]
+          if (!identical(x = new_name, y = character(0)) && !is.na(x = new_name)) {
+            header[["header_name"]] <- new_name
           }
           return(header)
         }
       )
+
+      names(x = data) <- sapply(X = data,
+                                FUN = function(x){x[["header_name"]]})
     }
+
+
   }
   return(data)
 }

@@ -20,7 +20,7 @@
   } else {
     sets <- nonint_sets
   }
-
+browser()
   # remove "=,),(" from definitions
   set_extract[["definition"]] <- trimws(x = gsub(pattern = "\\(|=|\\)", replacement = "", x = set_extract[["definition"]]))
 

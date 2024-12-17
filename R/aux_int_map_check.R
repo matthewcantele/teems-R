@@ -1,4 +1,4 @@
-#' @importFrom purrr list_flatten
+#' @importFrom purrr pluck
 #' @keywords internal
 #' @noRd
 .internal_map_check <- function(set,
@@ -6,11 +6,13 @@
                                 mapping) {
 
   # internal mappings
-  internal_mappings <- subset(x = mappings,
-                              subset = {is.element(el = names(x = mappings),
-                                                   set = database_version)})[[1]]
+  # default data format
+  data_format <- switch(EXPR = database_version,
+                        "v9" = "v6.2",
+                        "v10" = "v6.2",
+                        "v11" = "v7.0")
 
-  set_mappings <- internal_mappings[is.element(el = names(x = internal_mappings), set = set)][[1]]
+  set_mappings <- purrr::pluck(.x = mappings, database_version, data_format, set)
   available_mappings <- colnames(x = set_mappings)[-1]
 
   if (!any(is.element(el = colnames(x = set_mappings), set = available_mappings))) {

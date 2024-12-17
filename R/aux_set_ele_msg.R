@@ -10,7 +10,7 @@
                         paste0(set_name, "s"),
                         paste0("(", model_set, ")"),
                         "determined as:\n")
-  message_text <- paste0(message_text, element_text)
+  message_text <- paste0(message_text, element_text, "\n")
 
   # Print the final message
   message(message_text)

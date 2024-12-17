@@ -79,7 +79,7 @@
   }
 
   if (!identical(x = metadata[["data_format"]],
-                 y = metadata[["tab_data_format"]])) {
+                 y = metadata[["model_version"]])) {
     conversion <- TRUE
   } else {
     conversion <- FALSE
@@ -114,24 +114,24 @@
 
           # Format-specific transformations
           if (identical(x = metadata[["data_format"]], y = "v6.2")) {
-            if (identical(x = metadata[["tab_data_format"]], y = "v6.2")) {
+            if (identical(x = metadata[["model_version"]], y = "v6.2")) {
               replace_patterns <- list(
                 "TRAD_COMM" = "TRAD_COMMi",
                 "PROD_COMM" = "PROD_COMMj",
                 "ENDW_COMM" = "ENDW_COMMi"
               )
-            } else if (identical(x = metadata[["tab_data_format"]], y = "v7")) {
+            } else if (identical(x = metadata[["model_version"]], y = "v7.0")) {
               browser()
             }
-          } else if (identical(x = metadata[["data_format"]], y = "v7")) {
-              if (identical(x = metadata[["tab_data_format"]], y = "v7")) {
+          } else if (identical(x = metadata[["data_format"]], y = "v7.0")) {
+              if (identical(x = metadata[["model_version"]], y = "v7.0")) {
                 replace_patterns <- list(
                   "ACTS" = "ACTSa",
                   "COMM" = "COMMc",
                   "DIR" = "DIRd",
                   "ENDW" = "ENDWe"
                 )
-              } else if (identical(x = metadata[["tab_data_format"]], y = "v6.2")) {
+              } else if (identical(x = metadata[["model_version"]], y = "v6.2")) {
                 replace_patterns <- list("ACTS" = "PROD_COMMj",
                                          "COMM" = "TRAD_COMMi",
                                          "ENDW" = "ENDW_COMMi",
@@ -201,13 +201,12 @@
 
   # if tab file format data format mismatch convert data
   if (!identical(x = metadata[["data_format"]],
-                 y = metadata[["tab_data_format"]])) {
+                 y = metadata[["model_version"]])) {
     ls_array <- .convert_data_format(data = ls_array,
                                      data_format = metadata[["data_format"]],
                                      data_type = data_type)
   }
 
-browser()
   # optional transformations
   # all set elements to lowercase
   if (lowercase) {
@@ -228,8 +227,7 @@ browser()
   }
 
   # 'CGDS/cgds' to 'zCGDS' (see arguments)
-  if (zCGDS && is.element(el = "v6.2",
-                          set = c(metadata[["data_format"]], metadata[["tab_data_format"]]))) {
+  if (zCGDS && identical(x = metadata[["model_version"]], y = "v6.2")) {
     ls_array <- lapply(X = ls_array, FUN = function(header) {
       col_names <- colnames(x = header[["dt"]])
 
