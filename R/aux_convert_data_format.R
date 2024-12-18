@@ -5,6 +5,27 @@
   if (identical(x = data_format, y = "v6.2")) {
     if (identical(x = data_type, y = "set")) {
 browser()
+      data <- lapply(
+        X = data,
+        FUN = function(header) {
+          browser()
+          new_name <- set_conversion[grep(pattern = header[["header_name"]],
+                                          x = set_conversion[["v6.2header"]]), "v7.0header"]
+          if (!identical(x = new_name, y = character(0)) && !is.na(x = new_name)) {
+            header[["header_name"]] <- new_name
+            colnames(header[["dt"]]) <- new_name
+          }
+          return(header)
+        }
+      )
+
+      ACTS <- purrr::pluck(.x = data, "H2")
+      ACTS[["header_name"]] <- "ACTS"
+      colnames(ACTS[["dt"]]) <- "ACTS"
+
+      # index here? information?
+      names(x = data) <- sapply(X = data,
+                                FUN = function(x){x[["header_name"]]})
     } else if (identical(x = data_type, y = "par")) {
       # don't see any drawback to using the regions from here rather than bringing forth the prior set object
       REGr <- purrr::pluck(.x = data, "RFLX", "dt", "REGr")
