@@ -83,31 +83,31 @@
 #' # to utilize v6.2 data compatible with GTAPv7 and v7 compatible
 #' # data with v6.2-based models.
 #'
-#' v62_model_config <- teems_model(tab_file = "GTAPv62",
+#' v6.2_model_config <- teems_model(tab_file = "GTAPv6.2",
 #'                                 ndigits = 8,
 #'                                 verbose = TRUE)
 #'
-#' v62_base_config <- teems_base(dat_har = "~/dat/GTAP/v9/2011/gddat.har")
+#' v6.2_base_config <- teems_base(dat_har = "~/dat/GTAP/v9/2011/gddat.har")
 #'
-#' v62_param_config <- teems_param(par_har = "~/dat/GTAP/v9/2011/gdpar.har")
+#' v6.2_param_config <- teems_param(par_har = "~/dat/GTAP/v9/2011/gdpar.har")
 #'
-#' v62_set_config <- teems_sets(set_har = "~/dat/GTAP/v9/2011/gdset.har",
+#' v6.2_set_config <- teems_sets(set_har = "~/dat/GTAP/v9/2011/gdset.har",
 #'                              region_mapping = "big3",
 #'                              sector_mapping = "macro_sector",
 #'                              endowment_mapping = "labor_agg",
 #'                              verbose = TRUE)
 #'
-#' v62_numeraire_shk <- teems_shock(var = "pfactwld",
+#' v6.2_numeraire_shk <- teems_shock(var = "pfactwld",
 #'                                  type = "uniform",
 #'                                  value = 1)
 #'
-#' v62_closure_config <- teems_closure(shock = v62_numeraire_shk)
+#' v6.2_closure_config <- teems_closure(shock = v6.2_numeraire_shk)
 #'
-#' v62_cmf_path <- teems_deploy(model_config = v62_model_config,
-#'                              base_config = v62_base_config,
-#'                              param_config = v62_param_config,
-#'                              set_config = v62_set_config,
-#'                              closure_config = v62_closure_config,
+#' v6.2_cmf_path <- teems_deploy(model_config = v6.2_model_config,
+#'                              base_config = v6.2_base_config,
+#'                              param_config = v6.2_param_config,
+#'                              set_config = v6.2_set_config,
+#'                              closure_config = v6.2_closure_config,
 #'                              verbose = TRUE)
 #'
 #' # A GTAP-INTv1 3-region, 6-sector, 4-endowment, 5 timestep

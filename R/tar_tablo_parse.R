@@ -19,7 +19,7 @@
                          model_version) {
   # to do:
   # extract all extract components from tablo file (currently compatible with
-  # v62 and v7) Will break Tablo file down into all statements "kStatements"
+  # v6.2 and v7.0) Will break Tablo file down into all statements "kStatements"
   # plus additional components used throughout the wrapper Tablo<->LaTeX
   # conversions using powerful R functionalities, see:
   # https://adv-r.hadley.nz/translation.html?q=sql#introduction-20 Users will be

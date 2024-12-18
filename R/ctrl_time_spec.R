@@ -88,7 +88,9 @@
     target_time_sets <- rlang::expr(targets::tar_target_raw(
       name = "time_sets",
       command = expression(.time_sets(
-        time_steps = !!config[["time_steps"]]
+        time_steps = !!config[["time_steps"]],
+        t0 = !!config[["t0"]],
+        reference_year = metadata[["reference_year"]]
       )),
       cue = targets::tar_cue(mode = "always")
     ))

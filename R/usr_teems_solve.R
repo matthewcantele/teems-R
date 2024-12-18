@@ -86,15 +86,15 @@
 #' # A number of runtime options are available to solve the model.
 #'
 #' # sample static model setup
-#' v62_cmf_path <- teems_deploy(model_config = v62_model_config,
-#'                              base_config = v62_base_config,
-#'                              param_config = v62_param_config,
-#'                              set_config = v62_set_config,
-#'                              closure_config = v62_closure_config,
+#' v6.2_cmf_path <- teems_deploy(model_config = v6.2_model_config,
+#'                              base_config = v6.2_base_config,
+#'                              param_config = v6.2_param_config,
+#'                              set_config = v6.2_set_config,
+#'                              closure_config = v6.2_closure_config,
 #'                              verbose = TRUE)
 #'
 #' # The most simple solution is an LU Johansen with a single task:
-#' teems_solve(cmf_path = v62_cmf_path,
+#' teems_solve(cmf_path = v6.2_cmf_path,
 #'             matrix_method = "LU",
 #'             solution_method = "Johansen")
 #'
@@ -105,7 +105,7 @@
 #' # to either subintervals or steps.
 #'
 #' # Standard model run with LU and modified midpoint:
-#' teems_solve(cmf_path = v62_cmf_path,
+#' teems_solve(cmf_path = v6.2_cmf_path,
 #'             matrix_method = "LU",
 #'             n_subintervals = 2,
 #'             solution_method = "mod_midpoint",

@@ -13,7 +13,16 @@
 #'   non-integer sets.
 #' @keywords internal
 #' @noRd
-.time_sets <- function(time_steps) {
+.time_sets <- function(time_steps,
+                       t0,
+                       reference_year) {
+
+  if (!identical(x = reference_year, y = t0)) {
+    stop(paste("The database reference year",
+               paste0("(", reference_year, ")"),
+               "does not match the chronological year corresponding to the initial timestep",
+               paste0("(", t0, ").")))
+  }
 
   n_timestep <- as.numeric(length(x = time_steps) + 1)
   ALLTIME <- .create_header(

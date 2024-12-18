@@ -111,7 +111,7 @@
 
   # check that parsed column names match those within premodel tab extract
 
-  # there is a discrepancy here within the original GTAPv7 on cnttechr (REG,TECHTYPE)
+  # there is a discrepancy here within the original GTAPv7.0 on cnttechr (REG,TECHTYPE)
   # lax check (column order doesn't matter)
   lax_check <- all(unlist(x = purrr::map2(
     var_extract[["ls_upper_idx"]],

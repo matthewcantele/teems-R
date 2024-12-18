@@ -39,6 +39,13 @@
     warning('Data.table C-Locale sorting (which is used in associated functions) will lead to errors with capital case "CGDS". This element is found in v6.2 data format.')
   }
 
+  if (!identical(x = metadata[["data_format"]],
+                 y = metadata[["model_version"]])) {
+    conversion <- TRUE
+  } else {
+    conversion <- FALSE
+  }
+
   # full exclude on select headers (DREL, etc.)
   ls_array <- subset(
     x = ls_array,
@@ -50,8 +57,7 @@
 
   if (identical(x = data_type, y = "par")) {
     # change ETRE set from ENDWS_COMM to ENDW_COMM and add null values for mobile factors
-    if (is.element(el = "ETRE", set = names(x = ls_array)) &&
-      is.element(el = metadata[["database_version"]], set = c("v9", "v10"))) {
+    if (is.element(el = metadata[["database_version"]], set = c("v9", "v10"))) {
       ETRE_data <- purrr::pluck(.x = ls_array, "ETRE", "data")
       ENDWS_dimnames <- unlist(x = dimnames(x = ETRE_data))
 
@@ -78,13 +84,6 @@
     }
   }
 
-  if (!identical(x = metadata[["data_format"]],
-                 y = metadata[["model_version"]])) {
-    conversion <- TRUE
-  } else {
-    conversion <- FALSE
-  }
-
   # add our package type specific set names
   if (!is.element(el = data_type, set = "set")) {
     r_idx <- match(x = names(x = ls_array), table = coeff_extract[["header"]])
@@ -93,61 +92,78 @@
       .y = r_idx,
       .f = function(header, idx) {
         if (!is.na(idx) && !conversion) {
+          # extract won't align so can't pull if conversion == TRUE
           new_names <- setdiff(x = purrr::pluck(coeff_extract, "ls_mixed_idx", idx),
                                y = "ALLTIMEt")
           if (!identical(x = new_names, y = "null_set")) {
             names(x = dimnames(x = header[["data"]])) <- new_names
           }
         } else {
+          # this section is for headers that are not read-in but are used in some other way (par weights)
           dimnames_header <- dimnames(x = header[["data"]])
-          dim_names <- names(x = dimnames_header)
-          if (identical(x = sum(grepl(pattern = "REG", x = dim_names), na.rm = TRUE), y = 2L)) {
-            dim_names[duplicated(x = dim_names)] <- "REGs"
-            dim_names <- sub(pattern = "^REG$",
-                             replacement = "REGr",
-                             x = dim_names)
-          } else if (identical(x = sum(grepl(pattern = "REG", x = dim_names), na.rm = TRUE), y = 1L)) {
-            dim_names <- sub(pattern = "^REG$",
-                             replacement = "REGr",
-                             x = dim_names)
-          }
-
-          # Format-specific transformations
-          if (identical(x = metadata[["data_format"]], y = "v6.2")) {
-            if (identical(x = metadata[["model_version"]], y = "v6.2")) {
-              replace_patterns <- list(
-                "TRAD_COMM" = "TRAD_COMMi",
-                "PROD_COMM" = "PROD_COMMj",
-                "ENDW_COMM" = "ENDW_COMMi"
-              )
-            } else if (identical(x = metadata[["model_version"]], y = "v7.0")) {
-              browser()
+          # for RDLT and other switch/binary
+          if (!is.null(x = dimnames_header)) {
+            dim_names <- names(x = dimnames_header)
+            if (identical(x = sum(grepl(
+              pattern = "REG", x = dim_names
+            ), na.rm = TRUE), y = 2L)) {
+              dim_names[duplicated(x = dim_names)] <- "REGs"
+              dim_names <- sub(pattern = "^REG$",
+                               replacement = "REGr",
+                               x = dim_names)
+            } else if (identical(x = sum(grepl(
+              pattern = "REG", x = dim_names
+            ), na.rm = TRUE), y = 1L)) {
+              dim_names <- sub(pattern = "^REG$",
+                               replacement = "REGr",
+                               x = dim_names)
             }
-          } else if (identical(x = metadata[["data_format"]], y = "v7.0")) {
-              if (identical(x = metadata[["model_version"]], y = "v7.0")) {
+
+            # Format- and conversion-specific transformations
+            if (!conversion) {
+              if (identical(x = metadata[["data_format"]], y = "v6.2")) {
+                replace_patterns <- list(
+                  "TRAD_COMM" = "TRAD_COMMi",
+                  "PROD_COMM" = "PROD_COMMj",
+                  "ENDW_COMM" = "ENDW_COMMi"
+                )
+              } else if (identical(x = metadata[["data_format"]], y = "v7.0")) {
                 replace_patterns <- list(
                   "ACTS" = "ACTSa",
                   "COMM" = "COMMc",
                   "DIR" = "DIRd",
                   "ENDW" = "ENDWe"
                 )
-              } else if (identical(x = metadata[["model_version"]], y = "v6.2")) {
-                replace_patterns <- list("ACTS" = "PROD_COMMj",
-                                         "COMM" = "TRAD_COMMi",
-                                         "ENDW" = "ENDW_COMMi",
-                                         "MARG" = "MARG_COMMm")
+              }
+            } else {
+              if (identical(x = metadata[["data_format"]], y = "v6.2")) {
+                replace_patterns <- list(
+                  "TRAD_COMM" = "COMMc",
+                  "PROD_COMM" = "ACTSa",
+                  "ENDW_COMM" = "ENDWe"
+                )
+              } else if (identical(x = metadata[["data_format"]], y = "v7.0")) {
+                replace_patterns <- list(
+                  "ACTS" = "PROD_COMMj",
+                  "COMM" = "TRAD_COMMi",
+                  "ENDW" = "ENDW_COMMi",
+                  "MARG" = "MARG_COMMm"
+                )
               }
             }
 
-          origin <- names(x = replace_patterns)
-          r_idx <- match(x = dim_names, table = origin)
-          dim_names <- ifelse(test = is.element(el = dim_names, set = origin),
-                              yes = replace_patterns[r_idx],
-                              no = dim_names)
+            origin <- names(x = replace_patterns)
+            r_idx <- match(x = dim_names, table = origin)
+            dim_names <- ifelse(
+              test = is.element(el = dim_names, set = origin),
+              yes = replace_patterns[r_idx],
+              no = dim_names
+            )
 
-          # updated names
-          names(x = dimnames_header) <- dim_names
-          dimnames(x = header[["data"]]) <- dimnames_header
+            # updated names
+            names(x = dimnames_header) <- dim_names
+            dimnames(x = header[["data"]]) <- dimnames_header
+          }
         }
         return(header)
       }
@@ -200,8 +216,7 @@
   })
 
   # if tab file format data format mismatch convert data
-  if (!identical(x = metadata[["data_format"]],
-                 y = metadata[["model_version"]])) {
+  if (conversion) {
     ls_array <- .convert_data_format(data = ls_array,
                                      data_format = metadata[["data_format"]],
                                      data_type = data_type)

@@ -115,7 +115,10 @@ teems_time <- function(time_steps,
                        interval_switch = FALSE)
 {
 if (!interval_switch) {
+  t0 <- time_steps[1]
   time_steps <- diff(x = time_steps)
+} else {
+  t0 <- NA
 }
 stopifnot(is.numeric(x = time_steps))
 stopifnot(is.logical(x = INIDELTA))
@@ -211,6 +214,7 @@ if (grepl(pattern = "\\.csv", x = KAPPA)) {
   }
 }
 time_config <- list(time_steps = time_steps,
+                    t0 = t0,
                     CPHI = CPHI,
                     KAPPA = KAPPA,
                     LRORG = LRORG,

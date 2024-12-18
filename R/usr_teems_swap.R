@@ -54,7 +54,7 @@
 #' # teems_query(). Set names must conform to the "mixed_format" style
 #' # here:
 #' teems_query(component = "var",
-#'             model = "GTAPv62",
+#'             model = "GTAPv6.2",
 #'             name = "qfd")
 #'
 #' invisible(teems_sets(set_har = path_to_har,

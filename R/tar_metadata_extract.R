@@ -19,10 +19,6 @@
                                            replacement = "\\1",
                                            x = metadata[["database_version"]])
 
-    if (identical(x = model_version, y = "7.0")) {
-      model_version <- "7"
-    }
-
     metadata[["model_version"]] <- model_version
 
     return(metadata)

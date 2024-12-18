@@ -29,6 +29,7 @@
                            model_sets,
                            margin_sectors = c("atp", "otp", "wtp"),
                            data_format) {
+
   r_idx <- match(x = names(x = set_mappings), table = model_sets[["name"]])
   set_headers <- model_sets[["header"]][r_idx]
 
@@ -42,6 +43,7 @@
     .f = function(set, map, set_name) {
       if (!is.null(x = map)) {
         if (grepl(pattern = "\\.csv", x = map)) {
+          browser()
           mapping <- data.table::fread(input = map)
 
           # check user-provided mapping

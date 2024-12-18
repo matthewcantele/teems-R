@@ -10,7 +10,7 @@
 #'
 #' @param tab_file Character of length 1, path to a local Tablo model
 #' file or selection of an internal Tablo file. Internally available
-#' Tablo files currently include GTAP-INTv1, GTAPv62, and GTAPv7.
+#' Tablo files currently include GTAP-INTv1, GTAPv6.2, and GTAPv7.
 #' @param model_version Character of length 1 (default is `NULL`),
 #'   GTAP model base version corresponding to the selected Tablo model
 #'   file. Note that this is distinct from the data format of input
@@ -69,12 +69,12 @@
 #' # GTAPv6.2 --------------------------------------------------------
 #' # When `verbose` == `TRUE`, the detected type of temporal dynamics:
 #' # static or intertemporal will be printed to the console.
-#' model_config <- teems_model(tab_file = "GTAPv62",
+#' model_config <- teems_model(tab_file = "GTAPv6.2",
 #'                             notes = "initial run",
 #'                             verbose = TRUE)
 #'
 #' # Names of output files can be set within this function.
-#' model_config <- teems_model(tab_file = "GTAPv62",
+#' model_config <- teems_model(tab_file = "GTAPv6.2",
 #'                             data_csv_name = "GTAPDATA.csv",
 #'                             parameter_csv_name = "GTAPPARM.csv",
 #'                             sets_csv_name = "GTAPSETS.csv")
