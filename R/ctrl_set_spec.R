@@ -45,10 +45,18 @@
   # convert list of data arrays to structured data
   target_ls_set <- rlang::expr(targets::tar_target_raw(
     name = "ls_set",
-    command = expression(.constructDT(
+    command = expression(.construct_dt(
       ls_array = set_array,
       metadata = metadata,
       full_exclude = !!full_exclude
+    ))
+  ))
+
+  target_ls_set_mod <- rlang::expr(targets::tar_target_raw(
+    name = "ls_set_mod",
+    command = expression(.modify_data(
+      ls_array = ls_set,
+      metadata = metadata
     ))
   ))
 
@@ -56,7 +64,7 @@
   target_init.set_tib <- rlang::expr(targets::tar_target_raw(
     name = "init.set_tib",
     command = expression(.build_tibble(
-      ls_data = ls_set,
+      ls_data = ls_set_mod,
       preagg_header_replace = NULL
     ))
   ))

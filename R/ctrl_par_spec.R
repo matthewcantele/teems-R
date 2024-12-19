@@ -43,7 +43,7 @@
     # convert list of data arrays to structured data
     target_ls_par <- rlang::expr(targets::tar_target_raw(
       name = "ls_par",
-      command = expression(.constructDT(
+      command = expression(.construct_dt(
         ls_array = par_array,
         metadata = metadata,
         coeff_extract = tablo_coeff,
@@ -52,11 +52,19 @@
       ))
     ))
 
+    target_ls_par_mod <- rlang::expr(targets::tar_target_raw(
+      name = "ls_par_mod",
+      command = expression(.modify_data(
+        ls_array = ls_par,
+        metadata = metadata
+      ))
+    ))
+
     # construct tibbles from metadata and dts for each data type
     target_init.par_tib <- rlang::expr(targets::tar_target_raw(
       name = "init.par_tib",
       command = expression(.build_tibble(
-        ls_data = ls_par,
+        ls_data = ls_par_mod,
         preagg_header_replace = !!config[["preagg_data"]]
       ))
     ))

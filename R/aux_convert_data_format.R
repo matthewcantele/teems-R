@@ -94,6 +94,7 @@ browser()
       data <- c(data, missing_v7.0)
     } else if (identical(x = data_type, y = "dat")) {
       browser()
+      #TVOM has MAKS and MAKB
     }
   } else if (identical(x = data_format, y = "v7.0")) {
     if (identical(x = data_type, y = "set")) {
