@@ -4,21 +4,15 @@
 
   if (identical(x = data_format, y = "v6.2")) {
     if (identical(x = data_type, y = "set")) {
-browser()
-      data <- lapply(
-        X = data,
-        FUN = function(header) {
-          browser()
-          new_name <- set_conversion[grep(pattern = header[["header_name"]],
-                                          x = set_conversion[["v6.2header"]]), "v7.0header"]
-          if (!identical(x = new_name, y = character(0)) && !is.na(x = new_name)) {
-            header[["header_name"]] <- new_name
-            colnames(header[["dt"]]) <- new_name
-          }
-          return(header)
-        }
-      )
+      data <- lapply(X = data,
+                     FUN = function(header) {
+                       .convert_id(header = header,
+                                   table = set_conversion,
+                                   origin = data_format,
+                                   colname = TRUE)
+                     })
 
+browser()
       ACTS <- purrr::pluck(.x = data, "H2")
       ACTS[["header_name"]] <- "ACTS"
       colnames(ACTS[["dt"]]) <- "ACTS"
@@ -50,17 +44,18 @@ browser()
                        }
 
                        return(header)
-                     }
-      )
+                     })
+
       # add missing v7 parameters
       REG <- REGr
       ACTS <- unique(purrr::pluck(.x = data, "ESBV", "dt", "ACTSa"))
       MARG <- c("atp", "otp", "wtp")
 
       missing_v7.0 <- unlist(x = subset(x = param_conversion,
-                             subset = {is.na(v6.2header)},
+                             subset = {is.na(x = v6.2header)},
                              select = v7.0header))
 
+      # should pass in via fun rather than parent.frame
       missing_v7.0 <- with(data = param_conversion,
            expr = {
              lapply(X = missing_v7.0,
@@ -93,24 +88,109 @@ browser()
                                         FUN = function(x){x[["header_name"]]})
       data <- c(data, missing_v7.0)
     } else if (identical(x = data_type, y = "dat")) {
-      browser()
       #TVOM has MAKS and MAKB
+      # missing headers (MAKS, MAKB, VDIB, VDIP, VMIP, VMIB, CSEP)
+      browser()
+      missing_v7.0 <- unlist(x = subset(x = base_conversion,
+                                        subset = {is.na(x = v6.2header)},
+                                        select = v7.0header))
+
+      missing_v7.0 <- with(data = base_conversion,
+                           expr = {
+                             lapply(X = missing_v7.0,
+                                    FUN = function(nme) {
+                                      if (identical(x = nme, y = "VDIB")) {
+                                         dt <- data.table::copy(x = purrr::pluck(.x = data, "VDFM", "dt"))
+                                         dt <- dt[ACTSa == "CGDS", !("ACTSa"), with = FALSE]
+                                      } else if (identical(x = nme, y = "VDIP")) {
+                                        dt <- data.table::copy(x = purrr::pluck(.x = data, "VDFA", "dt"))
+                                        dt <- dt[ACTSa == "CGDS", !("ACTSa"), with = FALSE]
+                                      } else if (identical(x = nme, y = "VMIB")) {
+                                        dt <- data.table::copy(x = purrr::pluck(.x = data, "VIFM", "dt"))
+                                        dt <- dt[ACTSa == "CGDS", !("ACTSa"), with = FALSE]
+                                      } else if (identical(x = nme, y = "VMIP")) {
+                                        dt <- data.table::copy(x = purrr::pluck(.x = data, "VIFA", "dt"))
+                                        dt <- dt[ACTSa == "CGDS", !("ACTSa"), with = FALSE]
+                                      } else if (identical(x = nme, y = "CSEP")) {
+                                        dt <- data.table::copy(x = purrr::pluck(.x = data, "ISEP", "dt"))
+                                        dt <- dt[ACTSa != "CGDS"]
+                                        dt[, Value := Value * -1]
+                                      } else if (identical(x = nme, y = "MAKS")) {
+                                        browser()
+                                      } else if (identical(x = nme, y = "MAKB")) {
+                                        browser()
+                                      }
+                                      # r_idx <- grep(pattern = nme, x = v7.0header)
+                                      # sets <- v7.0set[r_idx][[1]]
+                                      # descr <- v7.0description[r_idx][[1]]
+
+                                    })})
+
+      data <- lapply(
+        X = data,
+        FUN = function(header) {
+          dt <- header[["dt"]]
+          nme <- header[["header_name"]]
+
+          if (is.element(el = nme, set = c("EVFA",
+                                           "VFM",
+                                           "FBEP",
+                                           "FTRV",
+                                           "FBEP",
+                                           "VDFA",
+                                           "VDFM",
+                                           "VIFA",
+                                           "VIFM"))) {
+            new_dt <- dt[ACTSa != "CGDS"]
+          } else if (identical(x = nme, y = "EVOA")) {
+            # use EVOA with shared out VFM PROD_COMM to recreate EVOS
+            VFM <- data.table::copy(purrr::pluck(.x = data, "VFM", "dt"))
+            col_names <- colnames(x = VFM)
+            VFM <- VFM[ACTSa != "CGDS",]
+            VFM_totals <- VFM[, .(total = sum(Value)), by = c("ENDWe", "REGr")]
+            VFM <- data.table::merge.data.table(x = VFM,
+                                                y = VFM_totals,
+                                                by = c("ENDWe", "REGr"))
+            VFM[, phi := Value / total]
+            dt <- data.table::merge.data.table(x = dt,
+                                               y = VFM[, c("ENDWe", "REGr", "ACTSa", "phi")])
+            dt[, Value := Value * phi]
+            new_dt <- dt[, phi := NULL]
+            data.table::setcolorder(x = new_dt, neworder = col_names)
+          } else if (identical(x = nme, y = "ISEP")) {
+            new_dt <- dt[ACTSa == "CGDS"]
+            new_dt <- new_dt[, let(ACTSa = NULL, Value = Value * -1)]
+          }
+
+          if (exists(x = "new_dt")) {
+            header[["dt"]] <- new_dt
+          }
+
+          return(header)
+        }
+      )
+
+      data <- lapply(X = data,
+                     FUN = function(header) {
+                       .convert_id(header = header,
+                                   table = base_conversion,
+                                   origin = data_format)
+                     })
+
+      names(x = data) <- sapply(X = data,
+                                FUN = function(x){x[["header_name"]]})
+
     }
   } else if (identical(x = data_format, y = "v7.0")) {
     if (identical(x = data_type, y = "set")) {
       # v7.0 to v6.2 on sets involves changing set names
-      data <- lapply(
-        X = data,
-        FUN = function(header) {
-          new_name <- set_conversion[grep(pattern = header[["header_name"]],
-                                          x = set_conversion[["v7.0header"]]), "v6.2header"]
-          if (!identical(x = new_name, y = character(0)) && !is.na(x = new_name)) {
-            header[["header_name"]] <- new_name
-            colnames(header[["dt"]]) <- new_name
-          }
-          return(header)
-        }
-      )
+      data <- lapply(X = data,
+                     FUN = function(header) {
+                       .convert_id(header = header,
+                                   table = set_conversion,
+                                   origin = data_format,
+                                   colname = TRUE)
+                     })
 
       # add missing v6.2 set
       missing_v6.2 <- list(H9 = list(header_name = "H9",
@@ -139,7 +219,7 @@ browser()
           ),
           set = v6.2_colnames)]
 
-          dt[, (drop_col) := NULL]
+          dt <- dt[, !(drop_col), with = FALSE]
           dt <- unique(x = dt)
 
           # CGDS additions
@@ -164,15 +244,6 @@ browser()
         FUN = function(header) {
           dt <- header[["dt"]]
           nme <- header[["header_name"]]
-
-          # see if headers differ
-          v6.2_name <- unlist(x = subset(
-            x = base_conversion,
-            subset = {
-              is.element(el = v7.0header, set = nme)
-            },
-            select = v6.2header
-          ))
 
           if (identical(x = nme, y = "VDFB")) {
             cgds <- data.table::copy(purrr::pluck(data, "VDIB", "dt"))
@@ -216,18 +287,12 @@ browser()
           return(header)
         }
       )
-
-      data <- lapply(
-        X = data,
-        FUN = function(header) {
-          new_name <- base_conversion[grep(pattern = header[["header_name"]],
-                                            x = base_conversion[["v7.0header"]]), "v6.2header"]
-          if (!identical(x = new_name, y = character(0)) && !is.na(x = new_name)) {
-            header[["header_name"]] <- new_name
-          }
-          return(header)
-        }
-      )
+      data <- lapply(X = data,
+                     FUN = function(header) {
+                       .convert_id(header = header,
+                                   table = base_conversion,
+                                   origin = data_format)
+                     })
 
       names(x = data) <- sapply(X = data,
                                 FUN = function(x){x[["header_name"]]})
