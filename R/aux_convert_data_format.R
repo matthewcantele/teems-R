@@ -4,6 +4,7 @@
 
   if (identical(x = data_format, y = "v6.2")) {
     if (identical(x = data_type, y = "set")) {
+
       data <- lapply(X = data,
                      FUN = function(header) {
                        .convert_id(header = header,
@@ -12,14 +13,15 @@
                                    colname = TRUE)
                      })
 
-browser()
       ACTS <- purrr::pluck(.x = data, "H2")
       ACTS[["header_name"]] <- "ACTS"
       colnames(ACTS[["dt"]]) <- "ACTS"
+      ACTS <- list(ACTS = ACTS)
 
-      # index here? information?
-      names(x = data) <- sapply(X = data,
-                                FUN = function(x){x[["header_name"]]})
+      data <- c(data, ACTS)
+
+      # names(x = data) <- sapply(X = data,
+      #                           FUN = function(x){x[["header_name"]]})
     } else if (identical(x = data_type, y = "par")) {
       # don't see any drawback to using the regions from here rather than bringing forth the prior set object
       REGr <- purrr::pluck(.x = data, "RFLX", "dt", "REGr")
@@ -49,6 +51,7 @@ browser()
       # add missing v7 parameters
       REG <- REGr
       ACTS <- unique(purrr::pluck(.x = data, "ESBV", "dt", "ACTSa"))
+      COMM <- ACTS
       MARG <- c("atp", "otp", "wtp")
 
       missing_v7.0 <- unlist(x = subset(x = param_conversion,
@@ -62,7 +65,7 @@ browser()
                     FUN = function(nme) {
                       r_idx <- grep(pattern = nme, x = v7.0header)
                       sets <- v7.0set[r_idx][[1]]
-                      descr <- v7.0description[r_idx][[1]]
+                      #descr <- v7.0description[r_idx][[1]]
                       set_ele <- mget(x = sets, parent.frame(n = 5))
                       lower_idx <- tolower(x = substr(x = names(x = set_ele), start = 1, stop = 1))
                       names(x = set_ele) <- paste0(names(x = set_ele), lower_idx)
@@ -71,7 +74,7 @@ browser()
                         value <- 1
                       } else if (identical(x = nme, y = "ETRQ")) {
                         value <- -5
-                      } else if (identical(x = nme, y = "ESBC")) {
+                      } else if (is.element(el = nme, set = c("ESBC", "ESBQ"))) {
                         value <- 0
                       }
 
@@ -79,7 +82,7 @@ browser()
                                     args = c(set_ele, Value = value))
 
                       list(header_name = nme,
-                           information = descr,
+                           #information = descr,
                            dt = dt)
                     })
            })
@@ -88,9 +91,8 @@ browser()
                                         FUN = function(x){x[["header_name"]]})
       data <- c(data, missing_v7.0)
     } else if (identical(x = data_type, y = "dat")) {
-      #TVOM has MAKS and MAKB
+      # TVOM has MAKB and MAKS (net OSEP)
       # missing headers (MAKS, MAKB, VDIB, VDIP, VMIP, VMIB, CSEP)
-      browser()
       missing_v7.0 <- unlist(x = subset(x = base_conversion,
                                         subset = {is.na(x = v6.2header)},
                                         select = v7.0header))
@@ -115,16 +117,38 @@ browser()
                                         dt <- data.table::copy(x = purrr::pluck(.x = data, "ISEP", "dt"))
                                         dt <- dt[ACTSa != "CGDS"]
                                         dt[, Value := Value * -1]
-                                      } else if (identical(x = nme, y = "MAKS")) {
-                                        browser()
-                                      } else if (identical(x = nme, y = "MAKB")) {
-                                        browser()
+                                      } else if (is.element(el = nme, set = c("MAKB", "MAKS"))) {
+                                        dt <- data.table::copy(x = purrr::pluck(.x = data, "TVOM", "dt"))
+                                        dt[, ACTSa := COMMc]
+                                        sectors <- unique(x = dt[["COMMc"]])
+                                        null_dt <- data.table::CJ(COMMc = sectors,
+                                                                  ACTSa = sectors,
+                                                                  REGr = unique(x = dt[["REGr"]]),
+                                                                  Value = 0)
+                                        null_dt <- null_dt[COMMc != ACTSa,]
+                                        dt <- data.table::rbindlist(l = list(null_dt, dt), use.names = TRUE)
+                                        if (identical(x = nme, y = "MAKS")) {
+                                          OSEP <- data.table::copy(x = purrr::pluck(.x = data, "OSEP", "dt"))
+                                          OSEP[, ACTSa := COMMc]
+                                          data.table::setnames(x = OSEP, old = "Value", new = "OSEP")
+                                          dt <- data.table::merge.data.table(x = dt,
+                                                                             y = OSEP,
+                                                                             by = c("COMMc", "ACTSa", "REGr"),
+                                                                             all.x = TRUE)
+                                          dt[, Value := Value + OSEP]
+                                          dt[is.na(x = Value), Value := 0]
+                                          dt[, OSEP := NULL]
+                                        }
                                       }
-                                      # r_idx <- grep(pattern = nme, x = v7.0header)
-                                      # sets <- v7.0set[r_idx][[1]]
-                                      # descr <- v7.0description[r_idx][[1]]
 
+                                      # r_idx <- grep(pattern = nme, x = v7.0header)
+                                      # information <- v7.0description[r_idx][[1]]
+                                      list(header_name = nme,
+                                           dt = dt)
                                     })})
+
+      # names(x =  missing_v7.0) <- sapply(X = missing_v7.0,
+      #                                    FUN = function(x){x[["header_name"]]})
 
       data <- lapply(
         X = data,
@@ -177,8 +201,10 @@ browser()
                                    origin = data_format)
                      })
 
-      names(x = data) <- sapply(X = data,
-                                FUN = function(x){x[["header_name"]]})
+      # names(x = data) <- sapply(X = data,
+      #                           FUN = function(x){x[["header_name"]]})
+
+      data <- c(data, missing_v7.0)
 
     }
   } else if (identical(x = data_format, y = "v7.0")) {
@@ -194,12 +220,12 @@ browser()
 
       # add missing v6.2 set
       missing_v6.2 <- list(H9 = list(header_name = "H9",
-                                     information = "Set CGDS_COMM  capital goods commodities",
+                                     #information = "Set CGDS_COMM  capital goods commodities",
                                      dt = data.table::data.table(H9 = "cgds")))
 
       data <- c(data, missing_v6.2)
-      names(x = data) <- sapply(X = data,
-                                FUN = function(x){x[["header_name"]]})
+      # names(x = data) <- sapply(X = data,
+      #                           FUN = function(x){x[["header_name"]]})
     } else if (identical(x = data_type, y = "par")) {
       # v7.0 to v6.2 on parameters involves summing over the additional (uniform) sets and adding cgds
       data <- lapply(X = data,
@@ -294,11 +320,13 @@ browser()
                                    origin = data_format)
                      })
 
-      names(x = data) <- sapply(X = data,
-                                FUN = function(x){x[["header_name"]]})
+      # names(x = data) <- sapply(X = data,
+      #                           FUN = function(x){x[["header_name"]]})
     }
 
 
   }
+  names(x = data) <- sapply(X = data,
+                           FUN = function(x){x[["header_name"]]})
   return(data)
 }

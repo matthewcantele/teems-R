@@ -8,11 +8,11 @@
 
   id <- grep(pattern = header[["header_name"]], x = table[[paste0(origin, "header")]])
   new_name <- table[id, paste0(target, "header")]
-  new_descr <- table[id, paste0(target, "description")]
+  #new_descr <- table[id, paste0(target, "description")]
 
   if (!identical(x = new_name, y = character(0)) && !is.na(x = new_name)) {
     header[["header_name"]] <- new_name
-    header[["information"]] <- new_descr
+    #header[["information"]] <- new_descr
     if (colname) {
       colnames(header[["dt"]]) <- new_name
     }

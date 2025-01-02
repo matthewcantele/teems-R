@@ -30,6 +30,7 @@
                          coeff_extract,
                          time_sets,
                          full_exclude,
+                         aux_data,
                          lowercase = TRUE,
                          zCGDS = TRUE,
                          set_array = NULL) {
@@ -45,6 +46,21 @@
     ls_array <- .convert_data_format(data = ls_array,
                                      data_format = metadata[["data_format"]],
                                      data_type = data_type)
+    # use tablo extract for coefficient and descriptive data
+    r_idx <- match(x = names(x = ls_array),
+                   table = aux_data[["header"]])
+
+    ls_array <- purrr::map2(.x = ls_array,
+                .y = r_idx,
+                .f = function(dat, id) {
+                  dat[["coefficient"]] <- purrr::pluck(aux_data[id,], "name", 1)
+                  dat[["information"]] <-  trimws(x = gsub(pattern = "#",
+                                                           replacement = "",
+                                                           x = purrr::pluck(aux_data[id,],
+                                                                            "information",
+                                                                            1)))
+                  return(dat)
+                })
   }
 
   # optional transformations

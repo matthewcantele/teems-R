@@ -43,7 +43,6 @@
     .f = function(set, map, set_name) {
       if (!is.null(x = map)) {
         if (grepl(pattern = "\\.csv", x = map)) {
-          browser()
           mapping <- data.table::fread(input = map)
 
           # check user-provided mapping
@@ -88,7 +87,7 @@
   )
 
   if (identical(x = data_format, y = "v6.2")) {
-    # capital and margin goods for v10
+    # capital and margin goods for v6.2
     model_sets[["CGDS_COMM"]] <- data.table::data.table(H9 = "zCGDS",
                                                         mapping = "zCGDS")
 
@@ -102,8 +101,7 @@
     data.table::setnames(x = model_sets[["MARG_COMM"]],
                          new = c("MARG", "mapping"))
   } else if (identical(x = data_format, y = "v7.0")) {
-    browser()
-    # margin goods for v11
+    # margin goods for v7.0
     model_sets[["MARG"]] <- subset(x = model_sets[["COMM"]],
                                         subset = {
                                           is.element(el = COMM, set = margin_sectors)

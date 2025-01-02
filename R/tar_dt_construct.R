@@ -112,14 +112,16 @@
                 replace_patterns <- list(
                   "TRAD_COMM" = "TRAD_COMMi",
                   "PROD_COMM" = "PROD_COMMj",
-                  "ENDW_COMM" = "ENDW_COMMi"
+                  "ENDW_COMM" = "ENDW_COMMi",
+                  "MARG_COMM" = "MARG_COMMm"
                 )
               } else if (identical(x = metadata[["data_format"]], y = "v7.0")) {
                 replace_patterns <- list(
                   "ACTS" = "ACTSa",
                   "COMM" = "COMMc",
                   "DIR" = "DIRd",
-                  "ENDW" = "ENDWe"
+                  "ENDW" = "ENDWe",
+                  "MARG" = "MARGm"
                 )
               }
             } else {
@@ -127,7 +129,8 @@
                 replace_patterns <- list(
                   "TRAD_COMM" = "COMMc",
                   "PROD_COMM" = "ACTSa",
-                  "ENDW_COMM" = "ENDWe"
+                  "ENDW_COMM" = "ENDWe",
+                  "MARG_COMM" = "MARGm"
                 )
               } else if (identical(x = metadata[["data_format"]], y = "v7.0")) {
                 replace_patterns <- list(

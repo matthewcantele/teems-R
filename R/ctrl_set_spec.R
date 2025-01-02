@@ -56,7 +56,8 @@
     name = "ls_set_mod",
     command = expression(.modify_data(
       ls_array = ls_set,
-      metadata = metadata
+      metadata = metadata,
+      aux_data = tablo_sets[["sets"]]
     ))
   ))
 

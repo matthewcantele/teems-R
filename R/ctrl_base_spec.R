@@ -72,7 +72,8 @@
     name = "ls_dat_mod",
     command = expression(.modify_data(
       ls_array = ls_dat,
-      metadata = metadata
+      metadata = metadata,
+      aux_data = tablo_coeff
     ))
   ))
 

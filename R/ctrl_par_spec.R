@@ -56,7 +56,8 @@
       name = "ls_par_mod",
       command = expression(.modify_data(
         ls_array = ls_par,
-        metadata = metadata
+        metadata = metadata,
+        aux_data = tablo_coeff
       ))
     ))
 

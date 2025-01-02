@@ -389,14 +389,19 @@ list(
 
                v7.0_param <- param_table[[1]][, c(5:8)]
 
-               v7.0_param <- .table_fix(single = c(11, 12),
+               # missing ESBQ
+               ESBQ <- tibble::tibble(14, "ESBQ", "COMM*REG", "1/CES elasticity for commodity sourcing")
+               colnames(x = ESBQ) <- colnames(x = v7.0_param)
+               v7.0_param <- rbind(v7.0_param, ESBQ)
+
+               v7.0_param <- .table_fix(single = c(11, 12, 27),
                                       double = c(1, 3, 5, 7, 9, 13, 15, 17, 19, 25),
                                       trebble = c(19, 22),
                                       table = v7.0_param,
                                       prefix = "v7.0",
                                       data_type = "par")
 
-               v7.0_param[10:13, "idx"] <- 11:14
+               v7.0_param[10:14, "idx"] <- 11:15
 
                v6.2_param <- param_table[[1]][, c(1:4)]
 
