@@ -44,7 +44,7 @@
                                      select = header))
 
     if (!all(is.element(el = req_headers, set = tib_data[["header"]]))) {
-      missing_headers <- req_headers[!is.element(el = req_headers, set = tib_data[["header"]])]
+      missing_headers <- toString(x = req_headers[!is.element(el = req_headers, set = tib_data[["header"]])])
       stop(paste("Headers determined as required:",
                  missing_headers,
                  "were not loaded."))
