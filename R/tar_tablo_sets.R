@@ -21,6 +21,7 @@
       )
     }
   )
+
   # qualifier_arg
   # fill empty qualifier with implicit value (non_intertemporal)
   sets[["qualifier"]] <- ifelse(
@@ -154,6 +155,41 @@
   } else {
     sets <- subset(x = sets, select = -remainder)
   }
+
+  # check for incompatible Tablo statements
+  if (any(sapply(sets[["definition"]],
+                 function(entry) {
+                   sum(grepl(pattern = "\\+",
+                             x = unlist(x = strsplit(x = entry, "")))) >= 2
+                 }))) {
+    stop(paste("Multiple",
+               dQuote(x = "+"),
+               "and/or",
+               dQuote(x = "-"),
+               "were detected within a single Tablo Set statement.",
+               "For compatibility, split into multiple statements:",
+               "Instead of A123=A1+A2+A3, A12=A1+A2 then A123=A12+A3"))
+  }
+
+  lapply(sets[["definition"]], function(entry) {
+    if (!is.na(x = entry)) {
+      if (!any(grepl(
+        pattern = "\\+|\\-|union|intersect",
+        x = entry,
+        ignore.case = TRUE
+      ))) {
+        if (grepl(pattern = "=", x = entry)) {
+          stop(
+            "It appears that one set has been defined as identical to a second set. If duplicate sets are desired, multiple Read statements should be implemented."
+          )
+        }
+      }
+    }
+  })
+
+  # other checks should include
+  # le/ge/lt/gt in the RHS of formula
+  # summation in formula headers
 
   # Subset statements ##########################################################
   subsets <- subset(
