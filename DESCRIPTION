@@ -7,7 +7,7 @@ Authors@R:
     role = c("aut", "cre"),
     comment = c(ORCID = "0000-0003-3729-1764"))
 Description: A comprehensive modeling system for preparing and running all aspects of a 
-    Computable General Equillibrium (CGE) model using GTAP data and 'targets' 
+    Computable General Equilibrium (CGE) model using GTAP data and 'targets' 
     pipeline software. The package converts HAR files, parses TABLO model 
     files, calculates aggregation-specific parameter values, aggregates data to 
     set specifications, compiles shocks and closures, and solves the model 

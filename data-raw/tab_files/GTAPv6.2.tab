@@ -3,6 +3,7 @@
     Global Trade Analysis Project
     The GTAP Modeling Framework
     GTAP Version 6.2
+    Trade and Environment Equilibrium Modeling System (TEEMS) compatible version
     September 2003
     ==================================
 
@@ -25,6 +26,8 @@
     --------------------
     HISTORY of this file
     --------------------
+
+    Syntactic modifications made for use within TEEMS
 
     Version 6.2 fixes bugs and provides minor enhancements:
         - EV_ALT, CNTdpar fix

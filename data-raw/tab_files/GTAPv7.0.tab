@@ -3,6 +3,7 @@
     Global Trade Analysis Project
     The GTAP Modeling Framework
     GTAP Model Version 7.0
+    Trade and Environment Equilibrium Modeling System (TEEMS) compatible version
     June 2017
     =============================
 
@@ -32,7 +33,7 @@
     --------------------
     HISTORY of this file
     --------------------
-    Sep 2023: Modified for compatibility with CGEPack
+    Jan 2025: Syntactic modifications made for use within TEEMS
     Jun 2017: Version 7.0 replaces GTAP.tab version 6.2
     Nov 2017: Added variables and equations representing tax-inclusive and 
               tax-exclusive real prices for mobile and sluggish endowments

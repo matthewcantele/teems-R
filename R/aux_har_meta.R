@@ -3,7 +3,7 @@
                       DVER,
                       data_type) {
   metadata <- list()
-  if (identical(x = length(x = DREL), y = as.integer(1))) {
+  if (identical(x = length(x = DREL), y = 1L)) {
     string <- purrr::pluck(strsplit(DREL, "_"), 1, 1)
     if (identical(x = string, y = "R9.0A")) {
       metadata[["database.version"]] <- "v9A"

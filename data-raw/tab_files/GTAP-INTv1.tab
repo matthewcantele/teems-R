@@ -1,30 +1,49 @@
 !<
     ==================================
     Global Trade Analysis Project
-    The GTAP Modeling Framework
-    GTAP Version 6.2
-    September 2003
+    GTAP-INT: An Intertemporal Version of the GTAPv6.2 Model
+    GTAP-INT Version 1 (created from GTAP-INT Version 1-pre)
+    January 2025
     ==================================
 
     For documentation see:
-    (a) Hertel, T.W. and M.E. Tsigas, "Structure of the Standard GTAP Model",
+    (a) Van Ha, P., Kompas, T., 2016. "Solving intertemporal CGE models in
+    parallel using a singly bordered block diagonal ordering technique."   
+    Economic Modelling 52, 3–12. https://doi.org/10.1016/j.econmod.2015.07.011
+
+    (b) Kompas, T., Van Ha, P., 2019. "The ‘curse of dimensionality’ resolved:
+    The effects of climate change and trade barriers in large dimensional
+    modelling." Economic Modelling 80, 103–110.
+    https://doi.org/10.1016/j.econmod.2018.08.011
+
+    (c) Hertel, T.W. and M.E. Tsigas, "Structure of the Standard GTAP Model",
     Chapter 2 in T.W. Hertel (editor,t) "Global Trade Analysis: Modeling and
     Applications", Cambridge University Press, 1997.
 
-    (b) R.A. McDougall, "A New Regional Household Demand System for GTAP",
+    (d) R.A. McDougall, "A New Regional Household Demand System for GTAP",
     GTAP Technical Paper #20, Center for Global Trade Analysis, Purdue
     University
 
-    (c) Hertel T.W., K. Itakura and R.A. McDougall, "GTAP.TAB: The Standard
+    (e) Hertel T.W., K. Itakura and R.A. McDougall, "GTAP.TAB: The Standard
     GTAP Model" (yet to be drafted), GTAP Technical Paper, Center for Global
     Trade Analysis, Purdue University,
     http://www.agecon.purdue.edu/gtap/techpapr/.  This technical paper
     documents all of the changes since the GTAP book TAB file.
 
 
-    --------------------
-    HISTORY of this file
-    --------------------
+    -------------------------------------
+    HISTORY of the GTAP-INT modifications
+    -------------------------------------
+    Version 1 modified by M. Cantele
+        - Syntax, set, and file modifications for compatibility within the
+        Trade and Environment Equilibrium Modeling System (TEEMS)
+
+    Version 1-pre developed by T. Kompas and P. Van Ha, 2016:
+
+
+    ----------------------------
+    HISTORY of the standard file
+    ----------------------------
 
     Version 6.2 fixes bugs and provides minor enhancements:
         - EV_ALT, CNTdpar fix
@@ -231,6 +250,8 @@ Read
 Set
     ENDWS_COMM
     # sluggish endowment commodities # (land, natlres);
+Subset
+    ENDWS_COMM is subset of ENDW_COMM;
 Set
     ENDWM_COMM
     # mobile endowment commodities # = ENDW_COMM - ENDWS_COMM;
@@ -256,14 +277,15 @@ Coefficient (integer)
 Read
     NINTERVAL from file INTDATA header "NTSP";
 
+
+Set (intertemporal)
+    ALLTIME # All time steps # maximum size 51 (P[0] - P[NINTERVAL-1]);
+
 Coefficient (parameter)(all,t,ALLTIME)
     YEAR(t) # Actual number of years #;
 
 Read
     YEAR from file INTDATA header "AYRS";
-
-Set (intertemporal)
-    ALLTIME # All time steps # maximum size 51 (P[0] - P[NINTERVAL-1]);
 
 Set (intertemporal)
     INITIME # Initial time step # size 1 (P[0]);
@@ -281,7 +303,6 @@ Subset INITIME is subset of ALLTIME ;
 Subset ENDTIME is subset of ALLTIME ;
 Subset FWDTIME is subset of ALLTIME ;
 Subset FTRTIME is subset of ALLTIME ;
-
 
 
 !<
@@ -4096,12 +4117,6 @@ Intertemporal module
     -------------------------------
     E. Intertemporal module
     -------------------------------
-
-    Computations for intertemporal dynamics
-    Reference:
-    Van Ha, P., Kompas, T., 2016.
-    Solving intertemporal CGE models in parallel using a singly bordered block diagonal ordering technique.
-    Economic Modelling 52, 3–12. https://doi.org/10.1016/j.econmod.2015.07.011
 
 >!
 

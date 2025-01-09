@@ -19,9 +19,6 @@
       ACTS <- list(ACTS = ACTS)
 
       data <- c(data, ACTS)
-
-      # names(x = data) <- sapply(X = data,
-      #                           FUN = function(x){x[["header_name"]]})
     } else if (identical(x = data_type, y = "par")) {
       # don't see any drawback to using the regions from here rather than bringing forth the prior set object
       REGr <- purrr::pluck(.x = data, "RFLX", "dt", "REGr")
@@ -37,7 +34,7 @@
                          set_col <- setdiff(x = colnames(x = dt), y = "Value")
                          new_dt <- dt[, .(REGr, Value), by = set_col]
                          if (is.element(el = nme, set = c("ESBT", "ESBV"))) {
-                           new_dt <- new_dt[ACTSa != "CGDS",]
+                           new_dt <- new_dt[ACTSa != "zcgds",]
                          }
                        }
 
@@ -103,19 +100,19 @@
                                     FUN = function(nme) {
                                       if (identical(x = nme, y = "VDIB")) {
                                          dt <- data.table::copy(x = purrr::pluck(.x = data, "VDFM", "dt"))
-                                         dt <- dt[ACTSa == "CGDS", !("ACTSa"), with = FALSE]
+                                         dt <- dt[ACTSa == "zcgds", !("ACTSa"), with = FALSE]
                                       } else if (identical(x = nme, y = "VDIP")) {
                                         dt <- data.table::copy(x = purrr::pluck(.x = data, "VDFA", "dt"))
-                                        dt <- dt[ACTSa == "CGDS", !("ACTSa"), with = FALSE]
+                                        dt <- dt[ACTSa == "zcgds", !("ACTSa"), with = FALSE]
                                       } else if (identical(x = nme, y = "VMIB")) {
                                         dt <- data.table::copy(x = purrr::pluck(.x = data, "VIFM", "dt"))
-                                        dt <- dt[ACTSa == "CGDS", !("ACTSa"), with = FALSE]
+                                        dt <- dt[ACTSa == "zcgds", !("ACTSa"), with = FALSE]
                                       } else if (identical(x = nme, y = "VMIP")) {
                                         dt <- data.table::copy(x = purrr::pluck(.x = data, "VIFA", "dt"))
-                                        dt <- dt[ACTSa == "CGDS", !("ACTSa"), with = FALSE]
+                                        dt <- dt[ACTSa == "zcgds", !("ACTSa"), with = FALSE]
                                       } else if (identical(x = nme, y = "CSEP")) {
                                         dt <- data.table::copy(x = purrr::pluck(.x = data, "ISEP", "dt"))
-                                        dt <- dt[ACTSa != "CGDS"]
+                                        dt <- dt[ACTSa != "zcgds"]
                                         dt[, Value := Value * -1]
                                       } else if (is.element(el = nme, set = c("MAKB", "MAKS"))) {
                                         dt <- data.table::copy(x = purrr::pluck(.x = data, "TVOM", "dt"))
@@ -141,15 +138,9 @@
                                         }
                                       }
 
-                                      # r_idx <- grep(pattern = nme, x = v7.0header)
-                                      # information <- v7.0description[r_idx][[1]]
                                       list(header_name = nme,
                                            dt = dt)
                                     })})
-
-      # names(x =  missing_v7.0) <- sapply(X = missing_v7.0,
-      #                                    FUN = function(x){x[["header_name"]]})
-
       data <- lapply(
         X = data,
         FUN = function(header) {
@@ -165,12 +156,12 @@
                                            "VDFM",
                                            "VIFA",
                                            "VIFM"))) {
-            new_dt <- dt[ACTSa != "CGDS"]
+            new_dt <- dt[ACTSa != "zcgds"]
           } else if (identical(x = nme, y = "EVOA")) {
             # use EVOA with shared out VFM PROD_COMM to recreate EVOS
             VFM <- data.table::copy(purrr::pluck(.x = data, "VFM", "dt"))
             col_names <- colnames(x = VFM)
-            VFM <- VFM[ACTSa != "CGDS",]
+            VFM <- VFM[ACTSa != "zcgds",]
             VFM_totals <- VFM[, .(total = sum(Value)), by = c("ENDWe", "REGr")]
             VFM <- data.table::merge.data.table(x = VFM,
                                                 y = VFM_totals,
@@ -182,7 +173,7 @@
             new_dt <- dt[, phi := NULL]
             data.table::setcolorder(x = new_dt, neworder = col_names)
           } else if (identical(x = nme, y = "ISEP")) {
-            new_dt <- dt[ACTSa == "CGDS"]
+            new_dt <- dt[ACTSa == "zcgds"]
             new_dt <- new_dt[, let(ACTSa = NULL, Value = Value * -1)]
           }
 
@@ -200,12 +191,7 @@
                                    table = base_conversion,
                                    origin = data_format)
                      })
-
-      # names(x = data) <- sapply(X = data,
-      #                           FUN = function(x){x[["header_name"]]})
-
       data <- c(data, missing_v7.0)
-
     }
   } else if (identical(x = data_format, y = "v7.0")) {
     if (identical(x = data_type, y = "set")) {
@@ -221,13 +207,11 @@
       # add missing v6.2 set
       missing_v6.2 <- list(H9 = list(header_name = "H9",
                                      #information = "Set CGDS_COMM  capital goods commodities",
-                                     dt = data.table::data.table(H9 = "cgds")))
+                                     dt = data.table::data.table(H9 = "zcgds")))
 
       data <- c(data, missing_v6.2)
-      # names(x = data) <- sapply(X = data,
-      #                           FUN = function(x){x[["header_name"]]})
     } else if (identical(x = data_type, y = "par")) {
-      # v7.0 to v6.2 on parameters involves summing over the additional (uniform) sets and adding cgds
+      # v7.0 to v6.2 on parameters involves summing over the additional (uniform) sets and adding zcgds
       data <- lapply(X = data,
         FUN = function(header) {
           dt <- header[["dt"]]
@@ -250,12 +234,12 @@
 
           # CGDS additions
           if (identical(x = nme, y = "ESBT")) {
-            cgds_row <- list(PROD_COMMj = "cgds", Value = 0)
+            cgds_row <- list(PROD_COMMj = "zcgds", Value = 0)
             dt <- rbind(dt, cgds_row)
           }
 
           if (identical(x = nme, y = "ESBV")) {
-            cgds_row <- list(PROD_COMMj = "cgds", Value = 1)
+            cgds_row <- list(PROD_COMMj = "zcgds", Value = 1)
             dt <- rbind(dt, cgds_row)
           }
 
@@ -264,7 +248,7 @@
         }
       )
     } else if (identical(x = data_type, y = "dat")) {
-      # v7.0 to v6.2 on base involves changing names, adding cgds, and other op
+      # v7.0 to v6.2 on base involves changing names, adding zcgds, and other op
       data <- lapply(
         X = data,
         FUN = function(header) {
@@ -273,25 +257,25 @@
 
           if (identical(x = nme, y = "VDFB")) {
             cgds <- data.table::copy(purrr::pluck(data, "VDIB", "dt"))
-            cgds[, let(PROD_COMMj = "cgds")]
+            cgds[, let(PROD_COMMj = "zcgds")]
             new_dt <- data.table::rbindlist(l = list(dt, cgds), use.names = TRUE)
           } else if (identical(x = nme, y = "VDFP")) {
             cgds <- data.table::copy(purrr::pluck(data, "VDIP", "dt"))
-            cgds[, let(PROD_COMMj = "cgds")]
+            cgds[, let(PROD_COMMj = "zcgds")]
             new_dt <- data.table::rbindlist(l = list(dt, cgds), use.names = TRUE)
           } else if (identical(x = nme, y = "VMFB")) {
             cgds <- data.table::copy(purrr::pluck(data, "VMIB", "dt"))
-            cgds[, let(PROD_COMMj = "cgds")]
+            cgds[, let(PROD_COMMj = "zcgds")]
             new_dt <- data.table::rbindlist(l = list(dt, cgds), use.names = TRUE)
           } else if (identical(x = nme, y = "VMFP")) {
             cgds <- data.table::copy(x = purrr::pluck(data, "VMIP", "dt"))
-            cgds[, let(PROD_COMMj = "cgds")]
+            cgds[, let(PROD_COMMj = "zcgds")]
             new_dt <- data.table::rbindlist(l = list(dt, cgds), use.names = TRUE)
           } else if (is.element(el = nme,
                                 set = c("EVFB", "EVFP", "FBEP", "FTRV"))) {
             cgds <- data.table::CJ(
               ENDW_COMMi = unique(dt[["ENDW_COMMi"]]),
-              PROD_COMMj = "cgds",
+              PROD_COMMj = "zcgds",
               REGr = unique(dt[["REGr"]]),
               Value = 0
             )
@@ -300,7 +284,7 @@
             new_dt <- dt[, .(Value = sum(Value)), by = c("ENDW_COMMi", "REGr")]
           } else if (identical(x = nme, y = "ISEP")) {
             cgds <- data.table::copy(x = dt)
-            cgds[, let(PROD_COMMj = "cgds", Value = Value * -1)]
+            cgds[, let(PROD_COMMj = "zcgds", Value = Value * -1)]
             dt <- data.table::copy(purrr::pluck(data, "CSEP", "dt"))
             dt[, let(Value = Value * -1)]
             new_dt <- data.table::rbindlist(l = list(dt, cgds), use.names = TRUE)
@@ -319,9 +303,6 @@
                                    table = base_conversion,
                                    origin = data_format)
                      })
-
-      # names(x = data) <- sapply(X = data,
-      #                           FUN = function(x){x[["header_name"]]})
     }
 
 

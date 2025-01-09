@@ -19,32 +19,6 @@
 .check_mapping <- function(model_sets,
                          full_sets) {
 
-  # all set elements to lowercase and no spaces
-  model_sets <- lapply(X = model_sets, FUN = function(set) {
-    set[["mapping"]] <- tolower(x = set[["mapping"]])
-    set[["mapping"]] <- gsub(pattern = " ", replacement = "_", x = set[["mapping"]])
-    return(set)
-  })
-
-  # margin commodity check
-  # marginSet <- grep(pattern = "MARG", x = names(x = model_sets), value = TRUE)
-  # margins <- unique(x = purrr::pluck(.x = model_sets, marginSet, "mapping"))
-  #
-  # # tradables are either TRAD_COMM or COMM
-  # tradableSet <- grep(pattern = "^TRAD_COMM$|^COMM$", x = names(x = model_sets), value = TRUE)
-  # tradables <- unique(x = purrr::pluck(.x = model_sets, tradableSet, "mapping"))
-
-  # check that the chosen Margin Commodities are in the sector list
-  # if (!all(is.element(el = margins, set = tradables))) {
-  #   stop(
-  #     paste0(
-  #       'Allocated margin commodity "',
-  #       margin[!is.element(el = margin, set = tradables)],
-  #       '" was not found within the list of aggregated sectors.\nMargin commodities must be a subset of TRAD_COMM.'
-  #     )
-  #   )
-  # }
-
   # first identifying header column for each set
   c1 <- sapply(X = model_sets, FUN = function(c) {
     colnames(x = c)[1]

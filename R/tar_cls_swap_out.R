@@ -184,7 +184,7 @@
           for (d in seq_along(stnd_swap)) {
             set_name <- stnd_swap[d]
 
-            if (identical(x = d, y = as.integer(1))) {
+            if (identical(x = d, y = 1L)) {
               full_ss <- split(x = full_ss, by = set_name)
               ss <- split(x = remaining_exo_var, by = set_name)
 

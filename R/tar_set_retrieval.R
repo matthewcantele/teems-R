@@ -45,6 +45,10 @@
         if (grepl(pattern = "\\.csv", x = map)) {
           mapping <- data.table::fread(input = map)
 
+          # tolower and no spaces for user-provided (internal already vetted)
+          mapping[["mapping"]] <- tolower(x = mapping[["mapping"]])
+          mapping[["mapping"]] <- gsub(pattern = " ", replacement = "_", x = mapping[["mapping"]])
+
           # check user-provided mapping
           # str check
           dim_check <- dim(set)
@@ -88,8 +92,8 @@
 
   if (identical(x = data_format, y = "v6.2")) {
     # capital and margin goods for v6.2
-    model_sets[["CGDS_COMM"]] <- data.table::data.table(H9 = "zCGDS",
-                                                        mapping = "zCGDS")
+    model_sets[["CGDS_COMM"]] <- data.table::data.table(H9 = "zcgds",
+                                                        mapping = "zcgds")
 
     tradeables_col <- colnames(x = model_sets[["TRAD_COMM"]])[1]
     model_sets[["MARG_COMM"]] <- subset(x = model_sets[["TRAD_COMM"]],

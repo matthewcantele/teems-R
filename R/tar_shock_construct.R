@@ -237,13 +237,7 @@
             ignore.row.order = TRUE,
             check.attributes = FALSE
           )))) {
-            all.equal(
-              current = value[, !"Value"],
-              target = constructed_dt,
-              ignore.row.order = TRUE,
-              check.attributes = FALSE
-            )
-            stop("Custom shock to set mismatch detected.")
+            stop("Custom shock to base data set elements mismatch detected.")
           }
 
           # check variable status (must be full var)

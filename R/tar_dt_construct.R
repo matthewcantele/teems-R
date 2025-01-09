@@ -162,13 +162,16 @@
 
   # create list of data.tables from arrays
   # uppercase 'Value' used to distinguish from automatically generated columns
-  # single dimension header (e.g., SAVE, POP, etc.)
+  # convert all strings to lower
+  # sub cgds to zcgds
   ls_array <- lapply(X = ls_array, FUN = function(header) {
     # set file
     if (identical(
       x = length(x = dimnames(x = header[["data"]])),
       y = 0L
     )) {
+      header[["data"]] <- tolower(x = header[["data"]])
+      header[["data"]] <- gsub(pattern = "cgds", replacement = "zcgds", x = header[["data"]])
       header[["dt"]] <- data.table::as.data.table(x = header[["data"]])
       if (!identical(x = data_type, y = "set")) {
         data.table::setnames(x = header[["dt"]], new = "Value")
@@ -179,6 +182,12 @@
       x = length(x = dimnames(x = header[["data"]])),
       y = 1L
     )) {
+      # single dimension header (e.g., SAVE, POP, etc.)
+      dimnames(x = header[["data"]]) <- lapply(X = dimnames(x = header[["data"]]),
+                                               FUN = function(ele) {
+                                                 ele <- tolower(x = ele)
+                                                 ele <- gsub(pattern = "cgds", replacement = "zcgds", x = ele)
+                                               })
       header[["dt"]] <- data.table::as.data.table(
         x = cbind(Value = as.list(x = header[["data"]])),
         keep.rownames = names(x = dimnames(x = header[["data"]]))
@@ -187,11 +196,21 @@
       x = length(x = dimnames(x = header[["data"]])),
       y = 2L
     )) {
+      dimnames(x = header[["data"]]) <- lapply(X = dimnames(x = header[["data"]]),
+                                               FUN = function(ele) {
+                                                 ele <- tolower(x = ele)
+                                                 ele <- gsub(pattern = "cgds", replacement = "zcgds", x = ele)
+                                               })
       # 2 dimension header (e.g., VST etc.)
       header[["dt"]] <- data.table::as.data.table(x = as.table(x = header[["data"]]))
       # the key argument could be used but no need to set keys here
       data.table::setnames(header[["dt"]], old = "N", new = "Value")
     } else {
+      dimnames(x = header[["data"]]) <- lapply(X = dimnames(x = header[["data"]]),
+                                               FUN = function(ele) {
+                                                 ele <- tolower(x = ele)
+                                                 ele <- gsub(pattern = "cgds", replacement = "zcgds", x = ele)
+                                               })
       # more than 2 dimensions
       header[["dt"]] <- data.table::as.data.table(x = header[["data"]], value.name = "Value")
     }
@@ -204,6 +223,29 @@
     }
     return(header)
   })
+
+  # if tab file format data format mismatch convert data
+  if (!identical(x = metadata[["data_format"]],
+                 y = metadata[["model_version"]])) {
+    ls_array <- .convert_data_format(data = ls_array,
+                                     data_format = metadata[["data_format"]],
+                                     data_type = data_type)
+    # use tablo extract for coefficient and descriptive data
+    r_idx <- match(x = names(x = ls_array),
+                   table = coeff_extract[["header"]])
+
+    ls_array <- purrr::map2(.x = ls_array,
+                            .y = r_idx,
+                            .f = function(dat, id) {
+                              dat[["coefficient"]] <- purrr::pluck(coeff_extract[id,], "name", 1)
+                              dat[["information"]] <-  trimws(x = gsub(pattern = "#",
+                                                                       replacement = "",
+                                                                       x = purrr::pluck(coeff_extract[id,],
+                                                                                        "information",
+                                                                                        1)))
+                              return(dat)
+                            })
+  }
 
   attr(x = ls_array, which = "data_type") <- data_type
 

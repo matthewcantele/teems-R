@@ -65,7 +65,7 @@
           append = TRUE
         )
 
-        # seperator between header/data sets
+        # separator between header/data sets
         cat("\n",
           file = path,
           sep = "",
@@ -81,7 +81,7 @@
           append = TRUE
         )
 
-        # seperator between header/data sets
+        # separator between header/data sets
         cat("\n",
           file = path,
           sep = "",
@@ -100,7 +100,7 @@
           append = TRUE
         )
 
-        # seperator between header/data sets
+        # separator between header/data sets
         cat("\n",
           file = path,
           sep = "",
@@ -162,6 +162,8 @@
 
           cat("\n", file = path, sep = "", append = TRUE)
         })
+      } else if (idx > 5) {
+        stop("Contact package author for extension of write algo.")
       }
     }
   )

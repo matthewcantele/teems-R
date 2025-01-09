@@ -113,20 +113,18 @@ teems_closure <- function(swap_in = NULL,
                           closure_file = NULL,
                           shock_file = NULL)
 {
-if (is.character(x = substitute(expr = swap_in)) && !is.null(x = swap_in)) {
-swap_in <- .convert_swap(swap = swap_in)
 fun_call <- match.call()
-fun_call[["swap_in"]] <- as.name(x = "swap_in")
-}
-if (is.character(x = substitute(expr = swap_out)) && !is.null(x = swap_out)) {
-swap_out <- .convert_swap(swap = swap_out)
-  if (!exists(x = "cls_call")) {
-  fun_call <- match.call()
+for (swap in seq_along(swap_in)) {
+  input <- swap_in[[swap]]
+  if (is.character(x = substitute(expr = input)) && !is.null(x = input)) {
+  fun_call[["swap_in"]][[swap+1]] <- teems_swap(var = input)
   }
-fun_call[["swap_out"]] <- as.name(x = "swap_out")
 }
-if (!exists(x = "fun_call")) {
-  fun_call <- match.call()
+for (swap in seq_along(swap_out)) {
+  input <- swap_out[[swap]]
+  if (is.character(x = substitute(expr = input)) && !is.null(x = input)) {
+    fun_call[["swap_out"]][[swap+1]] <- teems_swap(var = input)
+  }
 }
 args_list <- as.list(.match_call(fun_call = fun_call,
                                  eval_args = c("swap_in",
