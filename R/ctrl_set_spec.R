@@ -48,16 +48,8 @@
     command = expression(.construct_dt(
       ls_array = set_array,
       metadata = metadata,
+      coeff_extract = tablo_sets[["sets"]],
       full_exclude = !!full_exclude
-    ))
-  ))
-
-  target_ls_set_mod <- rlang::expr(targets::tar_target_raw(
-    name = "ls_set_mod",
-    command = expression(.modify_data(
-      ls_array = ls_set,
-      metadata = metadata,
-      aux_data = tablo_sets[["sets"]]
     ))
   ))
 
@@ -65,7 +57,7 @@
   target_init.set_tib <- rlang::expr(targets::tar_target_raw(
     name = "init.set_tib",
     command = expression(.build_tibble(
-      ls_data = ls_set_mod,
+      ls_data = ls_set,
       preagg_header_replace = NULL
     ))
   ))

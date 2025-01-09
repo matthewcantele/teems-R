@@ -68,20 +68,11 @@
     ))
   ))
 
-  target_ls_dat_mod <- rlang::expr(targets::tar_target_raw(
-    name = "ls_dat_mod",
-    command = expression(.modify_data(
-      ls_array = ls_dat,
-      metadata = metadata,
-      aux_data = tablo_coeff
-    ))
-  ))
-
   # construct tibbles from metadata and dts for each data type
   target_init.base_tib <- rlang::expr(targets::tar_target_raw(
     name = "init.base_tib",
     command = expression(.build_tibble(
-      ls_data = ls_dat_mod,
+      ls_data = ls_dat,
       preagg_header_replace = !!config[["preagg_data"]]
     ))
   ))
