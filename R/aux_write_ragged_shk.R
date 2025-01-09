@@ -11,7 +11,7 @@
 #'   possible at the cost of readability.
 #'
 #' @importFrom purrr map2
-#' @importFrom data.table fwrite setorder dcast.data.table
+#' @importFrom data.table fwrite setorder dcast.data.table uniqueN
 #' @return The path of the written file.
 #' @keywords internal
 #' @noRd
@@ -29,261 +29,168 @@
     scientific = FALSE
   )]
 
-  # refactoring needed
+  data.table::setorder(x = dt)
+
   # column names for the algo
   if (!identical(x = colnames(x = dt), y = "Value")) {
     dtColnames_idx <- setdiff(x = colnames(x = dt), y = "Value")
     dtColnames <- substr(
       x = dtColnames_idx,
       start = 1,
-      stop = nchar(dtColnames_idx) - 1
+      stop = nchar(x = dtColnames_idx) - 1
     )
   } else {
     dtColnames <- "Value"
   }
 
-  # algo for converting to the ragged edge style
-  if (identical(x = idx, y = as.integer(x = 0))) {
-    stop("No column names other than Value detected. This would indicate
-             that a shock type 'uniform' is appropriate.")
-  } else if (identical(x = idx, y = as.integer(x = 1))) {
+    if (identical(x = idx, y = 0L)) {
+      stop("No column names other than Value detected. This would indicate
+               that a shock type 'uniform' is appropriate.")
+    } else  if (identical(x = idx, y = 1L)) {
+    # lead
     if (attr(x = var_name, which = "full_var")) {
-      cat(paste("Shock", paste0(var_name, "(", dtColnames, ")"), "="),
-          "\n",
-          file = write_path,
-          append = TRUE)
+      lead <- paste("Shock", paste0(var_name, "(", dtColnames, ")"), "=")
     } else {
-      cat(paste("Shock", var_name, "="),
-          "\n",
+      stop("A partial shock on a variable with only one set should be handled with shock type 'uniform' and direct element specification.")
+    }
+    cat(lead,
+        "\n",
+        file = write_path,
+        append = TRUE)
+    # vector
+    arr <- as.array(dt[[2]])
+    cat(arr,
+        file = write_path,
+        sep = " ",
+        append = TRUE)
+    cat("\n", ";", "\n",
+        file = write_path,
+        sep = "",
+        append = TRUE)
+  } else if (identical(x = idx, y = 2L)) {
+    # lead
+    if (!attr(x = var_name, which = "full_var")) {
+      pattern <- paste0(paste0(dtColnames, collapse = ","), ")")
+      var_name <- sub(pattern = pattern,
+                      replacement = "",
+                      x = var_name)
+    }
+
+    lead <- paste("Shock",
+                  paste0(var_name, "(", paste0(dtColnames, collapse = ","), ")"),
+                  "=")
+
+    cat(lead, "\n", file = write_path, append = TRUE)
+    # matrix
+    unique_dim1 <- unique(dt[[2]])
+    unique_dim2 <- unique(dt[[1]])
+    mat <- matrix(dt[[3]], nrow = length(unique_dim1), byrow = FALSE)
+    for (row in seq_len(nrow(mat))) {
+      cat(mat[row, ],
+          file = write_path,
+          sep = " ",
+          append = TRUE)
+
+      cat("\n",
           file = write_path,
           append = TRUE)
     }
+    cat(";", "\n",
+        file = write_path,
+        sep = "",
+        append = TRUE)
+  } else {
+    # lead
+    #if (attr(x = var_name, which = "full_var")) {
+    # cat(
+    #   paste("Shock", paste0(
+    #     var_name,
+    #     "(",
+    #     paste0("\"", ele, "\"", ",", paste(dtColnames[2:3], collapse = ",")),
+    #     ")"
+    #   ), "="), "\n",
+    #   file = write_path,
+    #   append = TRUE
+    # )
+    # } else {
+    #   pattern <- paste0(paste0(dtColnames, collapse = ","),")")
+    #   var_name <- sub(pattern = pattern, replacement = "", x = var_name)
+    #   cat(
+    #     paste("Shock", paste0(
+    #       var_name,
+    #       paste0("\"", ele, "\"", ",", paste0(dtColnames[2:3], collapse = ",")),
+    #       ")"
+    #     ), "="), "\n",
+    #     file = write_path,
+    #     append = TRUE
+    #   )
+    # }
 
-    data.table::setorder(dt)
-
-    cat(unlist(x = dt[, -1]),
-      file = write_path,
-      sep = " ",
-      append = TRUE
-    )
-
-    # seperator between header/data sets
-    cat("\n", ";", "\n", "\n",
-      file = write_path,
-      sep = "",
-      append = TRUE
-    )
-  } else if (identical(x = idx, y = as.integer(x = 2))) {
-    ls_dt <- split(x = dt, by = dtColnames_idx[[1]])
-    purrr::map2(
-      .x = ls_dt,
-      .y = names(x = ls_dt),
-      .f = function(dt_ele, ele) {
-        # lead
-        if (attr(x = var_name, which = "full_var")) {
-        cat(
-          paste("Shock", paste0(
-            var_name,
-            "(",
-            paste0("\"", ele, "\"", ",", dtColnames[[2]]),
-            ")"
-          ), "="), "\n",
-          file = write_path,
-          append = TRUE
-        )
-        } else {
-          pattern <- paste0(paste0(dtColnames, collapse = ","),")")
-          var_name <- sub(pattern = pattern, replacement = "", x = var_name)
-          cat(
-            paste("Shock", paste0(
-              var_name,
-              paste0("\"", ele, "\"", ",", dtColnames[[2]]),
-              ")"
-            ), "="), "\n",
-            file = write_path,
-            append = TRUE
-          )
-        }
-
-        # data
-        cat(unlist(x = dt_ele[, 3]),
-          file = write_path,
-          sep = " ",
-          append = TRUE
-        )
-
-        cat("\n", ";", "\n", "\n",
-          file = write_path,
-          sep = "",
-          append = TRUE
-        )
+    dim_sizes <- lapply(
+      X = 1:(idx),
+      FUN = function(i) {
+        data.table::uniqueN(dt[[i]])
       }
     )
-  } else if (identical(x = idx, y = as.integer(x = 3))) {
-    ls_dt <- split(x = dt, by = dtColnames_idx[[1]])
+    arr <- array(data = dt[[idx + 1]], dim = rev(x = unlist(x = dim_sizes)))
+    ele_table <- unique(x = dt[, seq_len(length.out = idx - 2), with = FALSE])
+    ele_table <- ele_table[, lapply(.SD, function(r){paste0("\"", r, "\"")})]
+    full_sets <- dtColnames[c(idx - 1, idx)]
+    full_sets <- data.table::data.table(rep(full_sets[1], nrow(ele_table)), rep(full_sets[2], nrow(ele_table)))
+    lead_table <- cbind(ele_table, full_sets)
+    leads <- paste("Shock", paste0(
+      var_name,
+      "(",
+      apply(
+        X = lead_table,
+        MARGIN = 1,
+        paste0,
+        collapse = ","
+      ),
+      ")"
+    ), "=")
 
-    purrr::map2(
-      .x = ls_dt,
-      .y = names(x = ls_dt),
-      .f = function(dt_ele, ele) {
-        # lead
-        if (attr(x = var_name, which = "full_var")) {
-        cat(
-          paste("Shock", paste0(
-            var_name,
-            "(",
-            paste0("\"", ele, "\"", ",", paste(dtColnames[2:3], collapse = ",")),
-            ")"
-          ), "="), "\n",
-          file = write_path,
-          append = TRUE
-        )
-        } else {
-          pattern <- paste0(paste0(dtColnames, collapse = ","),")")
-          var_name <- sub(pattern = pattern, replacement = "", x = var_name)
-          cat(
-            paste("Shock", paste0(
-              var_name,
-              paste0("\"", ele, "\"", ",", paste0(dtColnames[2:3], collapse = ",")),
-              ")"
-            ), "="), "\n",
-            file = write_path,
-            append = TRUE
-          )
-        }
 
-        dt_ele <- data.table::dcast.data.table(
-          data = dt_ele,
-          formula = paste(rev(x = dtColnames_idx[2:3]), collapse = "~"),
-          value.var = "Value"
-        )
-        # data
-        data.table::fwrite(
-          x = dt_ele[, -1],
-          file = write_path,
-          append = TRUE,
-          quote = FALSE,
-          sep = " "
-        )
+  dims <- dim(arr)
+  n_dims <- length(dims)
+  other_dims <- setdiff(1:n_dims, c(1,2))
+  other_indices <- lapply(X = dims[other_dims],
+                          FUN = seq_len)
+  other_grid <- expand.grid(other_indices)
 
-        cat(";", "\n", "\n",
-          file = write_path,
-          sep = "",
-          append = TRUE
-        )
-      }
-    )
-  } else if (identical(x = idx, y = as.integer(x = 4))) {
-    ls_dt <- split(x = dt, by = dtColnames_idx[1:2])
+  # list of matrices
+  ls_mat <- list()
+  for (i in 1:nrow(other_grid)) {
+    indices <- as.list(other_grid[i,])
+    full_indices <- vector("list", n_dims)
+    full_indices[c(1,2)] <- list(quote(expr = ))
+    full_indices[other_dims] <- indices
+    ls_mat[[i]] <- do.call("[", c(list(arr), full_indices))
+  }
 
-    purrr::map2(
-      .x = ls_dt,
-      .y = names(x = ls_dt),
-      .f = function(dt_ele, ele) {
-        # multiset ele fix
-        ele <- paste0("\"",
-          unlist(x = strsplit(x = ele, split = "\\.")),
-          "\"",
-          collapse = ","
-        )
+  ls_dt <- lapply(X = ls_mat,
+                  FUN = data.table::as.data.table)
 
-        # lead
-        if (attr(x = var_name, which = "full_var")) {
-        cat(
-          paste("Shock", paste0(
-            var_name,
-            "(",
-            paste0(ele, ",", paste(dtColnames[3:4], collapse = ",")),
-            ")"
-          ), "="), "\n",
-          file = write_path,
-          append = TRUE
-        )
-        } else {
-          stop("not working yet")
-          pattern <- paste0(paste0(dtColnames, collapse = ","),")")
-          var_name <- sub(pattern = pattern, replacement = "", x = var_name)
-          cat(
-            paste("Shock", paste0(
-              var_name,
-              paste0("\"", ele, "\"", ",", paste0(dtColnames[3:4], collapse = ",")),
-              ")"
-            ), "="), "\n",
-            file = write_path,
-            append = TRUE
-          )
-        }
+  purrr::map2(.x = leads,
+              .y = ls_dt,
+              .f = function(l, d) {
+                cat(l, "\n",
+                    file = write_path,
+                    sep = "",
+                    append = TRUE)
 
-        dt_ele <- data.table::dcast.data.table(
-          data = dt_ele,
-          formula = paste(rev(x = dtColnames_idx[3:4]), collapse = "~"),
-          value.var = "Value"
-        )
-        # data
-        data.table::fwrite(
-          x = dt_ele[, -1],
-          file = write_path,
-          append = TRUE,
-          quote = FALSE,
-          sep = " "
-        )
+                data.table::fwrite(x = d,
+                                   file = write_path,
+                                   sep = " ",
+                                   col.names = FALSE,
+                                   append = TRUE)
 
-        cat(";", "\n", "\n",
-          file = write_path,
-          sep = "",
-          append = TRUE
-        )
-      }
-    )
-  } else if (identical(x = idx, y = as.integer(x = 5))) {
-    ls_dt <- split(x = dt, by = dtColnames_idx[1:3])
+                cat(";", "\n", "\n",
+                    file = write_path,
+                    sep = "",
+                    append = TRUE)
 
-    purrr::map2(
-      .x = ls_dt,
-      .y = names(x = ls_dt),
-      .f = function(dt_ele, ele) {
-        # multiset ele fix
-        ele <- paste0("\"",
-          unlist(x = strsplit(x = ele, split = "\\.")),
-          "\"",
-          collapse = ","
-        )
-
-        # lead
-        cat(
-          paste("Shock", paste0(
-            var_name,
-            "(",
-            paste0(ele, ",", paste(dtColnames[4:5], collapse = ",")),
-            ")"
-          ), "="), "\n",
-          file = write_path,
-          append = TRUE
-        )
-
-        dt_ele <- data.table::dcast.data.table(
-          data = dt_ele,
-          formula = paste(rev(x = dtColnames_idx[4:5]), collapse = "~"),
-          value.var = "Value"
-        )
-        # data
-        data.table::fwrite(
-          x = dt_ele[, -1],
-          file = write_path,
-          append = TRUE,
-          quote = FALSE,
-          sep = " "
-        )
-
-        cat(";", "\n", "\n",
-          file = write_path,
-          sep = "",
-          append = TRUE
-        )
-      }
-    )
-  } else if (identical(x = idx, y = as.integer(x = 5))) {
-    stop("Get dev to extend aux_write_ragged_shk algo")
+              })
   }
   return(write_path)
 }
