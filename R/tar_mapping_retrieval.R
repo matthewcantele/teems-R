@@ -16,7 +16,6 @@
                                sector_mapping,
                                endowment_mapping,
                                data_format) {
-
   # Model-specific requisite sets
   if (identical(x = data_format, y = "v6.2")) {
     # v6.2

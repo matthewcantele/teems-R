@@ -13,7 +13,7 @@
 #'   and the file name.
 #' @keywords internal
 #' @noRd
-.get_tab_format <- function(tab_file) {
+.get_model_version <- function(tab_file) {
   if (grepl(pattern = "\\.tab", tab_file)) {
       tab <- readChar(
         con = tab_file,
@@ -25,14 +25,15 @@
   }
 
   # get tab data format (first 200 char)
-  tab_preface <- substring(text = tab, first = 3, last = 200)
+  tab_preface <- substring(text = tab, first = 3, last = 300)
   # extract the line containing the version number
   lines <- unlist(strsplit(tab_preface, "\n"))
-  version_line <- grep(pattern = "Version", x = lines, value = TRUE)
-  model_version <- sub(pattern = ".*Version ([0-9]+\\.[0-9]+).*",
-                     replacement = "\\1",
-                     x = version_line)
-
-  final_format <- paste0("v", model_version)
-  return(final_format)
+  if (any(grepl(pattern = "6.2", x = lines))) {
+    model_version <- "v6.2"
+  } else if (any(grepl(pattern = "7.0|7", x = lines))) {
+    model_version <- "v7.0"
+  } else {
+    stop("Model version was not successfully extract from the Tab file. Input `model_version` explicitly.")
+  }
+  return(model_version)
 }

@@ -52,7 +52,6 @@
 
     # initialize for potential tab set append
     tab_append <- list()
-
     # swap out preferentially from full var names to tuples
     # use for loop due to iterative nature of swaps
     for (out_var in unique(x = expanded_exits[["var_name"]])) {

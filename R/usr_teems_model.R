@@ -133,64 +133,50 @@ teems_model <- function(tab_file,
 fun_call <- match.call()
 args_list <- as.list(.match_call(fun_call = fun_call)[-1])
 if (missing(x = tab_file))
-  {stop(paste("Argument",
-              dQuote(x = "tab_file"),
-              "is missing!"))
-  } else {
-if (grepl(pattern = "\\.tab", x = tab_file))
-  {args_list[["tab_file"]] <- path.expand(path = tab_file)
-    if (!file.exists(tab_file))
-      {stop(paste("Filepath for",
-                  dQuote(x = "tab_file"),
-                  "is not found!"))}
-if (any(grepl(pattern = "(intertemporal)",
-              x = readLines(con = tab_file))))
-  {temporal_dynamics <- "intertemporal"
-  } else {
-  temporal_dynamics <- "static"}
-  } else {
-  if (!is.element(el = tab_file, set = names(x = internal_tab)))
-    {stop(paste("The chosen internal Tablo file:",
-               tab_file,
-               "is not supported.",
-               "Currently supported Tablo files include:",
-               paste(names(x = internal_tab), collapse = ", "),
-               'Otherwise an unsupported Tablo file by directly inputting a Tablo path, e.g., "~/path2/tablo.tab"'))
-    } else {
-      internal_tab <- subset(x = internal_tab,
-                             subset = {is.element(el = names(x = internal_tab), set = tab_file)})
-      if (any(grepl(pattern = "(intertemporal)", x = internal_tab)))
-        {temporal_dynamics <- "intertemporal"
-        } else {
-         temporal_dynamics <- "static"
-        }
-      }
-    }
-  }
-if (!is.null(x = model_version)) {
-  model_version <- match.arg(arg = model_version,
-                             choices = c("v6.2", "v7.0"))
+{
+  stop(paste("Argument", dQuote(x = "tab_file"), "is missing!"))
 } else {
-  model_version <- .get_tab_format(tab_file = tab_file)
-  if (!is.element(el = model_version, set = c("v6.2", "v7.0"))) {
-    stop("Determined model version does not correspond to either `v6.2` or `v7.0`.",
-         "Adjust the header of the Tablo file or explicitly set `model_version`.")
+  user_tab <- .tab_check(tab_file = tab_file)
+  if (user_tab) {
+    args_list[["tab_file"]] <- path.expand(path = tab_file)
   }
-
+}
+temporal_dynamics <- .get_dynamics(tab_file = tab_file, user_tab = user_tab)
+if (!is.null(x = model_version)) {
+  model_version <- match.arg(arg = model_version, choices = c("v6.2", "v7.0"))
+} else {
+  model_version <- .get_model_version(tab_file = tab_file)
+  args_list[["model_version"]] <- model_version
   if (verbose)
-  {message(paste("Model version for the provided Tablo file has been determined as:",
-                 model_version))}
+  {
+    message(
+      paste(
+        "Model version for the provided Tablo file has been determined as:",
+        model_version
+      )
+    )
+  }
 }
 stopifnot(is.numeric(x = floor(x = ndigits)))
 if (identical(x = temporal_dynamics, y = "intertemporal"))
-  {args_list[["full_exclude"]] <- as.call(x = c(as.list(x = args_list$full_exclude), c("RDLT", "RFLX")))}
+{
+  args_list[["full_exclude"]] <- as.call(x = c(as.list(x = args_list[["full_exclude"]]), c("RDLT", "RFLX")))
+}
 if (verbose)
-{message(paste("Temporal dynamics have been determined as:",
-                temporal_dynamics,
-                ifelse(test = identical(x = temporal_dynamics, y = "intertemporal"),
-                       yes = paste("\nFor intertemporal model run specifications, see",
-                                   dQuote(x = 'help("teems_time")')),
-                       no = "")))}
+{
+  message(paste(
+    "Temporal dynamics have been determined as:",
+    temporal_dynamics,
+    ifelse(
+      test = identical(x = temporal_dynamics, y = "intertemporal"),
+      yes = paste(
+        "\nFor intertemporal model run specifications, see",
+        dQuote(x = 'help("teems_time")')
+      ),
+      no = ""
+    )
+  ))
+}
 args_list_append <- list(temporal_dynamics = temporal_dynamics)
 config <- c(args_list, args_list_append)
 config

@@ -143,8 +143,16 @@
             sets = sets
           )
 
-          # numeriare (null_set) condition
+          # non-numeriare (null_set) condition
           if (!identical(x = ls_upper_idx, y = "null_set")) {
+            # This check needs to be shock type agnostic
+            # full variable not exogenous
+            if (!is.element(el = var, set = closure[["var_name"]])) {
+              stop(paste("The variable",
+                         dQuote(x = var),
+                         "has been allocated a shock but is not identified as exogenous."))
+            }
+
             expanded_shk <- .expand_closure(
               closure = checked_shk,
               var_extract = var_extract,

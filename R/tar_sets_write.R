@@ -74,6 +74,5 @@
     )
   })
 
-  message(paste(nrow(x = sets), "sets written to", path))
   return(path)
 }

@@ -114,16 +114,18 @@ teems_closure <- function(swap_in = NULL,
                           shock_file = NULL)
 {
 fun_call <- match.call()
-for (swap in seq_along(swap_in)) {
-  input <- swap_in[[swap]]
-  if (is.character(x = substitute(expr = input)) && !is.null(x = input)) {
-  fun_call[["swap_in"]][[swap+1]] <- teems_swap(var = input)
+if (!is.null(x = swap_in)) {
+  if (!is.symbol(x = substitute(expr = swap_in))) {
+    fun_call <- .harmonize_swap(raw_swap = swap_in, fun_call = fun_call)
+  } else if (!attr(x = swap_in, which = "swap")) {
+    stop("Invalid swap-in value detected.")
   }
 }
-for (swap in seq_along(swap_out)) {
-  input <- swap_out[[swap]]
-  if (is.character(x = substitute(expr = input)) && !is.null(x = input)) {
-    fun_call[["swap_out"]][[swap+1]] <- teems_swap(var = input)
+if (!is.null(x = swap_out)) {
+  if (!is.symbol(x = substitute(expr = swap_out))) {
+    fun_call <- .harmonize_swap(raw_swap = swap_out, fun_call = fun_call)
+  } else if (!attr(x = swap_out, which = "swap")) {
+    stop("Invalid swap-out value detected.")
   }
 }
 args_list <- as.list(.match_call(fun_call = fun_call,

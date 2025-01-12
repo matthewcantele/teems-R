@@ -94,5 +94,6 @@ swap <- list(var = var,
              swap_ele = swap_ele)
 swap_names <- names(x = swap)
 swap <- c(swap, list(swap_names))
+attr(x = swap, which = "swap") <- TRUE
 swap
 }

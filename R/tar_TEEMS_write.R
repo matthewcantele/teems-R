@@ -23,7 +23,6 @@
   }
   # full write path
   write_path <- file.path(write_dir, file)
-
   if (is.element(el = write_object, set = c("cmf"))) {
     # write
     cat(input,
