@@ -40,14 +40,13 @@
 #'   written as output.
 #' @param sets_csv_name Character of length 1 (default is "sets.csv").
 #'   Name for the core set file that is written as output.
-#' @param int_data_csv_name Character of length 1 (default is
-#'   "time_data.csv"). Name for the intertemporal data file that is
-#'   written as output.
+#' @param int_data_csv_name Character of length 1 (default is "time_data.csv").
+#'   Name for the intertemporal data file that is written as output.
 #' @param int_parameter_csv_name Character of length 1 (default is
-#'   "int_parameters.csv"). Name for the intertemporal parameter file
-#'   that is written as output.
-#' @param verbose Logical of length 1 (default is `FALSE`). If `TRUE` output
-#'   function-specific diagnostics.
+#'   "int_parameters.csv"). Name for the intertemporal parameter file that is
+#'   written as output.
+#' @param quiet Logical of length 1 (default is `FALSE`). If `TRUE`,
+#'   function-specific diagnostics are silenced.
 #'
 #' @return A list of general model configuration options.
 #'
@@ -67,12 +66,6 @@
 #'
 #' # Internal Tablo Files
 #' # GTAPv6.2 --------------------------------------------------------
-#' # When `verbose` == `TRUE`, the detected type of temporal dynamics:
-#' # static or intertemporal will be printed to the console.
-#' model_config <- teems_model(tab_file = "GTAPv6.2",
-#'                             notes = "initial run",
-#'                             verbose = TRUE)
-#'
 #' # Names of output files can be set within this function.
 #' model_config <- teems_model(tab_file = "GTAPv6.2",
 #'                             data_csv_name = "GTAPDATA.csv",
@@ -89,12 +82,11 @@
 #' # model runs, the `time_config` argument within `teems_deploy()`
 #' # will require the return values from `teems_time()`.
 #' model_config <- teems_model(tab_file = "GTAP-INTv1",
-#'                             note = "10 by 2 year intervals",
-#'                             verbose = TRUE)
+#'                             note = "10 by 2 year intervals")
 #'
 #' # User-provided Tablo Files ---------------------------------------
 #' # Users can provide their own Tablo files. Some Tablo operations
-#' # are not supported by the TEEMS solver (see vignnete) and
+#' # are not supported by the TEEMS solver (see vignnette) and
 #' # Tablo-specific idiosyncrasies may not be automatically handled at
 #' # the current developmental stage of this package.
 #'
@@ -112,8 +104,7 @@
 #'
 #' print(x = path_to_user_model)
 #' head(x = readLines(path_to_user_model))
-#' model_config <- teems_model(tab_file = path_to_user_model,
-#'                             verbose = TRUE)
+#' model_config <- teems_model(tab_file = path_to_user_model)
 #'
 #' unlink(x = temp_dir, recursive = TRUE)
 #'
@@ -128,56 +119,26 @@ teems_model <- function(tab_file,
                         parameter_csv_name = "parameters.csv",
                         int_data_csv_name = "time_data.csv",
                         int_parameter_csv_name= "int_parameters.csv",
-                        verbose = FALSE)
+                        quiet = FALSE)
 {
-fun_call <- match.call()
-args_list <- as.list(.match_call(fun_call = fun_call)[-1])
-if (missing(x = tab_file))
-{
-  stop(paste("Argument", dQuote(x = "tab_file"), "is missing!"))
-} else {
-  user_tab <- .tab_check(tab_file = tab_file)
-  if (user_tab) {
-    args_list[["tab_file"]] <- path.expand(path = tab_file)
-  }
-}
-temporal_dynamics <- .get_dynamics(tab_file = tab_file, user_tab = user_tab)
-if (!is.null(x = model_version)) {
-  model_version <- match.arg(arg = model_version, choices = c("v6.2", "v7.0"))
-} else {
-  model_version <- .get_model_version(tab_file = tab_file)
-  args_list[["model_version"]] <- model_version
-  if (verbose)
-  {
-    message(
-      paste(
-        "Model version for the provided Tablo file has been determined as:",
-        model_version
-      )
-    )
-  }
-}
 stopifnot(is.numeric(x = floor(x = ndigits)))
-if (identical(x = temporal_dynamics, y = "intertemporal"))
-{
-  args_list[["full_exclude"]] <- as.call(x = c(as.list(x = args_list[["full_exclude"]]), c("RDLT", "RFLX")))
+call <- match.call()
+args_list <- mget(x = names(x = formals()))
+tab_file <- .check_required_file(file = tab_file,
+                                 ext = "tab",
+                                 call = call)
+intertemporal <- any(grepl(pattern = "(intertemporal)", x = readLines(con = tab_file)))
+if (!is.null(x = model_version)) {
+  match.arg(arg = model_version, choices = c("v6.2", "v7.0"))
+} else {
+  args_list[["model_version"]] <- .get_model_version(tab_file = tab_file,
+                                                     quiet = quiet,
+                                                     call = call)
 }
-if (verbose)
-{
-  message(paste(
-    "Temporal dynamics have been determined as:",
-    temporal_dynamics,
-    ifelse(
-      test = identical(x = temporal_dynamics, y = "intertemporal"),
-      yes = paste(
-        "\nFor intertemporal model run specifications, see",
-        dQuote(x = 'help("teems_time")')
-      ),
-      no = ""
-    )
-  ))
-}
-args_list_append <- list(temporal_dynamics = temporal_dynamics)
+.inform_temp_dyn(intertemporal = intertemporal,
+                 quiet = quiet,
+                 call = call)
+args_list_append <- list(intertemporal = intertemporal)
 config <- c(args_list, args_list_append)
 config
 }
