@@ -20,7 +20,7 @@
 #'   endowment mapping (see [`teems_query()`]) or path to a two-column
 #'   csv representing a database-specific endowment mapping.
 #'
-#' @importFrom purrr map2
+#' @importFrom rlang current_env
 #'
 #' @return A list of set configuration options.
 #'
@@ -57,14 +57,6 @@
 #'                          sector_mapping = file.path(temp_dir, "usr_mapping.csv"),
 #'                          endowment_mapping = "labor_agg")
 #'
-#' # When `verbose` == `TRUE`, the detected GTAP Database version,
-#' # reference year, and data format will be printed to the console.
-#' set_config <- teems_sets(set_har = path_to_har,
-#'                          region_mapping = "AR5",
-#'                          sector_mapping = file.path(temp_dir, "usr_mapping.csv"),
-#'                          endowment_mapping = "labor_agg",
-#'                          verbose = TRUE)
-#'
 #' unlink(x = temp_dir, recursive = TRUE)
 #'
 #' @export
@@ -72,85 +64,19 @@ teems_sets <- function(set_har,
                        region_mapping,
                        sector_mapping,
                        endowment_mapping,
-                       verbose = FALSE)
+                       quiet = FALSE)
 {
-fun_call <- match.call()
-args_list <- as.list(.match_call(fun_call = fun_call)[-1])
-if (missing(x = set_har)) {
-  stop(paste("Argument", dQuote(x = "set_har"), "is missing"))
-} else {
-  if (!file.exists(set_har)) {
-    stop(paste("Filepath for", dQuote(x = "set_har"), "is not found."))
-  }
-}
-database_version <- .get_metadata(con = set_har)[["database.version"]]
-map_args <- c("endowment_mapping","region_mapping","sector_mapping")
-mappings <- mget(x = map_args)
-if (is.element(el = database_version, set = c("v9", "v10"))) {
-  endowment_set <- "ENDW_COMM"
-  region_set <- "REG"
-  tradables_set <- "TRAD_COMM"
-} else if (identical(x = database_version, y = "v11")) {
-  endowment_set <- "ENDW"
-  region_set <- "REG"
-  tradables_set <- "COMM"
-}
-ls_set_ele <- purrr::map2(
-  .x = mappings,
-  .y = names(x = mappings),
-  .f = function(mapping, mapping_name)
-  {
-    if (grepl(pattern = "\\.csv", x = mapping)) {
-      if (!file.exists(mapping)) {
-        stop(paste(
-          "The .csv provided for:",
-          dQuote(mapping_name),
-          "does not exist."
-        ))
-      }
-      if (identical(x = mapping_name, y = "endowment_mapping")) {
-        map <- .set_ele_read(file = mapping,
-                             col = 2,
-                             set_name = endowment_mapping)
-      } else if (identical(x = mapping_name, y = "region_mapping")) {
-        map <- .set_ele_read(file = mapping,
-                             col = 2,
-                             set_name = region_mapping)
-      } else if (identical(x = mapping_name, y = "sector_mapping")) {
-        map <- .set_ele_read(file = mapping,
-                             col = 2,
-                             set_name = sector_mapping)
-      }
-    } else {
-      if (identical(x = mapping_name, y = "endowment_mapping")) {
-        .internal_map_check(set = endowment_set,
-                            database_version = database_version,
-                            mapping = mapping)
-      } else if (identical(x = mapping_name, y = "region_mapping")) {
-        .internal_map_check(set = region_set,
-                            database_version = database_version,
-                            mapping = mapping)
-      } else if (identical(x = mapping_name, y = "sector_mapping")) {
-        .internal_map_check(set = tradables_set,
-                            database_version = database_version,
-                            mapping = mapping)
-      }
-    }
-  }
-)
-if (verbose) {
-with(data = ls_set_ele, expr = {
-  .set_message(set_ele = endowment_mapping,
-               set_name = "endowment",
-               model_set = endowment_set)
-  .set_message(set_ele = region_mapping,
-               set_name = "region",
-               model_set = region_set)
-  .set_message(set_ele = sector_mapping,
-               set_name = "sector",
-               model_set = tradables_set)
-})
-}
+call <- match.call()
+args_list <- mget(x = names(x = formals()))
+args_list[["set_har"]] <- .check_required_file(file = set_har,
+                                               ext = "har",
+                                               call = call)
+database_version <- .get_metadata(con = args_list[["set_har"]])[["database.version"]]
+.check_set_mappings(args_list = args_list,
+                    database_version = database_version,
+                    call = call,
+                    envir = rlang::current_env(),
+                    quiet = quiet)
 config <- args_list
 config
 }
