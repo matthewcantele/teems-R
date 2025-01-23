@@ -103,28 +103,19 @@ teems_base <- function(dat_har,
                        coefficient_rename = NULL,
                        preagg_data = NULL,
                        postagg_data = NULL,
-                       verbose = FALSE)
+                       quiet = FALSE)
 {
-fun_call <- match.call()
-args_list <- as.list(.match_call(fun_call = fun_call)[-1])
-if (missing(dat_har)) {
-  stop("Argument 'dat_har' is missing.")
-} else if (!file.exists(dat_har)) {
-    stop("Filepath for 'dat_har' is not found.")
-}
+call <- match.call()
+args_list <- mget(x = names(x = formals()))
+args_list[["dat_har"]] <- .check_required_file(file = dat_har,
+                                               ext = "har",
+                                               call = call)
 metadata <- .get_metadata(con = dat_har)
-vetted_versions <- c("v9A", "v10A", "v11c")
-if (!is.element(el = metadata[["orig.database.version"]], set = vetted_versions))
-  {teems_version <- packageVersion("teems")
-   warning(paste("{teems} version:",
-                 teems_version,
-                 "has only been vetted on GTAP Data Base versions:",
-                 toString(x = vetted_versions)))}
-if (verbose)
-  {
-  message(paste("GTAP Data Base version:", metadata[["orig.database.version"]], "\n"),
-          paste("Reference year:", metadata[["reference.year"]], "\n"),
-          paste("Data format:", metadata[["data.format"]]))}
+.check_database_version(vetted =  c("v9A", "v10A", "v11c"),
+                        provided = metadata[["orig.database.version"]],
+                        quiet = quiet)
+.inform_metadata(metadata = metadata,
+                 quiet = quiet)
 config <- args_list
 config
 }
