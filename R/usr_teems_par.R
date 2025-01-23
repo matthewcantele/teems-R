@@ -94,24 +94,12 @@ teems_param <- function(par_har,
                         postagg_data = NULL)
 {
 stopifnot(is.logical(x = RORDELTA))
-fun_call <- match.call()
-args_list <- as.list(.match_call(fun_call = fun_call)[-1])
-if (RORDELTA) {
-  args_list[["RORDELTA"]] <- 1L
-} else {
-  args_list[["RORDELTA"]] <- 0L
-}
-if (missing(x = par_har)) {
-  stop(paste("Argument",
-             dQuote(x = "par_har"),
-             "is missing"))
-  } else {
-  if (!file.exists(par_har)) {
-    stop(paste("Filepath for",
-               dQuote(x = "par_har"),
-               "is not found."))
-  }
-}
+call <- match.call()
+args_list <- mget(x = names(x = formals()))
+RORDELTA <- as.integer(x = RORDELTA)
+args_list[["par_har"]] <- .check_required_file(file = par_har,
+                                               ext = "har",
+                                               call = call)
 config <- args_list
 config
 }
