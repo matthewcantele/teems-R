@@ -4,7 +4,7 @@
 \alias{teems_example}
 \title{Get path to teems example}
 \usage{
-teems_example(path = NULL)
+teems_example(file)
 }
 \arguments{
 \item{path}{Name of file. If \code{NULL}, the example files will be listed.}

@@ -6,8 +6,8 @@
 #' @param sets A data frame or list containing the all sets parsed from the
 #'   tablo file.
 #'
-#' @importFrom tibble remove_rownames as_tibble
-#' @importFrom purrr pmap pluck imap_dfr
+#' @importFrom tibble tibble
+#' @importFrom purrr map pluck list_rbind
 #' @importFrom data.table CJ data.table setnames setDT copy
 #' @return A tibble that integrates the provided parameters with the integer and
 #'   non-integer sets, including additional metadata such as lead and index
@@ -49,7 +49,7 @@
                   ignore.row.order = TRUE,
                   check.attributes = FALSE))) {
           stop(paste("The data provided for:",
-                     dQuote(int_param),
+                     dQuote(x = int_param),
                      "does not conform to the expected structure."))
         } else {
           dt <- data.table::copy(x = param_value)
@@ -61,20 +61,20 @@
     param_list[[int_param]] <- param
   }
 
-  header_tbl <- purrr::imap_dfr(
-    .x = param_list,
-    .f = function(param_entry, param_name) {
-      tibble::tibble(
-        param = param_name,
-        header = param_entry$header,
-        information = param_entry$information,
-        coeff = param_entry$coeff,
-        v_class = param_entry$v_class,
-        sets = list(param_entry$sets),
-        dt = list(param_entry$dt)
-      )
-    }
-  )
+header_tbl <- purrr::list_rbind(purrr::map(
+  .x = param_list,
+  .f = function(param_entry) {
+    tibble::tibble(
+      param = param_entry$header,
+      header = param_entry$header,
+      information = param_entry$information,
+      coeff = param_entry$coeff,
+      v_class = param_entry$v_class,
+      sets = list(param_entry$sets),
+      dt = list(param_entry$dt)
+    )
+  }
+))
 
   names(x = header_tbl[["dt"]]) <- header_tbl[["header"]]
   names(x = header_tbl[["information"]]) <- header_tbl[["header"]]

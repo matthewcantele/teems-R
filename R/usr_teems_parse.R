@@ -15,6 +15,9 @@
 #'   * `"coefficient"`: Absolute values for model coefficients
 #'   * `"basedata"`: Merged pre- and post-model base data values
 #'
+#' @importFrom targets tar_load
+#' @importFrom purrr pluck
+#'
 #' @seealso [`teems_solve()`] for running the model simulation.
 #'
 #' @examples
@@ -22,6 +25,7 @@
 #'
 #' @return A list containing the parsed model results according to the specified
 #'   type.
+#' @export
 teems_parse <- function(cmf_path,
                         type = c("variable", "coefficient", "basedata")) {
 type <- match.arg(arg = type)
@@ -66,14 +70,15 @@ if (identical(x = type, y = "variable")) {
     sets = set_elements,
     chron_yrs = purrr::pluck(.x = time_coeff, "dt", "CYRS")
   )
-} else if (identical(x = type, y = "coefficient")) {
+} else if (is.element(el = type, set = c("coefficient", "basedata"))) {
   output <- .parse_coeff(
     paths = coeff_paths,
     coeff_extract = tablo_coeff,
     sets = set_elements,
     chron_yrs = purrr::pluck(.x = time_coeff, "dt", "CYRS")
   )
-} else if (identical(x = type, y = "basedata")) {
+
+if (identical(x = type, y = "basedata")) {
   targets::tar_load(name = final.base_tib, store = file.path(model_dir, "store"))
   targets::tar_load(name = metadata, store = file.path(model_dir, "store"))
   if (any(grepl(pattern = "^\\(intertemporal\\)$", x = final.set_tib[["qualifier"]]))) {
@@ -83,12 +88,13 @@ if (identical(x = type, y = "variable")) {
   }
   output <- .merge_data(
     pre_coeff = final.base_tib[["dt"]],
-    post_coeff = coeff_csvs,
+    post_coeff = output,
     sets = final.set_tib,
     tab_coeff = tablo_coeff,
     reference_year = metadata[["reference_year"]],
     intertemporal = intertemporal
   )
+  }
 }
 output
 }

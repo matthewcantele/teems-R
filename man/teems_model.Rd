@@ -6,6 +6,7 @@
 \usage{
 teems_model(
   tab_file,
+  model_version = NULL,
   ndigits = 6,
   full_exclude = c("DREL", "DVER", "XXCR", "XXCD", "XXCP", "SLUG"),
   notes = NULL,
@@ -20,7 +21,20 @@ teems_model(
 \arguments{
 \item{tab_file}{Character of length 1, path to a local Tablo model
 file or selection of an internal Tablo file. Internally available
-Tablo files currently include GTAP-INTv1, GTAPv62, and GTAPv7.}
+Tablo files currently include GTAP-INTv1, GTAPv6.2, and GTAPv7.}
+
+\item{model_version}{Character of length 1 (default is \code{NULL}),
+GTAP model base version corresponding to the selected Tablo model
+file. Note that this is distinct from the data format of input
+data files. If \code{NULL}, the first 200 characters of the Tablo file
+will be parsed with \code{model_version} assigned the value following
+"Version". Choices:
+\itemize{
+\item \code{"v6.2"}: Classic GTAP model version 6.2 and models based off
+this version. See: https://www.gtap.agecon.purdue.edu/resources/res_display.asp?RecordID=2458
+\item \code{"v7.0"}: Standard GTAP model version 7 and models based off this
+version. See: https://jgea.org/ojs/index.php/jgea/article/view/47
+}}
 
 \item{ndigits}{Integer (default is \code{6}). Exact number of digits to
 the right of the decimal point to be written to file for numeric
@@ -78,18 +92,18 @@ path-dependent pipeline resulting in solver-ready input files for
 \code{\link[=teems_solve]{teems_solve()}}.
 }
 \examples{
-# See `vignette("something")` for examples and explanation.
+# See `vignette("teems-input_files")` for examples and explanation.
 
 # Internal Tablo Files
 # GTAPv6.2 --------------------------------------------------------
 # When `verbose` == `TRUE`, the detected type of temporal dynamics:
 # static or intertemporal will be printed to the console.
-model_config <- teems_model(tab_file = "GTAPv62",
+model_config <- teems_model(tab_file = "GTAPv6.2",
                             notes = "initial run",
                             verbose = TRUE)
 
 # Names of output files can be set within this function.
-model_config <- teems_model(tab_file = "GTAPv62",
+model_config <- teems_model(tab_file = "GTAPv6.2",
                             data_csv_name = "GTAPDATA.csv",
                             parameter_csv_name = "GTAPPARM.csv",
                             sets_csv_name = "GTAPSETS.csv")

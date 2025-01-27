@@ -151,7 +151,7 @@
     stop("Set construction of dependent (not read-in) sets was not possible")
   }
 
-  # bind mappings to a single object
+  # bind non-int set mapping to a single object
   r_idx <- match(x = toupper(x = set_extract[["header"]]), table = toupper(x = nonint_sets[["header"]]))
   set_extract[["full_sets"]] <- nonint_sets[["full_sets"]][r_idx]
 

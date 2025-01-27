@@ -107,9 +107,9 @@ teems_base <- function(dat_har,
 {
 call <- match.call()
 args_list <- mget(x = names(x = formals()))
-args_list[["dat_har"]] <- .check_required_file(file = dat_har,
-                                               ext = "har",
-                                               call = call)
+args_list[["dat_har"]] <- .check_input_file(file = dat_har,
+                                            ext = "har",
+                                            call = call)
 metadata <- .get_metadata(con = dat_har)
 .check_database_version(vetted =  c("v9A", "v10A", "v11c"),
                         provided = metadata[["orig.database.version"]],

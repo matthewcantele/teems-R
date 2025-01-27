@@ -1,17 +1,13 @@
+#' @importFrom cli col_blue cli_inform
+#'
 #' @keywords internal
 #' @noRd
-.set_message <- function(set_ele,
-                         set_name,
-                         model_set) {
-
-  # Loop through each element in set_ele
-  element_text <- paste(set_ele[[1]], collapse = "\n")
-  message_text <- paste("Set elements for:",
-                        paste0(set_name, "s"),
-                        paste0("(", model_set, ")"),
-                        "determined as:\n")
-  message_text <- paste0(message_text, element_text, "\n")
-
-  # Print the final message
-  message(message_text)
+.set_ele_inform <- function(set_ele,
+                            set_name,
+                            model_set) {
+  element_text <- cli::col_blue(sort(x = paste(set_ele[[1]])))
+  cli::cli_inform(c(
+    "i" = "Set elements for: {set_name}s ({model_set}) determined as:",
+    ">" = "{element_text}"
+  ))
 }

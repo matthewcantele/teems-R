@@ -12,6 +12,7 @@
                                 quiet) {
   map_args <- names(x = args_list)[grepl("_mapping", names(x = args_list))]
   mappings <- mget(x = map_args, envir = envir)
+
   if (is.element(el = database_version, set = c("v9", "v10"))) {
     endowment_set <- "ENDW_COMM"
     region_set <- "REG"
@@ -21,27 +22,28 @@
     region_set <- "REG"
     tradables_set <- "COMM"
   }
+
   ls_set_ele <- rlang::try_fetch(purrr::map2(
     .x = mappings,
     .y = names(x = mappings),
     .f = function(mapping, mapping_name)
     {
       if (identical(x = tolower(x = tools::file_ext(x = mapping)), y = "csv")) {
-        .check_required_file(file = mapping,
-                             ext = "csv",
-                             call = call)
+        .check_input_file(file = mapping,
+                          ext = "csv",
+                          call = call)
         if (identical(x = mapping_name, y = "endowment_mapping")) {
           map <- .set_ele_read(file = mapping,
                                col = 2,
-                               set_name = endowment_mapping)
+                               set_name = mappings[["endowment_mapping"]])
         } else if (identical(x = mapping_name, y = "region_mapping")) {
           map <- .set_ele_read(file = mapping,
                                col = 2,
-                               set_name = region_mapping)
+                               set_name = mappings[["region_mapping"]])
         } else if (identical(x = mapping_name, y = "sector_mapping")) {
           map <- .set_ele_read(file = mapping,
                                col = 2,
-                               set_name = sector_mapping)
+                               set_name = mappings[["sector_mapping"]])
         }
       } else {
         if (identical(x = mapping_name, y = "endowment_mapping")) {
@@ -76,4 +78,12 @@
                       model_set = tradables_set)
     })
   }
+  set_files <- sapply(X = ls_set_ele, FUN = names)
+  r_idx <- match(x = names(x = set_files), table = names(x = args_list))
+  args_list[r_idx] <- set_files
+
+return(args_list)
 }
+
+
+

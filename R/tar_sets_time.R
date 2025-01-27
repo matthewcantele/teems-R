@@ -23,7 +23,7 @@
                "does not match the chronological year corresponding to the initial timestep",
                paste0("(", t0, ").")))
   }
-
+# this can also be directly passed
   n_timestep <- as.numeric(length(x = time_steps) + 1)
   ALLTIME <- .create_header(
     header = "ALLTIME",

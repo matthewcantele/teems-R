@@ -1,69 +1,64 @@
 #' Load time specifications
 #'
-#' @description `teems_time()` loads time related data for non-static
-#'   model runs. This includes parameters specific to dynamic runs as
-#'   well as the number of timesteps and inferred intrastep intervals.
-#'   The output of this function is a required value for the
-#'   [`teems_deploy()`] `"time_config"` argument when temporal
-#' dynamics are not static (i.e., dynamic).
+#' @description `teems_time()` loads time related data for non-static model
+#'   runs. This includes parameters specific to dynamic runs as well as the
+#'   number of timesteps and inferred intrastep intervals. The output of this
+#'   function is a required value for the [`teems_deploy()`] `"time_config"`
+#'   argument when temporal dynamics are not static (i.e., dynamic).
 #'
-#' Learn more about this function including Tablo file limitations in
-#' `vignette("something")`
+#'   Learn more about this function including Tablo file limitations in
+#'   `vignette("something")`
 #'
-#' @param time_steps Integer vector of variable length (default is
-#'   `NULL`). `"time_steps"` are inputted as the desired chronological
-#'   years of steps including initial reference year.
-#' @param CPHI Numeric of length 1 or path to a csv with value (Value)
-#'   by region (REGr) and timestep (ALLTIMEt) (default is `0.1`). The
-#'   investment adjustment coefficient shows the ratio of investment
-#'   (at a $1 cost basis) necessary to gain the equivalent increase in
-#'   capital stock. For example, the default value .1 would indicate
-#'   that for every $1.10 in investment, capital stock increases by
-#'   $1. It represents the installment cost in investment process. The
-#'   adjustment cost function is typically a convex function. The
-#'   investment adjustment rate reflects how quickly the level of
-#'   investment adjusts in response to economic changes or new
-#'   information.
-#' @param KAPPA Numeric of length 1 or path to a csv with value
-#'   (Value) by region (REGr) and timestep (ALLTIMEt) (default is
-#'   `0.05`). The depreciation rate is the rate at which a physical
-#'   capital loses its value over time due to wear and tear,
-#'   obsolescence, or usage. It is a critical measure in accounting
-#'   and economics, as it determines the reduction in value of fixed
-#'   assets like machinery, equipment, and buildings. A higher
-#'   depreciation rate indicates a faster decline in an asset's
-#'   productive value.
-#' @param LRORG Numeric of length 1 or path to a csv with value
-#'   (Value) by timestep (ALLTIMEt) (default is `0.05`). The global
-#'   interest rate or rate of return refers to the average rate at
-#'   which investments yield returns across the global economy. This
-#'   rate is influenced by various factors, including international
-#'   demand for capital, central bank policies, inflation rates, and
-#'   global economic conditions.
-#' @param INIDELTA Logical of length 1 (default is `TRUE`). INIDELTA
-#'   determines the intertemporal initial condition switching
-#'   mechanism. When TRUE, VKB and the value of ps("capital",r,t) will
-#'   be adjusted so the current base year data will become steady
-#'   state of the economy. When FALSE, VKB will be read from data and
-#'   the value of ps("capital",r,t) will be calculated by definition.
-#'   The values of the auxiliary variables - LCAPHAT(r,t) and
-#'   LMUHAT(r,t) - should be one. If they are not 1 then shock them to
-#'   1 to get the baseline scenario.
-#' @param interval_switch Logical length 1 (default is `FALSE`).
-#'   Switch controlling interpretation of `"time_steps"` input. When
-#'   `TRUE`, each element of `"time_steps"` is interpreted as an
-#'   interval between 2 time steps.
+#' @param time_steps Integer vector of variable length (default is `NULL`).
+#'   `"time_steps"` are inputted as the desired chronological years of steps
+#'   including initial reference year.
+#' @param CPHI Numeric of length 1 or path to a csv with value (Value) by region
+#'   (REGr) and timestep (ALLTIMEt) (default is `0.1`). The investment
+#'   adjustment coefficient shows the ratio of investment (at a $1 cost basis)
+#'   necessary to gain the equivalent increase in capital stock. For example,
+#'   the default value .1 would indicate that for every $1.10 in investment,
+#'   capital stock increases by $1. It represents the installment cost in
+#'   investment process. The adjustment cost function is typically a convex
+#'   function. The investment adjustment rate reflects how quickly the level of
+#'   investment adjusts in response to economic changes or new information.
+#' @param KAPPA Numeric of length 1 or path to a csv with value (Value) by
+#'   region (REGr) and timestep (ALLTIMEt) (default is `0.05`). The depreciation
+#'   rate is the rate at which a physical capital loses its value over time due
+#'   to wear and tear, obsolescence, or usage. It is a critical measure in
+#'   accounting and economics, as it determines the reduction in value of fixed
+#'   assets like machinery, equipment, and buildings. A higher depreciation rate
+#'   indicates a faster decline in an asset's productive value.
+#' @param LRORG Numeric of length 1 or path to a csv with value (Value) by
+#'   timestep (ALLTIMEt) (default is `0.05`). The global interest rate or rate
+#'   of return refers to the average rate at which investments yield returns
+#'   across the global economy. This rate is influenced by various factors,
+#'   including international demand for capital, central bank policies,
+#'   inflation rates, and global economic conditions.
+#' @param INIDELTA Logical of length 1 (default is `FALSE`). INIDELTA determines
+#'   the intertemporal initial condition switching mechanism. When FALSE, VKB
+#'   will be read from data and the value of ps("capital",r,t) will be
+#'   calculated by definition. The slack variables (coefficients) LCAPHAT(r,t)
+#'   and LMUHAT(r,t) will be kept at their current level so the motion equations
+#'   will be adjusted to zero at the baseline. The value of LCAPHAT(r,t) and
+#'   LMUHAT(r,t) can be adjusted to 1 in order to adjust the baseline scenario
+#'   to a non-steady state. When TRUE, VKB and the value of ps("capital",r,t)
+#'   will be adjusted so the current base year data will become steady state of
+#'   the economy. The role of this binary switch can be clearly seen by
+#'   examining the post-model VKB header with `teems_parse(type = "basedata")`.
+#'
+#' @param interval_switch Logical length 1 (default is `FALSE`). Switch
+#'   controlling interpretation of `"time_steps"` input. When `TRUE`, each
+#'   element of `"time_steps"` is interpreted as an interval between 2 time
+#'   steps.
 #'
 #' @return A list of time configuration options.
 #'
-#' @details `teems_time()` return values have no purpose used in
-#'   isolation and are rather combined with user inputs in other
-#'   `teems` package functions within [`teems_deploy()`] to produce a
-#'   path-dependent pipeline resulting in solver-ready input files for
-#'   [`teems_solve()`].
+#' @details `teems_time()` return values have no purpose used in isolation and
+#'   are rather combined with user inputs in other `teems` package functions
+#'   within [`teems_deploy()`] to produce a path-dependent pipeline resulting in
+#'   solver-ready input files for [`teems_solve()`].
 #'
-#' @seealso [`teems_deploy()`] for loading the output of this
-#'   function.
+#' @seealso [`teems_deploy()`] for loading the output of this function.
 #'
 #' @examples
 #' # See `vignette("something")` for examples and explanation
@@ -111,113 +106,20 @@ teems_time <- function(time_steps,
                        CPHI = 0.1,
                        KAPPA = 0.05,
                        LRORG = 0.05,
-                       INIDELTA = TRUE,
+                       INIDELTA = FALSE,
                        interval_switch = FALSE)
 {
-if (!interval_switch) {
-  t0 <- time_steps[1]
-  time_steps <- diff(x = time_steps)
-} else {
-  t0 <- NA
-}
+call <- match.call()
 stopifnot(is.numeric(x = time_steps))
 stopifnot(is.logical(x = INIDELTA))
 stopifnot(is.logical(x = interval_switch))
-if (INIDELTA) {
-  INIDELTA <- 1L
-  } else {
-  INIDELTA <- 0L
-}
-n_timestep <- as.numeric(length(x = time_steps) + 1)
-if (grepl(pattern = "\\.csv", x = CPHI)) {
-  if (!file.exists(CPHI)) {
-    stop(paste("Filepath for",
-               dQuote(x = "CPHI"),
-               "is not found."))
-  } else {
-    CPHI_file <- read.csv(file = CPHI)
-    if (!all(is.element(el = colnames(x = CPHI_file),
-                        set = c("REGr", "ALLTIMEt", "Value")))) {
-      stop(paste("The user-provided intertemporal parameter file for",
-                 dQuote(x = "CPHI"),
-                 "does not have one or more of the required columns: REGr, ALLTIMEt, Value"))
-    } else {
-      implied_ALLTIMEt <- as.integer(x = sort(x = unique(x = CPHI_file[["ALLTIMEt"]])))
-      correct_ALLTIMEt <- seq(from = 0, to = n_timestep - 1)
-      if (!identical(x = implied_ALLTIMEt, y = correct_ALLTIMEt)) {
-        stop(cat("The user-provided ALLTIMEt set steps for",
-                 dQuote(x = "CPHI"),
-                 "are not consistent with the 'n_timestep' value of:",
-                 n_timestep,
-                 "\nThere should be a",
-                 dQuote(x = "Value"),
-                 "entry for every REGr by",
-                 toString(x = correct_ALLTIMEt)))
-      }
-    }
-  }
-}
-if (grepl(pattern = "\\.csv", x = LRORG)) {
-  if (!file.exists(LRORG)) {
-    stop(paste("Filepath for",
-               dQuote(x = "LRORG"),
-               "is not found."))
-  } else {
-    LRORG_file <- read.csv(file = LRORG)
-    if (!all(is.element(el = colnames(x = LRORG_file),
-                        set = c("ALLTIMEt", "Value")))) {
-      stop(paste("The user-provided intertemporal parameter file for",
-                 dQuote(x = "LRORG"),
-                 "does not have one or more of the required columns: ALLTIMEt, Value"))
-    } else {
-      implied_ALLTIMEt <- as.integer(x = sort(x = unique(x = LRORG_file[["ALLTIMEt"]])))
-      correct_ALLTIMEt <- seq(from = 0, to = n_timestep - 1)
-      if (!identical(x = implied_ALLTIMEt, y = correct_ALLTIMEt)) {
-        stop(cat("The user-provided ALLTIMEt set steps for",
-                 dQuote(x = "LRORG"),
-                 "are not consistent with the 'n_timestep' value of:",
-                 n_timestep,
-                 "\nThere should be a",
-                 dQuote(x = "Value"),
-                 "entry for every ALLTIMEt set:",
-                 toString(x = correct_ALLTIMEt)))
-      }
-    }
-  }
-}
-if (grepl(pattern = "\\.csv", x = KAPPA)) {
-  if (!file.exists(KAPPA)) {
-    stop(paste("Filepath for",
-               dQuote(x = "KAPPA"),
-               "is not found."))
-  } else {
-    KAPPA_file <- read.csv(file = KAPPA)
-    if (!all(is.element(el = colnames(x = KAPPA_file),
-               set = c("REGr", "ALLTIMEt", "Value")))) {
-      stop(paste("The user-provided intertemporal parameter file for",
-                 dQuote(x = "KAPPA"),
-                 "does not have one or more of the required columns: REGr, ALLTIMEt, Value"))
-    } else {
-      implied_ALLTIMEt <- as.integer(x = sort(x = unique(x = KAPPA_file[["ALLTIMEt"]])))
-      correct_ALLTIMEt <- seq(from = 0, to = n_timestep - 1)
-      if (!identical(x = implied_ALLTIMEt, y = correct_ALLTIMEt)) {
-        stop(cat("The user-provided ALLTIMEt set steps for",
-                 dQuote(x = "KAPPA"),
-                 "are not consistent with the 'n_timestep' value of:",
-                 n_timestep,
-                 "\nThere should be a",
-                 dQuote(x = "Value"),
-                 "entry for every REGr by",
-                 toString(x = correct_ALLTIMEt)))
-      }
-    }
-  }
-}
-time_config <- list(time_steps = time_steps,
-                    t0 = t0,
-                    CPHI = CPHI,
-                    KAPPA = KAPPA,
-                    LRORG = LRORG,
-                    INIDELTA = INIDELTA)
+INIDELTA <- as.integer(x = INIDELTA)
+ls_time <- .check_time_steps(CPHI = CPHI,
+                             KAPPA = KAPPA,
+                             LRORG = LRORG,
+                             time_steps = time_steps,
+                             interval_switch = interval_switch,
+                             call = call)
+time_config <- c(ls_time, list(time_steps = time_steps, INIDELTA = INIDELTA))
 time_config
 }

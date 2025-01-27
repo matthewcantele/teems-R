@@ -68,15 +68,16 @@ teems_sets <- function(set_har,
 {
 call <- match.call()
 args_list <- mget(x = names(x = formals()))
-args_list[["set_har"]] <- .check_required_file(file = set_har,
-                                               ext = "har",
-                                               call = call)
+args_list[["set_har"]] <- .check_input_file(file = set_har,
+                                            ext = "har",
+                                            call = call)
 database_version <- .get_metadata(con = args_list[["set_har"]])[["database.version"]]
-.check_set_mappings(args_list = args_list,
-                    database_version = database_version,
-                    call = call,
-                    envir = rlang::current_env(),
-                    quiet = quiet)
+browser()
+args_list <- .check_set_mappings(args_list = args_list,
+                                 database_version = database_version,
+                                 call = call,
+                                 envir = rlang::current_env(),
+                                 quiet = quiet)
 config <- args_list
 config
 }

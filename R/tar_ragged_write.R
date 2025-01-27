@@ -11,19 +11,16 @@
 #'   be written.
 #'
 #' @importFrom purrr pmap
-#' @importFrom data.table fwrite setorder dcast.data.table
-#' @return The path of the written file.
+#' @importFrom data.table fwrite setorder dcast.data.table uniqueN
+#' @return The write_path of the written file.
 #' @keywords internal
 #' @noRd
 .ragged_write <- function(dat,
                           ndigits,
                           file_name,
                           out_dir) {
-  # extend to 7 dimensions which is current GEMPack limit for Real arrays.
-  # this could probably be rewritten with Rcpp
-
   # write to
-  path <- file.path(out_dir, file_name)
+  write_path <- file.path(out_dir, file_name)
 
   purrr::pmap(
     .l = list(
@@ -49,124 +46,102 @@
       )]
       }
 
+      if (!identical(x = idx, y = 0L)) {
+      # consistency check between lead (constructed from sets) and actual data
+      dim_sizes <- sapply(
+        X = 1:(idx),
+        FUN = function(i) {
+          data.table::uniqueN(dt[[i]])
+        }
+      )
+
+      lead_dim <- as.integer(x = strsplit(x = trimws(x = sapply(
+        X = strsplit(x = lead, split = "Real|Integer"), "[[", 1
+      )), "\\s")[[1]])
+
+      if (!identical(x = dim_sizes, y = lead_dim)) {
+        stop(
+          cat(
+            "Lead set dim and data dim mismatch detected.\nLead dim:",
+            lead,
+            "\nData dim:",
+            dim_sizes
+          )
+        )
+      }
+      }
+
       # write the header lead with attributes
       cat(lead,
-        file = path,
+        file = write_path,
         sep = "\n",
         append = TRUE
       )
 
-      # algo for converting to the ragged edge style
-      if (identical(x = idx, y = as.integer(x = 0))) {
-        data.table::fwrite(
-          x = dt,
-          file = path,
-          quote = FALSE,
-          append = TRUE
-        )
+    # algo for converting to the ragged edge style
+    if (identical(x = idx, y = 0L)) {
+      data.table::fwrite(
+        x = dt,
+        file = write_path,
+        quote = FALSE,
+        append = TRUE
+      )
 
-        # separator between header/data sets
-        cat("\n",
-          file = path,
-          sep = "",
-          append = TRUE
-        )
-      } else if (identical(x = idx, y = as.integer(x = 1))) {
-        data.table::setorder(dt)
+    } else if (identical(x = idx, y = 1L)) {
+      data.table::setorder(dt)
+      data.table::fwrite(
+        x = dt[, -1],
+        file = write_path,
+        quote = FALSE,
+        append = TRUE
+      )} else {
+        data.table::setcolorder(x = dt, neworder = rev(x = colnames(x = dt[, !"Value"])))
+        data.table::setorder(x = dt)
 
-        data.table::fwrite(
-          x = dt[, -1],
-          file = path,
-          quote = FALSE,
-          append = TRUE
-        )
+        arr <- array(data = dt[[idx + 1]], dim = unlist(x = dim_sizes))
 
-        # separator between header/data sets
-        cat("\n",
-          file = path,
-          sep = "",
-          append = TRUE
-        )
-      } else if (identical(x = idx, y = as.integer(x = 2))) {
-        dt <- data.table::dcast.data.table(dt,
-          formula = paste(dtColnames, collapse = "~"),
-          value.var = "Value"
-        )
-
-        data.table::fwrite(
-          x = dt[, -1],
-          file = path,
-          quote = FALSE,
-          append = TRUE
-        )
-
-        # separator between header/data sets
-        cat("\n",
-          file = path,
-          sep = "",
-          append = TRUE
-        )
-      } else if (identical(x = idx, y = as.integer(x = 3))) {
-        dt <- data.table::dcast.data.table(dt,
-          formula = get(x = dtColnames[3]) + get(x = dtColnames[1]) ~ get(x = dtColnames[2]),
-          value.var = "Value"
-        )
-
-        dt_ls <- split(x = dt, by = "dtColnames")
-
-        lapply(X = dt_ls, FUN = function(d) {
+        if (identical(x = idx, y = 2L)) {
           data.table::fwrite(
-            x = d[, -(1:2)],
-            file = path,
-            quote = FALSE,
+            x = as.data.table(arr),
+            file = write_path,
+            sep = ",",
+            col.names = FALSE,
             append = TRUE
           )
+        } else {
+          # dynamic indexing for >= 3 dim
+          ls_dt <- .slice_array(arr = arr,
+                                dim_sizes = dim_sizes,
+                                n_dim = idx)
 
-          cat("\n", file = path, sep = "", append = TRUE)
-        })
-      } else if (identical(x = idx, y = as.integer(x = 4))) {
-        dt <- data.table::dcast.data.table(
-          data = dt,
-          formula = get(x = dtColnames[4]) + get(x = dtColnames[3]) + get(x = dtColnames[1]) ~ get(x = dtColnames[2]),
-          value.var = "Value"
-        )
+          lapply(
+            X = ls_dt,
+            FUN = function(d) {
+              data.table::fwrite(
+                x = d,
+                file = write_path,
+                sep = ",",
+                col.names = FALSE,
+                append = TRUE
+              )
 
-        dt_ls <- split(x = dt, by = c("dtColnames_1", "dtColnames"))
-
-        lapply(X = dt_ls, FUN = function(d) {
-          data.table::fwrite(
-            x = d[, -(1:3)],
-            file = path,
-            quote = FALSE,
-            append = TRUE
+              cat("\n",
+                  file = write_path,
+                  sep = "",
+                  append = TRUE)
+            }
           )
-
-          cat("\n", file = path, sep = "", append = TRUE)
-        })
-      } else if (identical(x = idx, y = as.integer(x = 5))) {
-        dt <- dcast.data.table(
-          data = dt,
-          formula = get(x = dtColnames[5]) + get(x = dtColnames[3]) + get(x = dtColnames[4]) + get(x = dtColnames[1]) ~ get(x = dtColnames[2]),
-          value.var = "Value"
-        )
-
-        dt_ls <- split(x = dt, by = c("dtColnames", "dtColnames_1", "dtColnames_2"))
-
-        lapply(X = dt_ls, FUN = function(d) {
-          data.table::fwrite(
-            x = d[, -(1:4)],
-            file = path,
-            quote = FALSE,
+        }
+      }
+      if (idx < 3) {
+        cat("\n",
+            file = write_path,
+            sep = "",
             append = TRUE
-          )
-
-          cat("\n", file = path, sep = "", append = TRUE)
-        })
-      } else if (idx > 5) {
-        stop("Contact package author for extension of write algo.")
+        )
       }
     }
   )
 
-  return(path)
+  return(write_path)
 }

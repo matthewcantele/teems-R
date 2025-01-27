@@ -21,12 +21,13 @@
 .prep_data <- function(data_type,
                        tib_data,
                        sets,
-                       coeff_list) {
-
+                       coeff_list,
+                       data_format) {
   # all set mappings consolidated
-  full_sets <- subset(x = sets, subset = {!is.na(header)}, select = full_sets)
-  stacked_full_sets <- unique(x = data.table::rbindlist(l = purrr::pluck(full_sets, 1), use.names = FALSE))
-  stacked_full_sets <- data.table::setnames(x = stacked_full_sets, new = c("origin", "map"))
+  full_sets <- subset(x = sets, subset = {!is.na(header)}, select = full_sets)[[1]]
+  lapply(X = full_sets,
+         FUN = data.table::setnames,
+         new = c("origin", "map"))
 
   if (!identical(x = data_type, y = "set")) {
     if (identical(x = data_type, y = "par")) {
@@ -56,16 +57,31 @@
                        })
   }
 
+  # PROD_COMM isn't read in so it isn't needed elsewhere
+  if (identical(x = data_format, y = "v6.2")) {
+    full_sets[["PROD_COMM"]] <- data.table::rbindlist(l = list(full_sets[["TRAD_COMM"]],
+                                                               full_sets[["CGDS_COMM"]]))
+  }
+
   # new set mappings (note use of is.character to differential set col from value col)
-  tib_data[["dt"]] <- lapply(X = tib_data[["dt"]], FUN = function(d) {
-    d <- d[, lapply(X = .SD, FUN = function(char_col) {
-      if (is.character(x = char_col)) {
-        r_idx <- match(x = char_col, table = stacked_full_sets[["origin"]])
-        char_col <- stacked_full_sets[["map"]][r_idx]
+  tib_data[["dt"]] <- lapply(
+    X = tib_data[["dt"]],
+    FUN = function(dt) {
+      set_col_mixed <- colnames(x = dt)[sapply(X = dt, FUN = is.character)]
+      for (c in seq_along(set_col_mixed)) {
+        set_col <- set_col_mixed[c]
+        set_map <- substr(x = set_col,
+                          start = 1,
+                          stop = nchar(x = set_col) - 1)
+        table <- full_sets[[set_map]]
+        r_idx <- match(x = dt[[set_col]], table = table[["origin"]])
+        dt[, (set_col) := lapply(.SD, function(r) {
+          table[["map"]][r_idx]
+        }), .SDcols = set_col]
       }
-      return(char_col)
-    })]
-  })
+      return(dt)
+    }
+  )
 
   return(tib_data)
 }

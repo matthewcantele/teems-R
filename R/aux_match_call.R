@@ -16,7 +16,6 @@
 .match_call <- function(fun_call,
                         eval_args = NULL,
                         ...) {
-  #browser()
   call <- evalq(expr = match.call(call = fun_call,
                                   expand.dots = FALSE,
                                   envir = environment()),
@@ -25,8 +24,8 @@
   formals <- evalq(expr = formals(), envir = parent.frame(1L))
 
   if (!is.null(x = eval_args)) {
-    eval_args <- as.character(x = eval_args)
     for (arg in eval_args) {
+      eval_args <- as.character(x = eval_args)
       if (arg %in% names(call)) {
         call[[arg]] <- eval(call[[arg]], envir = parent.frame(1L))
       }

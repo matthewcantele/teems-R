@@ -61,7 +61,6 @@
     select = "name"
   ), use.names = FALSE)
 
-
   # get basedata coefficients from output data using
   post_base <- subset(x = post_coeff, subset = {
     is.element(el = name, set = header_nmes)
@@ -77,41 +76,43 @@
 
   # and merge data
   r_idx <- match(x = post_base[["name"]], table = names(x = pre_coeff))
-  post_base[["pre_dt"]] <- pre_coeff[r_idx]
+  post_base[["pre_dat"]] <- pre_coeff[r_idx]
 
   if (intertemporal) {
     # final dt merge
-    post_base[["final_dt"]] <- purrr::map2(
-      .x = post_base[["pre_dt"]],
-      .y = post_base[["dt"]],
+    post_base[["final_dat"]] <- purrr::map2(
+      .x = post_base[["pre_dat"]],
+      .y = post_base[["dat"]],
       .f = function(pre, post) {
         data.table::rbindlist(list(pre, post))
       }
     )
 
     # include percentage change and move "Year" column
-    lapply(X = post_base[["final_dt"]], FUN = function(dt) {
-      data.table::setcolorder(dt, "Year", after = ncol(dt) - 1)
+    lapply(X = post_base[["final_dat"]],
+           FUN = function(dt) {
+      data.table::setcolorder(dt, "Year", after = ncol(x = dt) - 1)
       data.table::setkey(x = dt)
       return(dt)
     })
   } else {
     # add "Year" indicator for post-model data and stack
-    post_base[["final_dt"]] <- purrr::map2(
-      .x = post_base[["pre_dt"]],
-      .y = post_base[["dt"]],
+    post_base[["final_dat"]] <- purrr::map2(
+      .x = post_base[["pre_dat"]],
+      .y = post_base[["dat"]],
       .f = function(pre, post) {
         post[, Year := paste("post", reference_year, sep = "_")]
-        pre[, Year := paste("ante", as.character(Year), sep = "_")]
-        final <- data.table::rbindlist(list(pre, post))
-        data.table::setcolorder(x = final, "Value", after = ncol(final))
+        pre[, Year := paste("ante", as.character(x = Year), sep = "_")]
+        final <- data.table::rbindlist(l = list(pre, post))
+        data.table::setcolorder(x = final, "Value", after = ncol(x = final))
         return(final)
       }
     )
 
-    lapply(X = post_base[["final_dt"]], FUN = data.table::setkey)
+    lapply(X = post_base[["final_dat"]],
+           FUN = data.table::setkey)
   }
 
-  post_base <- subset(x = post_base, select = -c(pre_dt, dt))
+  post_base <- subset(x = post_base, select = -c(pre_dat, dat))
   return(post_base)
 }

@@ -22,10 +22,10 @@
 #' @keywords internal
 #' @noRd
 .parse_var <- function(paths,
-                           var_extract,
-                           vars,
-                           sets,
-                           chron_yrs = NULL) {
+                       var_extract,
+                       vars,
+                       sets,
+                       chron_yrs = NULL) {
 
   # now we turn to the var csvs
   # split up the set ids for matching
@@ -153,23 +153,23 @@
   }
 
   # bring over variables information for output
-  r_idx <- match(names(var_out), tolower(x = var_extract[["name"]]))
+  r_idx <- match(names(x = var_out), tolower(x = var_extract[["name"]]))
 
   f_var <- tibble::tibble(
     name = var_extract[["name"]][r_idx],
     information = var_extract[["information"]][r_idx],
-    dt = var_out
+    dat = var_out
   )
 
   # add year if intertemporal
   if (!is.null(x = chron_yrs)) {
-    f_var[["dt"]] <- lapply(X = f_var[["dt"]],
+    f_var[["dat"]] <- lapply(X = f_var[["dat"]],
                             FUN = .match_year,
                             sets = sets,
                             chron_yrs = chron_yrs)
   }
   # set the key
-  lapply(X = f_var[["dt"]], data.table::setkey)
+  lapply(X = f_var[["dat"]], data.table::setkey)
 
   return(f_var)
 }

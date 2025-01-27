@@ -126,13 +126,13 @@
     #   )
     # }
 
-    dim_sizes <- lapply(
+    dim_sizes <- rev(x = sapply(
       X = 1:(idx),
       FUN = function(i) {
         data.table::uniqueN(dt[[i]])
       }
-    )
-    arr <- array(data = dt[[idx + 1]], dim = rev(x = unlist(x = dim_sizes)))
+    ))
+    arr <- array(data = dt[[idx + 1]], dim = dim_sizes)
     ele_table <- unique(x = dt[, seq_len(length.out = idx - 2), with = FALSE])
     ele_table <- ele_table[, lapply(.SD, function(r){paste0("\"", r, "\"")})]
     full_sets <- dtColnames[c(idx - 1, idx)]
@@ -150,26 +150,9 @@
       ")"
     ), "=")
 
-
-  dims <- dim(arr)
-  n_dims <- length(dims)
-  other_dims <- setdiff(1:n_dims, c(1,2))
-  other_indices <- lapply(X = dims[other_dims],
-                          FUN = seq_len)
-  other_grid <- expand.grid(other_indices)
-
-  # list of matrices
-  ls_mat <- list()
-  for (i in 1:nrow(other_grid)) {
-    indices <- as.list(other_grid[i,])
-    full_indices <- vector("list", n_dims)
-    full_indices[c(1,2)] <- list(quote(expr = ))
-    full_indices[other_dims] <- indices
-    ls_mat[[i]] <- do.call("[", c(list(arr), full_indices))
-  }
-
-  ls_dt <- lapply(X = ls_mat,
-                  FUN = data.table::as.data.table)
+  ls_dt <- .slice_array(arr = arr,
+                        dim_sizes = dim_sizes,
+                        n_dims = idx)
 
   purrr::map2(.x = leads,
               .y = ls_dt,

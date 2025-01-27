@@ -50,8 +50,8 @@
 #'   halted for debugging and/or development purposes through
 #'   placement of `browser()`.
 #'
-#' @importFrom targets tar_helper tar_option_set tar_make
-#'   tar_config_set
+#' @importFrom targets tar_helper tar_option_set tar_make tar_config_set
+#' @importFrom qs2 qs_save qs_read
 #'
 #' @return File path to a CMF file necessary to execute
 #'   [`teems_solve()`].
@@ -267,8 +267,10 @@ if (missing(x = set_config)) {
   }
 if (missing(x = closure_config)) {
   message("Argument 'closure_config' is missing. A NULL shock and standard closure will be used.")
-  }
-if (identical(x = model_config[["temporal_dynamics"]], y = "intertemporal")) {
+}
+if (model_config[["intertemporal"]]) {
+  model_config[["full_exclude"]] <- c(model_config[["full_exclude"]], "RDLT", "RFLX")
+  model_config[["temporal_dynamics"]] <- "intertemporal"
   if (missing(x = time_config)) {
     stop(
       paste(
@@ -278,9 +280,14 @@ if (identical(x = model_config[["temporal_dynamics"]], y = "intertemporal")) {
       )
     )
   }
+} else {
+  model_config[["temporal_dynamics"]] <- "static"
 }
 if (!identical(x = base_dir, y = tempdir())) {
   base_dir <- path.expand(path = base_dir)
+  if (!dir.exists(path = base_dir)) {
+    stop("Base_dir not found.")
+  }
 }
 model_dir <- file.path(base_dir, model_name)
 pipeline_file <- file.path(model_dir, paste0(model_name, ".R"))

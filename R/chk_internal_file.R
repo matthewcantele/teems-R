@@ -14,15 +14,18 @@
       "cls" = "closure"
     )
 
+    .dev_trace()
     cli::cli_abort(c("x" = "The specified internal {file_type} file: {.val {file}} is not supported.",
                      "i" = "Currently supported {file_type} files include: {.val {file_names}}.",
-                     "i" = "Path to a user-provided {file_type} file is also supported.",
-                     "!" = "Note that user-provided {file_type} files may need to be modified for compatibility with {.fun teems::teems_solver}"))
+                     "i" = "Alternatively, path to a user-provided {file_type} file is supported.",
+                     "!" = "Note that user-provided {file_type} files may need to be modified for compatibility with various {.pkg teems} functions."),
+                   call = call)
   } else {
     tab <- valid_internal_files[[file]]
-    tab_file <- file.path(tempdir(), paste(file, ext, sep = "."))
-    writeLines(text = tab,
-               con = tab_file)
+    tab_file <- .teems_cache(input = tab,
+                             file = file,
+                             ext = ext,
+                             dir = "tab_files")
   }
   return(tab_file)
 }

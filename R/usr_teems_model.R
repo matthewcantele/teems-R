@@ -124,20 +124,26 @@ teems_model <- function(tab_file,
 stopifnot(is.numeric(x = floor(x = ndigits)))
 call <- match.call()
 args_list <- mget(x = names(x = formals()))
-tab_file <- .check_required_file(file = tab_file,
-                                 ext = "tab",
-                                 call = call)
+if (grepl(pattern = "\\.tab", x = tab_file)) {
+tab_file <- .check_input_file(file = tab_file,
+                              ext = "tab",
+                              call = call)
+} else {
+tab_file <-  .check_internal_file(file = tab_file,
+                                  ext = "tab",
+                                  call = call)
+}
 intertemporal <- any(grepl(pattern = "(intertemporal)", x = readLines(con = tab_file)))
 if (!is.null(x = model_version)) {
   match.arg(arg = model_version, choices = c("v6.2", "v7.0"))
 } else {
   args_list[["model_version"]] <- .get_model_version(tab_file = tab_file,
-                                                     quiet = quiet,
-                                                     call = call)
+                                                     call = call,
+                                                     quiet = quiet)
 }
 .inform_temp_dyn(intertemporal = intertemporal,
-                 quiet = quiet,
-                 call = call)
+                 call = call,
+                 quiet = quiet)
 args_list_append <- list(intertemporal = intertemporal)
 config <- c(args_list, args_list_append)
 config

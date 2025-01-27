@@ -9,80 +9,75 @@ teems_time(
   CPHI = 0.1,
   KAPPA = 0.05,
   LRORG = 0.05,
-  INIDELTA = TRUE,
+  INIDELTA = FALSE,
   interval_switch = FALSE
 )
 }
 \arguments{
-\item{time_steps}{Integer vector of variable length (default is
-\code{NULL}). \code{"time_steps"} are inputted as the desired chronological
-years of steps including initial reference year.}
+\item{time_steps}{Integer vector of variable length (default is \code{NULL}).
+\code{"time_steps"} are inputted as the desired chronological years of steps
+including initial reference year.}
 
-\item{CPHI}{Numeric of length 1 or path to a csv with value (Value)
-by region (REGr) and timestep (ALLTIMEt) (default is \code{0.1}). The
-investment adjustment coefficient shows the ratio of investment
-(at a $1 cost basis) necessary to gain the equivalent increase in
-capital stock. For example, the default value .1 would indicate
-that for every $1.10 in investment, capital stock increases by
-$1. It represents the installment cost in investment process. The
-adjustment cost function is typically a convex function. The
-investment adjustment rate reflects how quickly the level of
-investment adjusts in response to economic changes or new
-information.}
+\item{CPHI}{Numeric of length 1 or path to a csv with value (Value) by region
+(REGr) and timestep (ALLTIMEt) (default is \code{0.1}). The investment
+adjustment coefficient shows the ratio of investment (at a $1 cost basis)
+necessary to gain the equivalent increase in capital stock. For example,
+the default value .1 would indicate that for every $1.10 in investment,
+capital stock increases by $1. It represents the installment cost in
+investment process. The adjustment cost function is typically a convex
+function. The investment adjustment rate reflects how quickly the level of
+investment adjusts in response to economic changes or new information.}
 
-\item{KAPPA}{Numeric of length 1 or path to a csv with value
-(Value) by region (REGr) and timestep (ALLTIMEt) (default is
-\code{0.05}). The depreciation rate is the rate at which a physical
-capital loses its value over time due to wear and tear,
-obsolescence, or usage. It is a critical measure in accounting
-and economics, as it determines the reduction in value of fixed
-assets like machinery, equipment, and buildings. A higher
-depreciation rate indicates a faster decline in an asset's
-productive value.}
+\item{KAPPA}{Numeric of length 1 or path to a csv with value (Value) by
+region (REGr) and timestep (ALLTIMEt) (default is \code{0.05}). The depreciation
+rate is the rate at which a physical capital loses its value over time due
+to wear and tear, obsolescence, or usage. It is a critical measure in
+accounting and economics, as it determines the reduction in value of fixed
+assets like machinery, equipment, and buildings. A higher depreciation rate
+indicates a faster decline in an asset's productive value.}
 
-\item{LRORG}{Numeric of length 1 or path to a csv with value
-(Value) by timestep (ALLTIMEt) (default is \code{0.05}). The global
-interest rate or rate of return refers to the average rate at
-which investments yield returns across the global economy. This
-rate is influenced by various factors, including international
-demand for capital, central bank policies, inflation rates, and
-global economic conditions.}
+\item{LRORG}{Numeric of length 1 or path to a csv with value (Value) by
+timestep (ALLTIMEt) (default is \code{0.05}). The global interest rate or rate
+of return refers to the average rate at which investments yield returns
+across the global economy. This rate is influenced by various factors,
+including international demand for capital, central bank policies,
+inflation rates, and global economic conditions.}
 
-\item{INIDELTA}{Logical of length 1 (default is \code{TRUE}). INIDELTA
-determines the intertemporal initial condition switching
-mechanism. When TRUE, VKB and the value of ps("capital",r,t) will
-be adjusted so the current base year data will become steady
-state of the economy. When FALSE, VKB will be read from data and
-the value of ps("capital",r,t) will be calculated by definition.
-The values of the auxiliary variables - LCAPHAT(r,t) and
-LMUHAT(r,t) - should be one. If they are not 1 then shock them to
-1 to get the baseline scenario.}
+\item{INIDELTA}{Logical of length 1 (default is \code{FALSE}). INIDELTA determines
+the intertemporal initial condition switching mechanism. When FALSE, VKB
+will be read from data and the value of ps("capital",r,t) will be
+calculated by definition. The slack variables (coefficients) LCAPHAT(r,t)
+and LMUHAT(r,t) will be kept at their current level so the motion equations
+will be adjusted to zero at the baseline. The value of LCAPHAT(r,t) and
+LMUHAT(r,t) can be adjusted to 1 in order to adjust the baseline scenario
+to a non-steady state. When TRUE, VKB and the value of ps("capital",r,t)
+will be adjusted so the current base year data will become steady state of
+the economy. The role of this binary switch can be clearly seen by
+examining the post-model VKB header with \code{teems_parse(type = "basedata")}.}
 
-\item{interval_switch}{Logical length 1 (default is \code{FALSE}).
-Switch controlling interpretation of \code{"time_steps"} input. When
-\code{TRUE}, each element of \code{"time_steps"} is interpreted as an
-interval between 2 time steps.}
+\item{interval_switch}{Logical length 1 (default is \code{FALSE}). Switch
+controlling interpretation of \code{"time_steps"} input. When \code{TRUE}, each
+element of \code{"time_steps"} is interpreted as an interval between 2 time
+steps.}
 }
 \value{
 A list of time configuration options.
 }
 \description{
-\code{teems_time()} loads time related data for non-static
-model runs. This includes parameters specific to dynamic runs as
-well as the number of timesteps and inferred intrastep intervals.
-The output of this function is a required value for the
-\code{\link[=teems_deploy]{teems_deploy()}} \code{"time_config"} argument when temporal
-dynamics are not static (i.e., dynamic).
+\code{teems_time()} loads time related data for non-static model
+runs. This includes parameters specific to dynamic runs as well as the
+number of timesteps and inferred intrastep intervals. The output of this
+function is a required value for the \code{\link[=teems_deploy]{teems_deploy()}} \code{"time_config"}
+argument when temporal dynamics are not static (i.e., dynamic).
 
 Learn more about this function including Tablo file limitations in
 \code{vignette("something")}
 }
 \details{
-\code{teems_time()} return values have no purpose used in
-isolation and are rather combined with user inputs in other
-\code{teems} package functions within \code{\link[=teems_deploy]{teems_deploy()}} to produce a
-path-dependent pipeline resulting in solver-ready input files for
-\code{\link[=teems_solve]{teems_solve()}}.
+\code{teems_time()} return values have no purpose used in isolation and
+are rather combined with user inputs in other \code{teems} package functions
+within \code{\link[=teems_deploy]{teems_deploy()}} to produce a path-dependent pipeline resulting in
+solver-ready input files for \code{\link[=teems_solve]{teems_solve()}}.
 }
 \examples{
 # See `vignette("something")` for examples and explanation
@@ -127,6 +122,5 @@ unlink(x = temp_dir, recursive = TRUE)
 
 }
 \seealso{
-\code{\link[=teems_deploy]{teems_deploy()}} for loading the output of this
-function.
+\code{\link[=teems_deploy]{teems_deploy()}} for loading the output of this function.
 }

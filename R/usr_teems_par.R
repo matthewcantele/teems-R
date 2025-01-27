@@ -97,9 +97,9 @@ stopifnot(is.logical(x = RORDELTA))
 call <- match.call()
 args_list <- mget(x = names(x = formals()))
 RORDELTA <- as.integer(x = RORDELTA)
-args_list[["par_har"]] <- .check_required_file(file = par_har,
-                                               ext = "har",
-                                               call = call)
+args_list[["par_har"]] <- .check_input_file(file = par_har,
+                                            ext = "har",
+                                            call = call)
 config <- args_list
 config
 }

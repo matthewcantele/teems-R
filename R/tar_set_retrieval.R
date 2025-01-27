@@ -95,6 +95,13 @@
     model_sets[["CGDS_COMM"]] <- data.table::data.table(H9 = "zcgds",
                                                         mapping = "zcgds")
 
+    # model_sets[["PROD_COMM"]] <- data.table::rbindlist(l = list(model_sets[["TRAD_COMM"]],
+    #                                                         model_sets[["CGDS_COMM"]]),
+    #                                                    use.names = FALSE)
+    # data.table::setnames(x = model_sets[["PROD_COMM"]],
+    #                      old = "H2",
+    #                      new = "H5")
+
     tradeables_col <- colnames(x = model_sets[["TRAD_COMM"]])[1]
     model_sets[["MARG_COMM"]] <- subset(x = model_sets[["TRAD_COMM"]],
                                         subset = {

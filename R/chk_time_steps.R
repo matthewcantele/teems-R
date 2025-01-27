@@ -46,6 +46,7 @@
   }
 
 ls_int <- list(t0 = t0,
+               time_steps = time_steps,
                CPHI = CPHI,
                KAPPA = KAPPA,
                LRORG = LRORG)

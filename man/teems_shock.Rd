@@ -82,7 +82,7 @@ path_to_har <- file.path(temp_dir, "gdset.har")
 # Where specified, set names must conform to the
 # "mixed_format" style outputted here:
 teems_query(component = "var",
-            model = "GTAPv62",
+            model = "GTAPv6.2",
             name = "afeall")
 
 invisible(teems_sets(set_har = path_to_har,

@@ -84,7 +84,8 @@
       data_type = "dat",
       tib_data = init.base_tib,
       sets = final.set_tib,
-      coeff_list = tablo_coeff
+      coeff_list = tablo_coeff,
+      data_format = metadata[["model_version"]]
     ))
   ))
 

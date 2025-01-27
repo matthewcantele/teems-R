@@ -71,23 +71,16 @@ path-dependent pipeline resulting in solver-ready input files for
 \code{\link[=teems_solve]{teems_solve()}}.
 }
 \examples{
-# See `vignette("something")` for examples and explanation
+# See `vignette("teems-input_files")` for examples and explanation
 
-temp_dir <- tools::R_user_dir(package = "teems", "cache")
-if (!dir.exists(temp_dir)) {
-  dir.create(temp_dir)
-}
-file.copy(from = c(teems_example(path = "gddat.har"),
-                   teems_example(path = "SAVE.csv"),
-                   teems_example(path = "SAVE_preagg.csv"),
-                   teems_example(path = "SAVE_postagg.csv")),
-          to = temp_dir)
-path_to_har <- file.path(temp_dir, "gddat.har")
+files <- c("gddat.har", "SAVE.csv", "SAVE_preagg.csv", "SAVE_postagg.csv")
+paths <- sapply(X = files, FUN = teems_example, simplify = FALSE)
+list2env(x = paths, envir = environment())
 
 # Renaming existing data headers and coefficients can be useful
 # to distinguish from existing variables (e.g., pop) or for header
 # and coefficient consistency (e.g., VTWR, VTMFSD).
-base_config <- teems_base(dat_har = path_to_har,
+base_config <- teems_base(dat_har = gddat.har,
                           header_rename = c("POP" = "TPOP"),
                           coefficient_rename = c("POP" = "TPOP"))
 
@@ -95,17 +88,14 @@ base_config <- teems_base(dat_har = path_to_har,
 # post-aggregation. Pre-aggregation data must contain all tuples of
 # the data that it is to replace, including a `Value` column. Set
 # names must follow the `teems` convention (see vignette).
-original_SAVE <- file.path(temp_dir, "SAVE.csv")
-preagg_SAVE <- file.path(temp_dir, "SAVE_preagg.csv")
-head(read.csv(original_SAVE))
-head(read.csv(preagg_SAVE))
+head(read.csv(SAVE.csv))
+head(read.csv(SAVE_preagg.csv))
 
-base_config <- teems_base(dat_har = path_to_har,
-                          preagg_data = c("SAVE" = preagg_SAVE))
+base_config <- teems_base(dat_har = gddat.har,
+                          preagg_data = c("SAVE" = SAVE_preagg.csv))
 
 # Post-aggregation data must contain all tuples of the aggregated
 # data that it is to replace, including a `Value` column.
-postagg_SAVE <- file.path(temp_dir, "SAVE_postagg.csv")
 
 # sample region mapping
 reg_mapping <- teems_query(component = "mapping",
@@ -114,14 +104,14 @@ reg_mapping <- teems_query(component = "mapping",
 head(read.csv(postagg_SAVE))
 head(reg_mapping)
 all(is.element(el = reg_mapping[["big3"]],
-               set = read.csv(postagg_SAVE)[["REGr"]]))
+               set = read.csv(SAVE_postagg.csv)[["REGr"]]))
 
 base_config <- teems_base(dat_har = path_to_har,
-                          postagg_data = c("SAVE" = postagg_SAVE))
+                          postagg_data = c("SAVE" = SAVE_postagg.csv))
 
 # When `verbose` == `TRUE`, the detected GTAP Database version,
 # reference year, and data format will be printed to the console.
-base_config <- teems_base(dat_har = path_to_har,
+base_config <- teems_base(dat_har = gddat.har,
                           verbose = TRUE)
 
 unlink(x = temp_dir, recursive = TRUE)

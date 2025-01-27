@@ -18,7 +18,6 @@
                             tib_data,
                             sets,
                             postagg_header_replace) {
-
   # sum value columns by sets (condition for whether weighted aggregated occurs)
   # take unique values for others
   if (identical(x = data_type, y = "par")) {

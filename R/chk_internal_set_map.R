@@ -18,17 +18,23 @@
   available_mappings <- colnames(x = set_mappings)[-1]
 
   if (!is.element(el = mapping, set = available_mappings)) {
+    .dev_trace()
     cli::cli_abort(
-      c(
-        "The internal mapping selected: {.val {mapping}}, for set: {set} does not exist.",
-        "Available mappings for {set} include {.val {available_mappings}}"
+      c("x" = "The internal mapping selected: {.val {mapping}}, for set: {set} does not exist.",
+        "i" = "Available mappings for {set} include {.val {available_mappings}}"
       ),
       # add information for what the mappings are ??mappings
       call = call
     )
   } else {
+    sel_mapping <- set_mappings[, mget(x = c(colnames(x = set_mappings)[1], ..mapping))]
+    file <- paste(database_version, mapping, sep = "_")
+    set_file <- .teems_cache(input = sel_mapping,
+                             file = file,
+                             ext = "csv",
+                             dir = "mappings")
     set_ele <- as.list(x = unique(x = set_mappings[, ..mapping]))
-    names(x = set_ele) <- set
+    names(x = set_ele) <- set_file
   }
   return(set_ele)
 }

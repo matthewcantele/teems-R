@@ -43,8 +43,8 @@
   target_closure <- rlang::expr(targets::tar_target_raw(
     name = "closure",
     command = expression(expr = {
-      tail(head(closures[[!!tab_file]], -3), -1)
-      })
+      .infer_closure(tab_file = !!tab_file)
+    })
   ))
   }
 
