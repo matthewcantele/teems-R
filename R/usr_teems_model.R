@@ -111,40 +111,35 @@
 #' @export
 teems_model <- function(tab_file,
                         model_version = NULL,
-                        ndigits = 6,
+                        ndigits = 6L,
                         full_exclude = c("DREL", "DVER", "XXCR", "XXCD", "XXCP", "SLUG"),
                         notes = NULL,
-                        sets_csv_name = "sets.csv",
-                        data_csv_name = "basedata.csv",
-                        parameter_csv_name = "parameters.csv",
-                        int_data_csv_name = "time_data.csv",
-                        int_parameter_csv_name= "int_parameters.csv",
                         quiet = FALSE)
 {
-stopifnot(is.numeric(x = floor(x = ndigits)))
 call <- match.call()
 args_list <- mget(x = names(x = formals()))
+.check_missing_args(call = call,
+                    args_list = args_list)
+stopifnot(is.numeric(x = ndigits) && identical(x = ndigits, y = as.integer(ndigits)))
 if (grepl(pattern = "\\.tab", x = tab_file)) {
-tab_file <- .check_input_file(file = tab_file,
-                              ext = "tab",
-                              call = call)
+args_list[["tab_file"]] <- .check_input_file(file = tab_file,
+                                             ext = "tab",
+                                             call = call)
 } else {
-tab_file <-  .check_internal_file(file = tab_file,
-                                  ext = "tab",
-                                  call = call)
+args_list[["tab_file"]] <- .check_internal_file(file = tab_file,
+                                                ext = "tab",
+                                                call = call)
 }
-intertemporal <- any(grepl(pattern = "(intertemporal)", x = readLines(con = tab_file)))
 if (!is.null(x = model_version)) {
   match.arg(arg = model_version, choices = c("v6.2", "v7.0"))
 } else {
-  args_list[["model_version"]] <- .get_model_version(tab_file = tab_file,
+  args_list[["model_version"]] <- .get_model_version(tab_file = args_list[["tab_file"]],
                                                      call = call,
                                                      quiet = quiet)
 }
-.inform_temp_dyn(intertemporal = intertemporal,
+.inform_temp_dyn(tab_file = args_list[["tab_file"]],
                  call = call,
                  quiet = quiet)
-args_list_append <- list(intertemporal = intertemporal)
-config <- c(args_list, args_list_append)
+config <- c(args_list, call = call)
 config
 }
