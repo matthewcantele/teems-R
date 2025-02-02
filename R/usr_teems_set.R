@@ -19,7 +19,13 @@
 #' @param endowment_mapping Character of length 1, name of internal
 #'   endowment mapping (see [`teems_query()`]) or path to a two-column
 #'   csv representing a database-specific endowment mapping.
-#'
+#' @param time_steps Integer vector of variable length (default is `NULL`).
+#'   `"time_steps"` are inputted as the desired chronological years of steps
+#'   including initial reference year.
+#' @param interval_switch Logical length 1 (default is `FALSE`). Switch
+#'   controlling interpretation of `"time_steps"` input. When `TRUE`, each
+#'   element of `"time_steps"` is interpreted as an interval between 2 time
+#'   steps.
 #' @importFrom rlang current_env
 #'
 #' @return A list of set configuration options.
@@ -64,20 +70,29 @@ teems_sets <- function(set_har,
                        region_mapping,
                        sector_mapping,
                        endowment_mapping,
+                       time_steps = NULL,
+                       interval_switch = FALSE,
                        quiet = FALSE)
 {
 call <- match.call()
 args_list <- mget(x = names(x = formals()))
-args_list[["set_har"]] <- .check_input_file(file = set_har,
-                                            ext = "har",
-                                            call = call)
-database_version <- .get_metadata(con = args_list[["set_har"]])[["database.version"]]
-browser()
+args_list[["set_har"]] <- .check_input(file = set_har,
+                                       ext = "har",
+                                       call = call,
+                                       internal = FALSE)
+metadata <- .get_metadata(con = args_list[["set_har"]])
 args_list <- .check_set_mappings(args_list = args_list,
-                                 database_version = database_version,
+                                 database_version = metadata[["database.version"]],
                                  call = call,
                                  envir = rlang::current_env(),
                                  quiet = quiet)
+if (!is.null(x = time_steps)) {
+args_list[["time_steps"]] <- .check_time_steps(t0 = metadata[["reference.year"]],
+                                               time_steps = time_steps,
+                                               interval_switch = interval_switch,
+                                               call = call,
+                                               quiet = quiet)
+}
 config <- args_list
 config
 }
