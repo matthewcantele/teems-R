@@ -174,7 +174,6 @@
     name = "write.dat",
     command = expression(.ragged_write(
       dat = final.base_tib,
-      file_name = tab_file_check[["GTAPDATA"]],
       out_dir = !!write_dir,
       ndigits = !!ndigits
     )),

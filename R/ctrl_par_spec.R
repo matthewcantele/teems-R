@@ -183,7 +183,6 @@
     name = "write.par",
     command = expression(.ragged_write(
       dat = final.par_tib,
-      file_name = tab_file_check[["GTAPPARM"]],
       out_dir = !!write_dir,
       ndigits = !!ndigits
     )),

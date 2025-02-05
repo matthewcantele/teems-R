@@ -1,35 +1,22 @@
-#' Write Data to File
-#'
-#' This function writes data to a file in a specific format based on the 'idx'
-#' parameter.
-#'
-#' @inheritParams teems_model
-#'
-#' @param dat A list containing data.tables to be written to file.
-#' @param file_name A string specifying the name of the output file.
-#' @param out_dir A string specifying the directory where the output file will
-#'   be written.
-#'
 #' @importFrom purrr pmap
 #' @importFrom data.table fwrite setorder dcast.data.table uniqueN
-#' @return The write_path of the written file.
+#' 
 #' @keywords internal
 #' @noRd
 .ragged_write <- function(dat,
                           ndigits,
-                          file_name,
                           out_dir) {
-  browser()
-  # write to
-  write_path <- file.path(out_dir, file_name)
 
-  purrr::pmap(
+  paths <- purrr::pmap(
     .l = list(
       dat[["dt"]],
       dat[["lead"]],
-      dat[["idx"]]
+      dat[["idx"]],
+      dat[["input_file"]]
     ),
-    .f = function(dt, lead, idx) {
+    .f = function(dt, lead, idx, file) {
+      write_path <- file.path(out_dir, paste0(file, ".txt"))
+      
       # column names for the algo
       if (!identical(x = colnames(x = dt), y = "Value")) {
         dtColnames <- setdiff(x = colnames(x = dt), y = "Value")
@@ -144,5 +131,5 @@
     }
   )
 
-  return(write_path)
+  return(unlist(x = paths))
 }

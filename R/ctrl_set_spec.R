@@ -168,7 +168,6 @@
     name = "write.sets",
     command = expression(.write_sets(
       sets = final.set_tib,
-      file_name = tab_file_check[["GTAPSETS"]],
       out_dir = !!write_dir
     )),
     format = "file"
