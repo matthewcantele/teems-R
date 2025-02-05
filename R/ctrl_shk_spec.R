@@ -95,10 +95,9 @@
       input = constructed.shocks[["shocks"]],
       ndigits = !!ndigits,
       file = constructed.shocks[["shock_file"]],
-      write_object = "shk",
+      write_object = "shock",
       write_dir = !!write_dir
     )),
-    format = "file",
     cue = targets::tar_cue(mode = "always")
   ))
   ##############################################################################

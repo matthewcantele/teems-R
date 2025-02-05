@@ -63,10 +63,9 @@
     command = expression(.TEEMS_write(
       input = final.tablo,
       file = parsed.tablo[["tab_file"]],
-      write_object = "tab",
+      write_object = "tabfile",
       write_dir = !!launchpad_dir
     )),
-    format = "file",
     cue = targets::tar_cue(mode = "always")
   ))
 

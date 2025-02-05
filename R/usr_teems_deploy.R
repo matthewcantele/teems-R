@@ -280,6 +280,7 @@ targets <- .write_pipeline(model_config = model_config,
                            teems_paths = teems_paths)
 cmf_path  <- .execute_pipeline(teems_paths = teems_paths,
                                model_name = model_name,
+                               metadata = metadata,
                                quiet = quiet,
                                .testing = .testing)
 cmf_path

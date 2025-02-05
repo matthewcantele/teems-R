@@ -28,7 +28,7 @@
     cat(input,
       file = write_path,
       sep = "\n")
-    } else if (identical(x = write_object, y = "shk")) {
+    } else if (identical(x = write_object, y = "shock")) {
       if (!is.null(x = input)) {
         for (shk in input) {
           if (identical(x = shk[["type"]], y = "uniform")) {
@@ -56,12 +56,12 @@
             sep = "\n",
             append = FALSE)
       }
-  } else if (is.element(el = write_object, set = c("cls", "tab"))) {
+  } else if (is.element(el = write_object, set = c("closure", "tabfile"))) {
     writeLines(
       text = input,
       con = write_path
     )
   }
-
+  names(x = write_path) <- write_object
   return(write_path)
 }

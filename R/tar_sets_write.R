@@ -59,5 +59,5 @@
       return(path)
     }
   )
-  return(unlist(x = paths))
+  return(unique(x = unlist(x = paths)))
 }

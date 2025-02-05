@@ -1,5 +1,4 @@
 #' @importFrom targets tar_read
-#' @importFrom purrr compact
 .cmf_write <- function(tab_file = NULL,
                        closure_file = NULL,
                        shock_file = NULL,
@@ -57,16 +56,15 @@
 
   if (!in_situ) {
     # io files
-    io_files <- list(
-      GTAPDATA = targets::tar_read(write.dat, store = store_dir),
-      GTAPPARM = targets::tar_read(write.par, store = store_dir),
-      GTAPSETS = targets::tar_read(write.sets, store = store_dir),
-      INTPARM = targets::tar_read(write.int_par, store = store_dir),
-      INTDATA = targets::tar_read(write.int_dat, store = store_dir)
-    )
-
-    # remove int if static
-    io_files <- purrr::compact(.x = io_files)
+    io_files <- c(targets::tar_read(write.base, store = store_dir),
+                  targets::tar_read(write.par, store = store_dir),
+                  targets::tar_read(write.set, store = store_dir))
+    
+    io_names <- sapply(X = io_files,
+                       FUN = function(f) {sub(pattern = ".txt",
+                                              replacement = "",
+                                              x = basename(path = f))})
+    names(x = io_files) <- io_names
   } else {
     # launchpad_dir for user-provided same as tab file
     parsed.tablo <- .parse_tablo(tab_file = tab_file)
@@ -95,15 +93,11 @@
 
   if (!in_situ) {
     # tab, closure, and shock
-    cmf_components <- paste(c("tabfile", "closure", "shock"), paste0(
-      '"',
-      c(
-        targets::tar_read(write.tablo, store = store_dir),
-        targets::tar_read(write.closure, store = store_dir),
-        targets::tar_read(write.shocks, store = store_dir)
-      ),
-      '";'
-    ))
+    cmf_components <- c(targets::tar_read(write.tablo, store = store_dir),
+                        targets::tar_read(write.closure, store = store_dir),
+                        targets::tar_read(write.shocks, store = store_dir))
+    
+    cmf_components <- paste(names(cmf_components), paste0("\"", cmf_components, "\"", ";"))
   } else {
     cmf_components <- paste(c("tabfile", "closure", "shock"), paste0('"', c(tab_file, closure_file, shock_file), '";'))
   }
@@ -168,15 +162,12 @@
 
   cmf_file <- paste0(model_name, ".cmf")
 
-  .TEEMS_write(
+  cmf_path <- .TEEMS_write(
     input = cmf,
     file = cmf_file,
     write_object = "cmf",
     write_dir = launchpad_dir
   )
-
-  # full cmf path
-  cmf_path <- file.path(launchpad_dir, cmf_file)
 
   gen_out <- list(cmf_path = cmf_path, io_files = io_files)
 

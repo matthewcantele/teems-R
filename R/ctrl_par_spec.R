@@ -186,7 +186,7 @@
       out_dir = !!write_dir,
       ndigits = !!ndigits
     )),
-    format = "file"
+    cue = targets::tar_cue(mode = "always")
   ))
 
   ##############################################################################

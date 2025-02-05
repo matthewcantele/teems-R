@@ -171,13 +171,13 @@
 
   # write data
   t_write.dat <- rlang::expr(targets::tar_target_raw(
-    name = "write.dat",
+    name = "write.base",
     command = expression(.ragged_write(
       dat = final.base_tib,
       out_dir = !!write_dir,
       ndigits = !!ndigits
     )),
-    format = "file"
+    cue = targets::tar_cue(mode = "always")
   ))
 
   ##############################################################################

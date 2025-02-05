@@ -8,6 +8,7 @@
                                   store_dir,
                                   pipeline_file,
                                   io_files,
+                                  metadata,
                                   verbose) {
 
   tab_path <- file.path(launchpad_dir,
@@ -21,7 +22,6 @@
   param <- subset(x = coeff,
                   subset = {is.element(el = file, set = "GTAPPARM")})
 
-  metadata <- targets::tar_read(name = metadata, store = store_dir)
   closure <- tar_read(name = final.closure, store = store_dir)
   closure <- head(tail(closure, -1), -3)
   shocks <- targets::tar_read(name = constructed.shocks, store = store_dir)[[1]]

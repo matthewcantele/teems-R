@@ -165,12 +165,12 @@
 
   # Write sets
   t_write.sets <- rlang::expr(targets::tar_target_raw(
-    name = "write.sets",
+    name = "write.set",
     command = expression(.write_sets(
       sets = final.set_tib,
       out_dir = !!write_dir
     )),
-    format = "file"
+    cue = targets::tar_cue(mode = "always")
   ))
 
   ##############################################################################

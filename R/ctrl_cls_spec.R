@@ -92,10 +92,9 @@
     command = expression(.TEEMS_write(
       input = final.closure,
       file = paste0(!!model_name, ".cls"),
-      write_object = "cls",
+      write_object = "closure",
       write_dir = !!write_dir
     )),
-    format = "file",
     cue = targets::tar_cue(mode = "always")
   ))
 
