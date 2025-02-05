@@ -76,23 +76,25 @@ teems_sets <- function(set_har,
 {
 call <- match.call()
 args_list <- mget(x = names(x = formals()))
+.check_missing_args(call = call,
+                    args_list = args_list)
 args_list[["set_har"]] <- .check_input(file = set_har,
-                                       ext = "har",
+                                       valid_ext = "har",
                                        call = call,
                                        internal = FALSE)
 metadata <- .get_metadata(con = args_list[["set_har"]])
 args_list <- .check_set_mappings(args_list = args_list,
-                                 database_version = metadata[["database.version"]],
+                                 database_version = metadata[["database_version"]],
                                  call = call,
                                  envir = rlang::current_env(),
                                  quiet = quiet)
 if (!is.null(x = time_steps)) {
-args_list[["time_steps"]] <- .check_time_steps(t0 = metadata[["reference.year"]],
+args_list[["time_steps"]] <- .check_time_steps(t0 = metadata[["reference_year"]],
                                                time_steps = time_steps,
                                                interval_switch = interval_switch,
                                                call = call,
                                                quiet = quiet)
 }
-config <- args_list
+config <- c(args_list, call = call)
 config
 }

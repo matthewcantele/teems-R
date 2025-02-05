@@ -158,7 +158,7 @@ list(
              },
              format = "file"),
 
-  tar_target(name = closures,
+  tar_target(name = internal_cls,
              command = {
                cls <- lapply(X = closure_files,
                              FUN = function(closure) {
@@ -461,7 +461,7 @@ list(
                                  var_extracts,
                                  param_weights,
                                  int_params,
-                                 closures,
+                                 internal_cls,
                                  set_conversion,
                                  param_conversion,
                                  base_conversion,

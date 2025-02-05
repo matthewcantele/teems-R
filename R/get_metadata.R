@@ -2,7 +2,8 @@
 #'
 #' @keywords internal
 #' @noRd
-.get_metadata <- function(con) {
+.get_metadata <- function(con,
+                          model_version = NULL) {
   # map connection to data type (GTAP database file naming is inconsistent across releases)
   data_type <- .har_match(con = con)
 
@@ -332,10 +333,21 @@
                         DVER = DVER,
                         data_type = data_type)
 
-  metadata[["orig.database.version"]] <- metadata[["database.version"]]
-  metadata[["database.version"]] <- gsub(pattern = "(\\d.*?)[A-Za-z]",
+  metadata[["full_database_version"]] <- metadata[["database_version"]]
+  metadata[["database_version"]] <- gsub(pattern = "(\\d.*?)[A-Za-z]",
                                          replacement = "\\1",
-                                         x = metadata[["database.version"]])
+                                         x = metadata[["database_version"]])
+  
+  if (!is.null(x = model_version)) {
+    metadata[["model_version"]] <- model_version
+    
+    if (!identical(x = metadata[["data_format"]],
+                   y = metadata[["model_version"]])) {
+      metadata[["convert"]] <- TRUE
+    } else {
+      metadata[["convert"]] <- FALSE
+    }
+  }
 
   return(metadata)
 }

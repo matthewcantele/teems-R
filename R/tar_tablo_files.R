@@ -1,9 +1,3 @@
-#' .parse_tablo function
-#'
-#' This function extracts key set and subset components from the model Tablo file.
-#'
-#' @param parsed_tablo Parsed Tablo file produced by \code{.parse_tablo()}.
-#'
 #' @importFrom purrr map
 #' @return A list containing the original Tablo data, the extracted components,
 #'   and the file name.
@@ -19,6 +13,7 @@
   })
 
   files[["names"]] <- trimws(x = purrr::map(sapply(X = files[["remainder"]], FUN = strsplit, split = " "), 1))
+  browser()
   files[["remainder"]] <- .advance_remainder(
     type = "files",
     pattern = files[["names"]]

@@ -21,5 +21,12 @@
 
     metadata[["model_version"]] <- model_version
 
+    if (!identical(x = metadata[["data_format"]],
+                   y = metadata[["model_version"]])) {
+      metadata[["conversion"]] <- TRUE
+    } else {
+      metadata[["conversion"]] <- FALSE
+    }
+
     return(metadata)
 }

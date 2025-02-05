@@ -5,12 +5,13 @@
 \title{Load data specifications}
 \usage{
 teems_base(
+  ...,
   dat_har,
   header_rename = NULL,
   coefficient_rename = NULL,
   preagg_data = NULL,
   postagg_data = NULL,
-  verbose = FALSE
+  quiet = FALSE
 )
 }
 \arguments{
@@ -48,8 +49,8 @@ data to be replaced as well as a "Value" column with new values.
 This replacement will be subject to structure checks according to
 selected set aggregations.}
 
-\item{verbose}{Logical of length 1 (default is \code{FALSE}). If \code{TRUE} output
-function-specific diagnostics.}
+\item{quiet}{Logical of length 1 (default is \code{FALSE}). If \code{TRUE},
+function-specific diagnostics are silenced.}
 }
 \value{
 A list of basedata configuration options.

@@ -7,6 +7,7 @@
                          file,
                          ext,
                          dir) {
+
   teems_cache <- tools::R_user_dir(package = "teems", which = "cache")
   object_cache <- file.path(teems_cache, dir)
   if (!dir.exists(paths = object_cache)) {
@@ -14,7 +15,7 @@
   }
   file_path <- file.path(object_cache, paste(file, ext, sep = "."))
 
-  if (identical(x = ext, y = "tab")) {
+  if (is.element(el = ext, set = c("tab", "cls"))) {
   writeLines(text = input,
              con = file_path)
   } else if (identical(x = ext, y = "csv")) {

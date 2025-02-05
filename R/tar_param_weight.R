@@ -121,7 +121,7 @@
   )
 
   # weighted elasticities
-  par_weights <- subset(x = par_weights, select = c("header", "information", "coeff", "v_class"))
+  par_weights <- subset(x = par_weights, select = c("header", "information", "coeff", "v_class", "input_file"))
 
   # place elasticities ready for aggregation into main prm object
   r_idx <- match(x = names(x = elasticities), table = par_weights[["header"]])
@@ -134,12 +134,6 @@
   # consolidated
   par <- rbind(par_weights, other_par)
 
-  # RORDELTA (RDLT) binary switch if not 1 (default) or NULL (intertemporal)
-  if (is.element(el = "RDLT", set = par[["header"]])) {
-    if (!identical(x = as.numeric(x = RDLT), y = 1)) {
-      purrr::pluck(.x = par, "dt", "RDLT", "Value") <- RDLT
-    }
-  }
 
   return(par)
 }

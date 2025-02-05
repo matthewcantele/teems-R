@@ -29,7 +29,6 @@
                            model_sets,
                            margin_sectors = c("atp", "otp", "wtp"),
                            data_format) {
-
   r_idx <- match(x = names(x = set_mappings), table = model_sets[["name"]])
   set_headers <- model_sets[["header"]][r_idx]
 
@@ -46,8 +45,10 @@
           mapping <- data.table::fread(input = map)
 
           # tolower and no spaces for user-provided (internal already vetted)
-          mapping[["mapping"]] <- tolower(x = mapping[["mapping"]])
-          mapping[["mapping"]] <- gsub(pattern = " ", replacement = "_", x = mapping[["mapping"]])
+          mapping <- mapping[, lapply(.SD, function(m) {
+            m <- tolower(x = m)
+            m <- gsub(pattern = " ", replacement = "_", x = m)
+          })]
 
           # check user-provided mapping
           # str check
@@ -74,16 +75,6 @@
           }
           mapping_colnames <- c(colnames(set), "mapping")
           data.table::setnames(x = mapping, new = mapping_colnames)
-          return(mapping)
-        } else {
-          internal_map <- colnames(x = purrr::pluck(.x = mappings, database_version, data_format, set_name))
-          # pull mapping from internal data
-          mapping <- subset(
-            x = purrr::pluck(.x = mappings, database_version, data_format, set_name),
-            select = c(internal_map[1], map)
-          )
-
-          data.table::setnames(x = mapping, old = map, new = "mapping")
           return(mapping)
         }
       }

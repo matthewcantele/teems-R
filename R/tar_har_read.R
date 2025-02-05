@@ -17,7 +17,9 @@
 #' @noRd
 .read_har <- function(con,
                       header_rename,
-                      coefficient_rename) {
+                      coefficient_rename,
+                      full_exclude = NULL,
+                      append = NULL) {
 
   # map connection to data type (GTAP database file naming is inconsistent across releases)
   data_type <- .har_match(con = con)
@@ -383,6 +385,7 @@
 
       headers[[h]]$data <- m
     }
+    
     # records missing for the following parameter headers
     if (identical(x = data_type, y = "par")) {
       if (identical(x = purrr::pluck(headers, h, "header_name"), y = "RDLT")) {
@@ -414,10 +417,14 @@
 
   # renaming coefficients if coefficient_rename != NULL
   if (!is.null(x = coefficient_rename)) {
-    coefficient_names <- lapply(headers, function(h){h[["coefficient"]]})
+    coefficient_names <- lapply(headers, function(h) {
+      h[["coefficient"]]
+    })
     if (!all(is.element(el = names(x = coefficient_rename), set = coefficient_names))) {
-      errant_headers <- names(x = coefficient_rename)[!is.element(el = names(x = coefficient_rename),
-                                                                  set = coefficient_names)]
+      errant_headers <- names(x = coefficient_rename)[!is.element(
+        el = names(x = coefficient_rename),
+        set = coefficient_names
+      )]
       stop(paste("The header(s) specified for renaming:", errant_headers, "is(are) not found in the HAR file."))
     }
 
@@ -427,20 +434,26 @@
       r_idx <- match(x = old_coeff, table = coefficient_names)
       purrr::pluck(.x = headers, r_idx, "coefficient") <- new_coeff
     }
+  }
 
-    }
+  # drop records and unnecessary data
+  headers <- lapply(X = headers,
+                    FUN = function(h) {
+                      h <- h[!is.element(el = names(x = h), set = c("start", "binary", "records"))]
+                      return(h)
+                    })
 
-  # get metadata
-  # this data is not consistent across GTAP database releases
-  DREL <- purrr::pluck(.x = headers, "DREL", "data")
-  DVER <- purrr::pluck(.x = headers, "DVER", "data")
+  if (!is.null(x = append)) {
+    headers <- c(headers, append)
+  }
 
-  metadata <- .har_meta(DREL = DREL,
-                        DVER = DVER,
-                        data_type = data_type)
-
+  # full exclude
+  if (!is.null(x = full_exclude)) {
+    headers <- headers[!is.element(el = names(x = headers), set = full_exclude)]
+  }
+  
   # give attribute to list to carry on to subsequent function
-  attr(x = headers, "metadata") <- metadata
+  #attr(x = headers, "metadata") <- metadata
   attr(x = headers, "data_type") <- data_type
 
   return(headers)

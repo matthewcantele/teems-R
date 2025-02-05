@@ -16,6 +16,7 @@
 .write_sets <- function(sets,
                         file_name,
                         out_dir) {
+  browser()
   # write to
   path <- file.path(out_dir, file_name)
 

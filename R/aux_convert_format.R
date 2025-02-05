@@ -1,7 +1,13 @@
-.convert_data_format <- function(data,
-                                 data_format,
-                                 data_type) {
+#' @importFrom purrr pluck
+#' @importFrom data.table CJ copy rbindlist setnames merge.data.table
+#' 
+#' @keywords internal
+#' @noRd
+.convert_format <- function(data,
+                            data_format) {
 
+  data_type <- attr(x = ls_array, "data_type")
+  
   if (identical(x = data_format, y = "v6.2")) {
     if (identical(x = data_type, y = "set")) {
 
@@ -309,5 +315,7 @@
   }
   names(x = data) <- sapply(X = data,
                            FUN = function(x){x[["header_name"]]})
+  
+  attr(x = data, which = "data_type") <- data_type
   return(data)
 }

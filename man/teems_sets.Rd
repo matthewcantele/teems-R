@@ -9,7 +9,9 @@ teems_sets(
   region_mapping,
   sector_mapping,
   endowment_mapping,
-  verbose = FALSE
+  time_steps = NULL,
+  interval_switch = FALSE,
+  quiet = FALSE
 )
 }
 \arguments{
@@ -28,8 +30,17 @@ csv representing a database-specific sector mapping.}
 endowment mapping (see \code{\link[=teems_query]{teems_query()}}) or path to a two-column
 csv representing a database-specific endowment mapping.}
 
-\item{verbose}{Logical of length 1 (default is \code{FALSE}). If \code{TRUE} output
-function-specific diagnostics.}
+\item{time_steps}{Integer vector of variable length (default is \code{NULL}).
+\code{"time_steps"} are inputted as the desired chronological years of steps
+including initial reference year.}
+
+\item{interval_switch}{Logical length 1 (default is \code{FALSE}). Switch
+controlling interpretation of \code{"time_steps"} input. When \code{TRUE}, each
+element of \code{"time_steps"} is interpreted as an interval between 2 time
+steps.}
+
+\item{quiet}{Logical of length 1 (default is \code{FALSE}). If \code{TRUE},
+function-specific diagnostics are silenced.}
 }
 \value{
 A list of set configuration options.
@@ -70,14 +81,6 @@ set_config <- teems_sets(set_har = path_to_har,
                          region_mapping = "AR5",
                          sector_mapping = file.path(temp_dir, "usr_mapping.csv"),
                          endowment_mapping = "labor_agg")
-
-# When `verbose` == `TRUE`, the detected GTAP Database version,
-# reference year, and data format will be printed to the console.
-set_config <- teems_sets(set_har = path_to_har,
-                         region_mapping = "AR5",
-                         sector_mapping = file.path(temp_dir, "usr_mapping.csv"),
-                         endowment_mapping = "labor_agg",
-                         verbose = TRUE)
 
 unlink(x = temp_dir, recursive = TRUE)
 

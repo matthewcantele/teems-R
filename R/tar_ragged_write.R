@@ -19,6 +19,7 @@
                           ndigits,
                           file_name,
                           out_dir) {
+  browser()
   # write to
   write_path <- file.path(out_dir, file_name)
 

@@ -247,137 +247,40 @@ teems_deploy <- function(model_config,
                          param_config,
                          set_config,
                          closure_config = NULL,
-                         time_config = NULL,
                          model_name = "teems",
                          base_dir = tempdir(),
-                         verbose = FALSE,
+                         quiet = FALSE,
                          .testing = FALSE)
 {
-if (missing(x = model_config)) {
-  stop("Argument 'model_config' is missing.")
-  }
-if (missing(x = base_config)) {
-  stop("Argument 'base_config' is missing.")
-  }
-if (missing(x = param_config)) {
-  stop("Argument 'param_config' is missing.")
-  }
-if (missing(x = set_config)) {
-  stop("Argument 'set_config' is missing.")
-  }
-if (missing(x = closure_config)) {
-  message("Argument 'closure_config' is missing. A NULL shock and standard closure will be used.")
-}
-if (model_config[["intertemporal"]]) {
-  model_config[["full_exclude"]] <- c(model_config[["full_exclude"]], "RDLT", "RFLX")
-  model_config[["temporal_dynamics"]] <- "intertemporal"
-  if (missing(x = time_config)) {
-    stop(
-      paste(
-        "Argument 'time_config' is missing.",
-        dQuote(x = "intertemporal"),
-        "model runs require time step specifications."
-      )
-    )
-  }
-} else {
-  model_config[["temporal_dynamics"]] <- "static"
-}
-if (!identical(x = base_dir, y = tempdir())) {
-  base_dir <- path.expand(path = base_dir)
-  if (!dir.exists(path = base_dir)) {
-    stop("Base_dir not found.")
-  }
-}
-model_dir <- file.path(base_dir, model_name)
-pipeline_file <- file.path(model_dir, paste0(model_name, ".R"))
-store_dir <- file.path(model_dir, "store")
-launchpad_dir <- file.path(model_dir, "launchpad")
-if (!dir.exists(paths = model_dir)) {
-    dir.create(path = model_dir, recursive = TRUE)
-  }
-if (dir.exists(paths = launchpad_dir)) {
-    unlink(x = launchpad_dir, recursive = TRUE, force = TRUE)
-  }
-dir.create(path = file.path(launchpad_dir, "out", "coefficients"),
-           recursive = TRUE)
-dir.create(path = file.path(launchpad_dir, "out", "variables", "bin"),
-           recursive = TRUE)
-tar_model_config <- .model_config(
-  config = model_config,
-  launchpad_dir = launchpad_dir)
-tar_set_config <- .set_config(
-  config = set_config,
-  temporal_dynamics = model_config[["temporal_dynamics"]],
-  full_exclude = model_config[["full_exclude"]],
-  write_dir = launchpad_dir)
-tar_param_config <- .param_config(
-  config = param_config,
-  ndigits = model_config[["ndigits"]],
-  full_exclude = model_config[["full_exclude"]],
-  write_dir = launchpad_dir)
-tar_data_config <- .base_config(
-  config = base_config,
-  ndigits = model_config[["ndigits"]],
-  full_exclude = model_config[["full_exclude"]],
-  write_dir = launchpad_dir)
-tar_time_config <- .time_config(
-  config = time_config,
-  temporal_dynamics = model_config[["temporal_dynamics"]],
-  ndigits = model_config[["ndigits"]],
-  write_dir = launchpad_dir)
-tar_closure_config <- .closure_config(
-  config = closure_config,
-  tab_file = model_config[["tab_file"]],
-  write_dir = launchpad_dir,
-  model_name = model_name)
-tar_shock_config <- .shock_config(
-  shock = closure_config[["shock"]],
-  shock_file = closure_config[["shock_file"]],
-  temporal_dynamics = model_config[["temporal_dynamics"]],
-  ndigits = model_config[["ndigits"]],
-  write_dir = launchpad_dir)
-targets <- c(
-  tar_model_config,
-  tar_set_config,
-  tar_param_config,
-  tar_data_config,
-  tar_time_config,
-  tar_closure_config,
-  tar_shock_config)
-targets::tar_config_set(
-  store = store_dir,
-  config = file.path(base_dir, "_targets.yaml"),
-  project = model_name)
-targets::tar_helper(path = pipeline_file, {
-  targets::tar_option_set(
-    format = "qs",
-    memory = "transient",
-    garbage_collection = TRUE,
-    envir = getNamespace(name = "teems")
-  )
-  !!targets
-})
-if (!.testing) {
-  targets::tar_make(
-    script = pipeline_file,
-    store = store_dir)
-} else {
-  targets::tar_make(
-    script = pipeline_file,
-    callr_function = NULL,
-    store = store_dir)
-}
-gen_out <- .cmf_write(model_name = model_name,
-                      model_dir = model_dir,
-                      store_dir = store_dir,
-                      launchpad_dir = launchpad_dir)
-.pipeline_diagnostics(model_dir = model_dir,
-                      launchpad_dir = launchpad_dir,
-                      model_name = model_name,
-                      store_dir = store_dir,
-                      io_files = gen_out[["io_files"]],
-                      verbose = verbose)
-cmf_path <- gen_out[["cmf_path"]]
+call <- match.call()
+args_list <- mget(x = names(x = formals()))
+.check_missing_args(call = call,
+                    args_list = args_list)
+
+teems_paths <- .path_ledger(base_dir = base_dir,
+                            model_name = model_name,
+                            call)
+closure_config <- .assert_config(model_config = model_config,
+                                 set_config = set_config,
+                                 closure_config = closure_config,
+                                 base_dir = teems_paths[["base"]],
+                                 store_dir = teems_paths[["store"]],
+                                 model_name = model_name,
+                                 call = set_config[["call"]],
+                                 quiet = quiet)
+metadata <- .get_metadata(con = base_config[["dat_har"]],
+                          model = model_config[["model_version"]])
+targets <- .write_pipeline(model_config = model_config,
+                           base_config = base_config,
+                           param_config = param_config,
+                           set_config = set_config,
+                           closure_config = closure_config,
+                           shock_config = shock_config,
+                           metadata = metadata,
+                           teems_paths = teems_paths)
+cmf_path  <- .execute_pipeline(teems_paths = teems_paths,
+                               model_name = model_name,
+                               quiet = quiet,
+                               .testing = .testing)
 cmf_path
 }

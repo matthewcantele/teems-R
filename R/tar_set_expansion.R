@@ -1,24 +1,18 @@
-#' ExpandSets function
-#'
-#' This function expands sets based on their definitions. It handles both
-#' non-inter-temporal and inter-temporal sets. It also sorts sets, handles
-#' compound set components, and generates sets based on set formulas.
-#'
-#' @param nonint_sets A data frame of non-inter-temporal sets.
-#' @param int_sets A data frame of inter-temporal sets, default is NULL.
-#' @param set_extract A list containing set information to be expanded.
-#'
 #' @importFrom purrr pmap list_flatten
-#' @return A list of expanded sets.
+#' 
 #' @keywords internal
 #' @noRd
-.expand_sets <- function(nonint_sets,
-                       int_sets = NULL,
-                       set_extract) {
-  if (!is.null(x = int_sets)) {
-    sets <- rbind(nonint_sets, int_sets)
-  } else {
-    sets <- nonint_sets
+.expand_sets <- function(sets,
+                         time_steps,
+                         set_extract) {
+
+  if (!is.null(x = time_steps)) {
+    time_sets <- subset(x = set_extract,
+                        subset = {is.element(el = qualifier,
+                                             set = "(intertemporal)")})
+    int_sets <- .fill_time_sets(time_steps = time_steps,
+                                time_sets = time_sets)
+    sets <- rbind(sets, int_sets)
   }
 
   # remove "=,),(" from definitions
@@ -152,8 +146,8 @@
   }
 
   # bind non-int set mapping to a single object
-  r_idx <- match(x = toupper(x = set_extract[["header"]]), table = toupper(x = nonint_sets[["header"]]))
-  set_extract[["full_sets"]] <- nonint_sets[["full_sets"]][r_idx]
+  r_idx <- match(x = set_extract[["header"]], table = sets[["header"]])
+  set_extract[["full_sets"]] <- sets[["full_sets"]][r_idx]
 
   return(set_extract)
 }

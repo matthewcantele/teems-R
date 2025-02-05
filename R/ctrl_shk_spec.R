@@ -18,11 +18,10 @@
 .shock_config <- function(shock,
                           shock_file,
                           ndigits,
-                          temporal_dynamics,
                           write_dir) {
 
   if (!is.null(x = shock_file)) {
-    target_shock_file <- rlang::expr(targets::tar_target_raw(
+    t_shock_file <- rlang::expr(targets::tar_target_raw(
       name = "shock_file",
       command = quote(expr = !!shock_file),
       format = "file"
@@ -31,7 +30,7 @@
 
   if (!is.null(x = shock)) {
   # shock files need to be tracked via targets
-  target_shocks <- rlang::expr(targets::tar_target_raw(
+    t_shocks <- rlang::expr(targets::tar_target_raw(
     name = "shocks",
     command = quote(expr = !!shock),
     cue = targets::tar_cue(mode = "always")
@@ -39,7 +38,7 @@
 
   # run series of checks on specified variables, sets, and elements
   # currently only functional for sets defined in model config, see set expansion
-  target_prepped.shocks <- rlang::expr(targets::tar_target_raw(
+    t_prepped.shocks <- rlang::expr(targets::tar_target_raw(
     name = "prepped.shocks",
     command = expression(.shock_prep(
       shocks = shocks,
@@ -48,7 +47,7 @@
     cue = targets::tar_cue(mode = "always")
   ))
 
-  target_constructed.shocks <- rlang::expr(targets::tar_target_raw(
+    t_constructed.shocks <- rlang::expr(targets::tar_target_raw(
     name = "constructed.shocks",
     command = expression(.shock_construct(
       shock_list = prepped.shocks,
@@ -61,13 +60,13 @@
   ))
   } else {
     if (!is.null(x = shock_file)) {
-      target_shocks <- rlang::expr(targets::tar_target_raw(
+      t_shocks <- rlang::expr(targets::tar_target_raw(
         name = "shocks",
         command = expression(readLines(con = shock_file)),
         cue = targets::tar_cue(mode = "always")
       ))
 
-      target_constructed.shocks <- rlang::expr(targets::tar_target_raw(
+      t_constructed.shocks <- rlang::expr(targets::tar_target_raw(
         name = "constructed.shocks",
         command = expression({
           return(list(shocks = list(user = list(shock = shocks,
@@ -77,7 +76,7 @@
         cue = targets::tar_cue(mode = "always")
       ))
     } else {
-    target_constructed.shocks <- rlang::expr(targets::tar_target_raw(
+      t_constructed.shocks <- rlang::expr(targets::tar_target_raw(
       name = "constructed.shocks",
       command = expression({
         return(list(shocks = NULL,
@@ -90,7 +89,7 @@
   }
 
   # Write shock(s)
-  target_write.shocks <- rlang::expr(targets::tar_target_raw(
+  t_write.shocks <- rlang::expr(targets::tar_target_raw(
     name = "write.shocks",
     command = expression(.TEEMS_write(
       input = constructed.shocks[["shocks"]],
@@ -104,6 +103,6 @@
   ))
   ##############################################################################
   # gather and check all generated targets
-  targets <- .gather_targets(criteria = "target_")
+  targets <- .gather_targets(criteria = "t_")
   return(targets)
 }

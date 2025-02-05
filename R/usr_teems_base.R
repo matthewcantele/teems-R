@@ -98,7 +98,8 @@
 #' unlink(x = temp_dir, recursive = TRUE)
 #'
 #' @export
-teems_base <- function(dat_har,
+teems_base <- function(...,
+                       dat_har,
                        header_rename = NULL,
                        coefficient_rename = NULL,
                        preagg_data = NULL,
@@ -107,15 +108,25 @@ teems_base <- function(dat_har,
 {
 call <- match.call()
 args_list <- mget(x = names(x = formals()))
-args_list[["dat_har"]] <- .check_input_file(file = dat_har,
-                                            ext = "har",
-                                            call = call)
+if (!missing(...)) {
+  aux_dat <- unlist(x = ...)
+  args_list[["aux_base"]] <- .check_input(file = aux_dat,
+                                         valid_ext = c("har", "qs2"),
+                                         call = call,
+                                         internal = FALSE)
+} else {
+  args_list[["aux_base"]] <- NA
+}
+args_list["..."] <- NULL
+args_list[["dat_har"]] <- .check_input(file = dat_har,
+                                       valid_ext = "har",
+                                       call = call)
 metadata <- .get_metadata(con = dat_har)
 .check_database_version(vetted =  c("v9A", "v10A", "v11c"),
-                        provided = metadata[["orig.database.version"]],
+                        provided = metadata[["full_database_version"]],
                         quiet = quiet)
 .inform_metadata(metadata = metadata,
                  quiet = quiet)
-config <- args_list
+config <- c(args_list, call = call)
 config
 }

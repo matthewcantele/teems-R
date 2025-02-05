@@ -146,7 +146,9 @@
   coeff[["ls_mixed_idx"]] <- strsplit(x = coeff[["mixed_idx"]], split = ",")
 
   coeff[["mixed_idx"]] <- paste0("(", coeff[["mixed_idx"]], ")")
-
+  coeff[["data_type"]] <- ifelse(test = grepl(pattern = "parameter", coeff[["qualifier_list"]]),
+                                 yes = "par",
+                                 no = "dat")
   # full standard writeout
   data.table::setnames(x = coeff,
                        old = "remainder",
@@ -185,6 +187,7 @@
                                                   "header",
                                                   "information",
                                                   "file",
+                                                  "data_type",
                                                   "qualifier_list",
                                                   "full_set",
                                                   "mixed_idx",

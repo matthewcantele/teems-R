@@ -12,45 +12,94 @@
 #' @inheritParams teems_time
 #'
 #' @importFrom rlang expr
+#' @importFrom qs2 qd_read
 #' @importFrom targets tar_target_raw tar_cue
 #' @importFrom data.table fread
 #' @return A list of all generated targets within the data specification process.
 #' @keywords internal
 #' @noRd
 .base_config <- function(config,
-                         exclude_inactive,
+                         metadata,
                          ndigits,
                          full_exclude,
                          write_dir) {
-
   # track any changes to designated har files
-  target_base_file <- rlang::expr(targets::tar_target_raw(
+  t_base_file <- rlang::expr(targets::tar_target_raw(
     name = "base_file",
     command = quote(expr = !!config[["dat_har"]]),
     format = "file"
   ))
 
-  # convert binary har files to a list of arrays
-  target_base_array <- rlang::expr(targets::tar_target_raw(
-    name = "base_array",
-    command = expression(.read_har(
-      con = base_file,
-      header_rename = !!config[["header_rename"]],
-      coefficient_rename = !!config[["coefficient_rename"]]
+  if (!is.na(x = config[["aux_base"]])) {
+    t_aux_base_file <- rlang::expr(targets::tar_target_raw(
+      name = "aux_base_file",
+      command = quote(expr = !!config[["aux_base"]]),
+      format = "file"
+    ))
+
+    file_type <- attr(x = config[["aux_base"]], "file_ext")
+    if (identical(x = file_type, y = "har")) {
+      t_aux_base_array <- rlang::expr(targets::tar_target_raw(
+        name = "aux_base_array",
+        command = expression(.read_har(
+          con = aux_base_file,
+          header_rename = !!config[["header_rename"]],
+          coefficient_rename = !!config[["coefficient_rename"]]
+        ))
+      ))
+    } else if (identical(x = file_type, y = "qs2")) {
+      t_aux_base_array <- rlang::expr(targets::tar_target_raw(
+        name = "aux_base_array",
+        command = expression(qs2::qd_read(file = aux_base_file))
+      ))
+    }
+
+    # convert binary har files to a list of arrays and append
+    t_base_array <- rlang::expr(targets::tar_target_raw(
+      name = "base_array",
+      command = expression(.read_har(
+        con = base_file,
+        header_rename = !!config[["header_rename"]],
+        coefficient_rename = !!config[["coefficient_rename"]],
+        append = aux_base_array,
+        full_exclude = !!full_exclude
+      ))
+    ))
+  } else {
+    # convert binary har files to a list of arrays
+    t_base_array <- rlang::expr(targets::tar_target_raw(
+      name = "base_array",
+      command = expression(.read_har(
+        con = base_file,
+        header_rename = !!config[["header_rename"]],
+        coefficient_rename = !!config[["coefficient_rename"]],
+        full_exclude = !!full_exclude
+      ))
+    ))
+  }
+
+  t_base_mod <- rlang::expr(targets::tar_target_raw(
+    name = "mod.base_array",
+    command = expression(.modify_array(
+      ls_array = base_array,
+      database_version = !!metadata[["database_version"]],
+      sets = final.set_tib,
+      time_steps = time_steps,
+      base_year = !!metadata[["reference_year"]]
     ))
   ))
 
-  # extract metadata from dat headers
-  target_branched_metadata <- rlang::expr(targets::tar_target_raw(
-    name = "metadata",
-    command = expression(.extract_metadata(
-      ls_array = base_array,
-      model_version = parsed.tablo[["model_version"]]
+  t_base_setnames <- rlang::expr(targets::tar_target_raw(
+    name = "final.base_array",
+    command = expression(.update_set_names(
+      ls_array = mod.base_array,
+      coeff_extract = tablo_coeff,
+      metadata = !!metadata
     ))
   ))
 
   # extract coefficient information from tab file
-  target_tablo_coeff <- rlang::expr(targets::tar_target_raw(
+  t_tablo_coeff <- rlang::expr(targets::tar_target_raw(
     name = "tablo_coeff",
     command = expression(.tablo_coeff(
       parsed_tablo = parsed.tablo[["extract"]]
@@ -58,39 +107,59 @@
   ))
 
   # convert list of data arrays to structured data
-  target_ls_dat <- rlang::expr(targets::tar_target_raw(
-    name = "ls_dat",
+  t_ls_base <- rlang::expr(targets::tar_target_raw(
+    name = "ls_base",
     command = expression(.construct_dt(
-      ls_array = base_array,
-      metadata = metadata,
+      ls_array = final.base_array,
+      metadata = !!metadata,
       coeff_extract = tablo_coeff,
-      full_exclude = !!full_exclude
     ))
   ))
-
-  # construct tibbles from metadata and dts for each data type
-  target_init.base_tib <- rlang::expr(targets::tar_target_raw(
-    name = "init.base_tib",
-    command = expression(.build_tibble(
-      ls_data = ls_dat,
-      preagg_header_replace = !!config[["preagg_data"]]
+  
+  if (metadata[["convert"]]) {
+    t_ls_base <- rlang::expr(targets::tar_target_raw(
+      name = "converted.ls_base",
+      command = expression(.convert_data(
+        data = ls_base,
+        data_format = !!metadata[["data_format"]]
+      ))
     ))
-  ))
+    
+    # construct tibbles from metadata and dts for each data type
+    t_init.base_tib <- rlang::expr(targets::tar_target_raw(
+      name = "init.base_tib",
+      command = expression(.build_tibble(
+        ls_data = converted.ls_base,
+        preagg_header_replace = !!config[["preagg_data"]],
+        coeff_extract = tablo_coeff
+      ))
+    ))
+  } else {
+    # construct tibbles from metadata and dts for each data type
+    t_init.base_tib <- rlang::expr(targets::tar_target_raw(
+      name = "init.base_tib",
+      command = expression(.build_tibble(
+        ls_data = ls_base,
+        preagg_header_replace = !!config[["preagg_data"]],
+        coeff_extract = tablo_coeff
+      ))
+    ))
+  }
 
   # remove unnecessary headers and map new sets
-  target_prepped.base_tib <- rlang::expr(targets::tar_target_raw(
+  t_prepped.base_tib <- rlang::expr(targets::tar_target_raw(
     name = "prepped.base_tib",
     command = expression(.prep_data(
       data_type = "dat",
       tib_data = init.base_tib,
       sets = final.set_tib,
       coeff_list = tablo_coeff,
-      data_format = metadata[["model_version"]]
+      data_format = !!metadata[["model_version"]]
     ))
   ))
 
   # aggregate to new sets
-  target_final.base_tib <- rlang::expr(targets::tar_target_raw(
+  t_final.base_tib <- rlang::expr(targets::tar_target_raw(
     name = "final.base_tib",
     command = expression(.aggregate_data(
       data_type = "dat",
@@ -101,7 +170,7 @@
   ))
 
   # write data
-  target_write.dat <- rlang::expr(targets::tar_target_raw(
+  t_write.dat <- rlang::expr(targets::tar_target_raw(
     name = "write.dat",
     command = expression(.ragged_write(
       dat = final.base_tib,
@@ -114,6 +183,6 @@
 
   ##############################################################################
   # gather and check all generated targets
-  targets <- .gather_targets(criteria = "target_")
+  targets <- .gather_targets(criteria = "t_")
   return(targets)
 }

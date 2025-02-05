@@ -121,25 +121,16 @@ args_list <- mget(x = names(x = formals()))
 .check_missing_args(call = call,
                     args_list = args_list)
 stopifnot(is.numeric(x = ndigits) && identical(x = ndigits, y = as.integer(ndigits)))
-if (grepl(pattern = "\\.tab", x = tab_file)) {
-args_list[["tab_file"]] <- .check_input_file(file = tab_file,
-                                             ext = "tab",
-                                             call = call)
-} else {
-args_list[["tab_file"]] <- .check_internal_file(file = tab_file,
-                                                ext = "tab",
-                                                call = call)
-}
-if (!is.null(x = model_version)) {
-  match.arg(arg = model_version, choices = c("v6.2", "v7.0"))
-} else {
-  args_list[["model_version"]] <- .get_model_version(tab_file = args_list[["tab_file"]],
+args_list[["tab_file"]] <- .check_input(file = tab_file,
+                                        valid_ext = "tab",
+                                        call = call)
+args_list[["model_version"]] <- .check_model_version(tab_file = args_list[["tab_file"]],
+                                                     model_version = model_version,
                                                      call = call,
                                                      quiet = quiet)
-}
-.inform_temp_dyn(tab_file = args_list[["tab_file"]],
-                 call = call,
-                 quiet = quiet)
+args_list[["intertemporal"]] <- .inform_temp_dyn(tab_file = args_list[["tab_file"]],
+                                                 call = call,
+                                                 quiet = quiet)
 config <- c(args_list, call = call)
 config
 }

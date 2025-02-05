@@ -7,7 +7,7 @@
                                 args_list) {
   args_syms <- rlang::fn_fmls(fn = rlang::caller_fn())
   req_args <- vapply(X = args_syms,
-                     FUN = function(arg) {!is.null(arg) && arg == ""},
+                     FUN = function(arg) {!is.null(arg) && arg == "" },
                      FUN.VALUE = logical(1))
   
   missing_args <- names(x = args_list[req_args & args_list == ""])

@@ -13,9 +13,11 @@
 #'   classification of entry type
 #' @keywords internal
 #' @noRd
-.check_closure <- function(closure,
+.check_closure <- function(closure_file,
                            sets,
                            tab_file) {
+  
+  closure <- tail(head(readLines(con = closure_file), -3), -1)
   # expand standard closure to possible set and element combinations
   exogenous <- tibble::tibble(orig_closure = closure)
 

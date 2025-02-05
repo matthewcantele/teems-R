@@ -86,20 +86,34 @@
 #' unlink(x = temp_dir, recursive = TRUE)
 #'
 #' @export
-teems_param <- function(par_har,
+teems_param <- function(...,
+                        par_har,
                         RORDELTA = TRUE,
                         header_rename = NULL,
                         coefficient_rename = NULL,
                         preagg_data = NULL,
                         postagg_data = NULL)
 {
-stopifnot(is.logical(x = RORDELTA))
 call <- match.call()
 args_list <- mget(x = names(x = formals()))
+if (!missing(...)) {
+  aux_par <- unlist(x = ...)
+  args_list[["aux_par"]] <- .check_input(file = aux_par,
+                                         valid_ext = c("har", "qs2"),
+                                         call = call,
+                                         internal = FALSE)
+} else {
+  args_list[["aux_par"]] <- NA
+}
+args_list["..."] <- NULL
+.check_missing_args(call = call,
+                    args_list = args_list)
+stopifnot(is.logical(x = RORDELTA))
 RORDELTA <- as.integer(x = RORDELTA)
-args_list[["par_har"]] <- .check_input_file(file = par_har,
-                                            ext = "har",
-                                            call = call)
-config <- args_list
+args_list[["par_har"]] <- .check_input(file = par_har,
+                                       valid_ext = "har",
+                                       call = call,
+                                       internal = FALSE)
+config <- c(args_list, call = call)
 config
 }
