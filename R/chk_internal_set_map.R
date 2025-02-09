@@ -28,7 +28,7 @@
     )
   } else {
     sel_mapping <- set_mappings[, mget(x = c(colnames(x = set_mappings)[1], ..mapping))]
-    file <- paste(database_version, mapping, sep = "_")
+    file <- paste(database_version, set, mapping, sep = "_")
     set_file <- .teems_cache(input = sel_mapping,
                              file = file,
                              ext = "csv",

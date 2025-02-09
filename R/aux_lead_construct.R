@@ -54,7 +54,7 @@
   }
 
   # data type (int for binary switches or real for the rest)
-  if (identical(x = purrr::pluck(.x = dat, "v_class", header_name), y = "switch")) {
+  if (identical(x = purrr::pluck(.x = dat, "type", header_name), y = "2IFULL")) {
     numeric_type <- "Integer"
   }
 

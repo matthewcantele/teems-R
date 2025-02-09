@@ -6,30 +6,32 @@
 .build_tibble <- function(ls_data,
                           preagg_header_replace,
                           coeff_extract) {
-
   data_type <- attr(x = ls_data, which = "data_type")
 
   # header_replace if != NULL
   if (!is.null(x = preagg_header_replace)) {
     for (header in seq_along(preagg_header_replace)) {
-
       new_header <- preagg_header_replace[header]
       header_name <- names(x = new_header)
 
       # check that file exists
       if (!file.exists(new_header)) {
-        stop(paste("File with header replacement data for header:",
-                   header_name,
-                   "not found."))
+        stop(paste(
+          "File with header replacement data for header:",
+          header_name,
+          "not found."
+        ))
       }
 
       # load file
       new_header_data <- data.table::fread(input = new_header)
 
       if (!is.element(el = "Value", set = colnames(x = new_header_data))) {
-        stop(paste(dQuote(x = "Value"),
-                   "column missing from the pre-agg header:",
-                   header_name))
+        stop(paste(
+          dQuote(x = "Value"),
+          "column missing from the pre-agg header:",
+          header_name
+        ))
       }
 
       # load data to be replaced
@@ -42,9 +44,11 @@
         ignore.row.order = TRUE,
         ignore.col.order = TRUE
       ))) {
-        stop(paste("One or more columns and/or rows in the new pre-agg header data for:",
-                   header_name,
-                   "is inconsistent or missing."))
+        stop(paste(
+          "One or more columns and/or rows in the new pre-agg header data for:",
+          header_name,
+          "is inconsistent or missing."
+        ))
       }
 
       # replace data
@@ -58,34 +62,19 @@
       list(
         header = header[["header_name"]],
         information = header[["information"]],
-        coeff = header[["coefficient"]]
+        coeff = header[["coefficient"]],
+        type = header[["type"]],
+        aggregate = header[["aggregate"]]
       )
     } else {
       list(
         header = header[["header_name"]],
-        information = header[["information"]]
+        information = header[["information"]],
+        type = header[["type"]],
+        aggregate = header[["aggregate"]]
       )
     }
   }))
-
-  # har file specific value type for headers (e.g., monetary, elasticity)
-  # below will need revising for generalizability (pass in as separate parameter value target)
-  if (identical(x = data_type, y = "dat")) {
-    metadata[is.element(el = header, set = c("IRAT")), let(v_class = "int_rate")]
-    metadata[is.element(el = header, set = c("NTSP")), let(v_class = "int_constant")]
-    metadata[is.na(x = v_class), let(v_class = "quantity")]
-  } else if (identical(x = data_type, y = "par")) {
-    metadata[is.element(el = header, set = c("CPHI", "KAPP")), let(v_class = "rate")]
-    metadata[is.element(el = header, set = c("ESBD", "ESBM", "ESBT", "ESBV")), let(v_class = "CES")]
-    #metadata[is.element(el = header, set = c("ETA", "ETRE", "ETL1", "ETL2", "ETL3")), let(v_class = "CET")]
-    metadata[is.element(el = header, set = c("ETA", "ETRE")), let(v_class = "CET")]
-    metadata[is.element(el = header, set = c("INCP", "SUBP")), let(v_class = "CDE")]
-    # metadata[is.element(el = header, set = c("YDEL")), let(v_class = "YEL")]
-    metadata[is.element(el = header, set = c("RDLT", "INID")), let(v_class = "switch")]
-    # metadata[is.element(el = header, set = c("SLUG")), v_class := "switch"]
-    metadata[is.na(x = v_class), let(v_class = "other")]
-    # metadata[is.element(el = header, set = c('SLUG', 'RDLT')), v_class := 'switch']
-  }
 
   # convert to tibble
   tib_data <- tibble::as_tibble(x = metadata)
@@ -100,25 +89,27 @@
   if (any(is.na(x = r_idx))) {
     stop("NA found in match between metadata and data")
   }
-  
+
   # add write to file here
   r_idx <- match(x = tib_data[["header"]], table = coeff_extract[["header"]])
   tib_data[["input_file"]] <- coeff_extract[["file"]][r_idx]
-  
-  tib_data[["dt"]] <- lapply(X = ls_data, FUN = function(d) {d[["dt"]]})
+
+  tib_data[["dt"]] <- lapply(X = ls_data, FUN = function(d) {
+    d[["dt"]]
+  })
 
   # check for mismatches
-  if (!all(is.element(el = names(x = tib_data[["dt"]]),
-                     set = tib_data[["header"]]))) {
+  if (!all(is.element(
+    el = names(x = tib_data[["dt"]]),
+    set = tib_data[["header"]]
+  ))) {
     stop("Name mismatch after metadata/data merge")
   }
 
   # names for later
   names(x = tib_data[["information"]]) <- tib_data[["header"]]
-
-  if (!identical(x = data_type, y = "set")) {
-    names(x = tib_data[["v_class"]]) <- tib_data[["header"]]
-  }
+  names(x = tib_data[["type"]]) <- tib_data[["header"]]
+  names(x = tib_data[["aggregate"]]) <- tib_data[["header"]]
 
   # sort data
   lapply(X = tib_data[["dt"]], FUN = data.table::setkey)

@@ -446,6 +446,21 @@
   if (!is.null(x = append)) {
     headers <- c(headers, append)
   }
+  
+  # set type and aggregate
+  headers <- lapply(X = headers,
+                    FUN = function(h) {
+                      if (is.element(el = h[["type"]], set = c("1CFULL", "2IFULL"))) {
+                        h[["aggregate"]] <- FALSE
+                      } else if (!isFALSE(x = h[["aggregate"]])) {
+                        h[["aggregate"]] <- TRUE
+                      }
+                      return(h)
+                    })
+
+# 1CFULL = character
+# 2IFULL = integer
+# REFULL = real
 
   # full exclude
   if (!is.null(x = full_exclude)) {

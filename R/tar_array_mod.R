@@ -42,9 +42,6 @@
     ALLTIME <- purrr::pluck(.x = sets, "elements", "ALLTIME")
     n_time_steps <- length(x = time_steps) + 1
     if (identical(x = data_type, y = "dat")) {
-
-      # purrr::pluck(.x = ls_array, "CYRS", "data") <- array(data = base_year + c(0, cumsum(x = time_steps)),
-      #                                                      dimnames = list(ALLTIME = ALLTIME))
       purrr::pluck(.x = ls_array, "NTSP", "data") <- matrix(data = n_time_steps)
       purrr::pluck(.x = ls_array, "IRAT", "data") <- array(data = rep(purrr::pluck(.x = ls_array, "IRAT", "data"),
                                                                       n_time_steps),

@@ -7,9 +7,15 @@
 .construct_dt <- function(ls_array,
                           metadata,
                           coeff_extract,
-                          set_array = NULL) {
+                          sets = NULL) {
+
   # create list of data.tables from arrays
-  # uppercase 'Value' used to distinguish from automatically generated columns
+  if (!is.null(x = sets)) {
+  int_sets <- subset(x = sets,
+                     subset = intertemporal,
+                     select = name)[[1]]
+  }
+  
   data_type <- attr(x = ls_array, "data_type")
   ls_array <- lapply(X = ls_array, FUN = function(header) {
     dim_length <- length(x = dimnames(x = header[["data"]]))
@@ -22,7 +28,12 @@
         data.table::setnames(x = header[["dt"]], new = header[["header_name"]])
       }
     } else {
-            header[["dt"]] <- array2DF(x = header[["data"]])
+      header[["dt"]] <- array2DF(x = header[["data"]])
+      stnd_col <- substr(x = colnames(header[["dt"]]), start = 1, stop = nchar(colnames(header[["dt"]])) - 1)
+      if (any(is.element(el = stnd_col, set = int_sets))) {
+        int_col <- colnames(header[["dt"]])[is.element(el = stnd_col, set = int_sets)]
+        header[["dt"]][[int_col]] <- as.integer(x = header[["dt"]][[int_col]])
+      }
       data.table::setDT(x = header[["dt"]])
     } 
     return(header)

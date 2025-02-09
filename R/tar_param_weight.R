@@ -121,7 +121,7 @@
   )
 
   # weighted elasticities
-  par_weights <- subset(x = par_weights, select = c("header", "information", "coeff", "v_class", "input_file"))
+  par_weights <- subset(x = par_weights, select = c("header", "information", "coeff", "type", "aggregate", "input_file"))
 
   # place elasticities ready for aggregation into main prm object
   r_idx <- match(x = names(x = elasticities), table = par_weights[["header"]])

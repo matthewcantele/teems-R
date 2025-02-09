@@ -17,6 +17,7 @@
                      swap_in,
                      sets,
                      var_extract) {
+
   if (!is.null(x = swap_in)) {
     # convoluted but appears to work
     list_depth <- purrr::pluck_depth(x = swap_in)

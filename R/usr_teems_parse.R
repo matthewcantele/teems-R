@@ -28,6 +28,7 @@
 #' @export
 teems_parse <- function(cmf_path,
                         type = c("variable", "coefficient", "basedata")) {
+browser()
 type <- match.arg(arg = type)
 launchpad_dir <- dirname(path.expand(cmf_path))
 model_dir <- sub(pattern = "/launchpad", replacement = "", x = launchpad_dir)

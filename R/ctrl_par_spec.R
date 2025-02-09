@@ -100,7 +100,6 @@
     ))
   ))
 
-  
   # convert list of data arrays to structured data
   t_ls_par <- rlang::expr(targets::tar_target_raw(
     name = "ls_par",
@@ -108,7 +107,7 @@
       ls_array = final.par_array,
       metadata = !!metadata,
       coeff_extract = tablo_coeff,
-      set_array = set_array
+      sets = tablo_sets[["sets"]]
     ))
   ))
 

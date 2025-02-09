@@ -54,9 +54,9 @@
 
   # new set mappings (note use of is.character to differential set col from value col)
   tib_data[["dt"]] <- purrr::map2(.x = tib_data[["dt"]],
-                                  .y = tib_data[["v_class"]],
-                                  .f = function(dt, cls) {
-                                    if (!is.element(el = cls, set = c("int_rate", "int_constant"))) {
+                                  .y = tib_data[["aggregate"]],
+                                  .f = function(dt, agg) {
+                                    if (agg) {
                                     set_col_mixed <- colnames(x = dt)[sapply(X = dt, FUN = is.character)]
                                     for (c in seq_along(set_col_mixed)) {
                                       set_col <- set_col_mixed[c]

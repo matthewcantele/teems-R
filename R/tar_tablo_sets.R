@@ -187,8 +187,8 @@
     }
   })
 
+  sets[["intertemporal"]] <- is.element(el = sets[["qualifier"]], set = "(intertemporal)")
   sets[["data_type"]] <- "set"
-
   # other checks should include
   # le/ge/lt/gt in the RHS of formula
   # summation in formula headers

@@ -9,16 +9,21 @@
                          internal = TRUE) {
   arg <- as.character(x = substitute(expr = file))
   file_ext <- tolower(x = tools::file_ext(x = basename(path = file)))
-  if (!identical(x = file_ext, y = "")) {
-    file <- .check_usr_file(file = file,
-                            valid_ext = valid_ext,
-                            file_ext = file_ext,
-                            arg = arg,
-                            call = call)
+  numeric_ext <- !is.na(suppressWarnings(as.numeric(file_ext)))
+  if (!identical(x = file_ext, y = "") && !numeric_ext) {
+    file <- .check_usr_file(
+      file = file,
+      valid_ext = valid_ext,
+      file_ext = file_ext,
+      arg = arg,
+      call = call
+    )
   } else if (internal) {
-    file <- .check_internal_file(file = file,
-                                 ext = valid_ext,
-                                 call = call)
+    file <- .check_internal_file(
+      file = file,
+      ext = valid_ext,
+      call = call
+    )
   }
   return(file)
 }

@@ -40,12 +40,12 @@
                                       model_version = !!config[["model_version"]]))
   ))
 
-  t_tablo_files <- rlang::expr(targets::tar_target_raw(
-    name = "tablo_files",
-    command = expression(.tablo_files(
-      parsed_tablo = parsed.tablo[["extract"]]
-    ))
-  ))
+  # t_tablo_files <- rlang::expr(targets::tar_target_raw(
+  #   name = "tablo_files",
+  #   command = expression(.tablo_files(
+  #     parsed_tablo = parsed.tablo[["extract"]]
+  #   ))
+  # ))
 
   # Append "Write" statements
   t_final.tablo <- rlang::expr(targets::tar_target_raw(

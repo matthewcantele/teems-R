@@ -31,6 +31,14 @@
     command = quote(expr = !!config[["closure_file"]]),
     format = "file"
   ))
+  
+  t_closure <- rlang::expr(targets::tar_target_raw(
+    name = "closure",
+    command = expression(expr = {
+      closure <- tail(head(readLines(con = closure_file), -3), -1)
+      return(closure)
+    })
+  ))
 
   t_tablo_var <- rlang::expr(targets::tar_target_raw(
     name = "tablo_var",
@@ -42,7 +50,7 @@
   t_check.closure <- rlang::expr(targets::tar_target_raw(
     name = "checked.closure",
     command = expression(.check_closure(
-      closure_file = closure_file,
+      closure = closure,
       sets = final.set_tib
     ))
   ))

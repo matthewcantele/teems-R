@@ -113,6 +113,7 @@
       ls_array = final.base_array,
       metadata = !!metadata,
       coeff_extract = tablo_coeff,
+      sets = tablo_sets[["sets"]]
     ))
   ))
   

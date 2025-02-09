@@ -71,6 +71,7 @@
 # it's either all ALLTIMEt or not
   # non-Value, non-int columns
   # write function to go between REG to REGr for all sets
+  browser()
   non_int_sets <- toupper(x = unlist(x = subset(x = sets, subset = {
     is.element(el = qualifier, set = "(non_intertemporal)")
   }, select = name)))

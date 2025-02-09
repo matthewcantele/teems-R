@@ -18,7 +18,7 @@
                             tib_data,
                             sets,
                             postagg_header_replace) {
-  browser()
+
   # sum value columns by sets (condition for whether weighted aggregated occurs)
   # take unique values for others
   if (identical(x = data_type, y = "par")) {
@@ -37,23 +37,42 @@
       }
     })
   } else if (identical(x = data_type, y = "dat")) {
-    tib_data[["dt"]] <- lapply(X = tib_data[["dt"]], FUN = function(header) {
-      sets <- setdiff(x = colnames(x = header), y = "Value")
-      header <- header[, .(Value = sum(Value)), by = sets]
-      return(header)
-    })
+    tib_data[["dt"]] <- purrr::map2(
+      .x = tib_data[["dt"]],
+      .y = tib_data[["aggregate"]],
+      .f = function(dt, agg) {
+        if (agg) {
+          sets <- setdiff(x = colnames(x = dt), y = "Value")
+          dt <- dt[, .(Value = sum(Value)), by = sets]
+        }
+        return(dt)
+      }
+    )
   }
 
   # add ALLTIME to basedata headers
-  if (any(is.element(el = "(intertemporal)", set = sets[["qualifier"]]))) {
+  if (any(sets[["intertemporal"]])) {
+    int_sets <- toupper(x = subset(
+      x = sets,
+      subset = intertemporal,
+      select = name
+    )[[1]])
+    
     ALLTIMEt <- purrr::pluck(.x = sets, "elements", "ALLTIME")
-    tib_data[["dt"]] <- purrr::map2(
-      .x = tib_data[["dt"]],
-      .y = tib_data[["v_class"]],
-      .f = function(dt, cls) {
-        if (!is.element(el = cls, set = c("int_rate", "int_constant", "switch"))) {
+    
+    tib_data[["dt"]] <- lapply(
+      X = tib_data[["dt"]],
+      FUN = function(dt) {
+        stnd_col <- substr(
+          x = colnames(x = dt),
+          start = 1,
+          stop = nchar(colnames(x = dt)) - 1
+        )
+        if (!any(is.element(el = stnd_col, set = int_sets))) {
+          if (!identical(x = colnames(x = dt), y = "Value")) {
           set_col <- setdiff(x = colnames(x = dt), y = "Value")
           dt <- dt[, .(ALLTIMEt, Value), by = set_col]
+          }
         }
         return(dt)
       }

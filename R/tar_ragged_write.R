@@ -24,7 +24,7 @@
         dtColnames <- "Value"
       }
 
-      if (!is.integer(dt[["Value"]])) {
+      if (!grepl(pattern = "Integer", x = lead)) {
       # format values
       dt[, Value := format(
         round(Value, ndigits),
@@ -32,6 +32,8 @@
         nsmall = ndigits,
         scientific = FALSE
       )]
+      } else {
+        dt[, Value := as.integer(x = Value)]
       }
 
       if (!identical(x = idx, y = 0L)) {
@@ -82,7 +84,8 @@
         file = write_path,
         quote = FALSE,
         append = TRUE
-      )} else {
+      )
+      } else {
         data.table::setcolorder(x = dt, neworder = rev(x = colnames(x = dt[, !"Value"])))
         data.table::setorder(x = dt)
 

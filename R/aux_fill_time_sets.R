@@ -14,12 +14,15 @@
                                 dt <- data.table::data.table(Value = num_vec)
                                 return(dt)
                               })
+
   time_sets[["information"]] <- trimws(x = gsub(pattern = "#",
                                                 replacement =  "",
                                                 x = time_sets[["information"]]))
 
   int_sets <- tibble::tibble(header = time_sets[["name"]],
                              information = time_sets[["information"]],
+                             type = "2IFULL",
+                             aggregate = FALSE,
                              input_file = time_sets[["file"]],
                              dt = time_sets[["dt"]],
                              full_sets = NA,
