@@ -29,6 +29,7 @@
                            model_sets,
                            margin_sectors = c("atp", "otp", "wtp"),
                            data_format) {
+
   r_idx <- match(x = names(x = set_mappings), table = model_sets[["name"]])
   set_headers <- model_sets[["header"]][r_idx]
 
@@ -41,7 +42,6 @@
     .l = list(full_sets, set_mappings, names(x = full_sets)),
     .f = function(set, map, set_name) {
       if (!is.null(x = map)) {
-        if (grepl(pattern = "\\.csv", x = map)) {
           mapping <- data.table::fread(input = map)
 
           # tolower and no spaces for user-provided (internal already vetted)
@@ -76,7 +76,6 @@
           mapping_colnames <- c(colnames(set), "mapping")
           data.table::setnames(x = mapping, new = mapping_colnames)
           return(mapping)
-        }
       }
     }
   )

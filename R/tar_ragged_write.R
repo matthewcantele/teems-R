@@ -50,6 +50,7 @@
       )), "\\s")[[1]])
 
       if (!identical(x = dim_sizes, y = lead_dim)) {
+        # check duplicates as well and move this check to a prior function
         stop(
           cat(
             "Lead set dim and data dim mismatch detected.\nLead dim:",

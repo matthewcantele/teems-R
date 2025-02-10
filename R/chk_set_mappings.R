@@ -29,9 +29,9 @@
     .f = function(mapping, mapping_name)
     {
       if (identical(x = tolower(x = tools::file_ext(x = mapping)), y = "csv")) {
-        .check_input_file(file = mapping,
-                          ext = "csv",
-                          call = call)
+        .check_input(file = mapping,
+                     valid_ext = "csv",
+                     call = call)
         if (identical(x = mapping_name, y = "endowment_mapping")) {
           map <- .set_ele_read(file = mapping,
                                col = 2,

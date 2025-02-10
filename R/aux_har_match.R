@@ -7,6 +7,7 @@
                       "gdpar.har" = "par",
                       "gsdpar.har" = "par",
                       "gsdfpar.har" = "par",
+                      "gdpextra.har" = "par",
                       "gdset.har" = "set",
                       "gsdset.har" = "set",
                       "gsdfset.har" = "set",

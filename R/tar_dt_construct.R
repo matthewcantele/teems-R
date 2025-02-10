@@ -21,7 +21,7 @@
     dim_length <- length(x = dimnames(x = header[["data"]]))
     # set file
     if (identical(x = dim_length, y = 0L)) {
-      header[["dt"]] <- data.table::as.data.table(x = header[["data"]])
+      header[["dt"]] <- data.table::as.data.table(x = as.matrix(x = header[["data"]]))
       if (!identical(x = data_type, y = "set")) {
         data.table::setnames(x = header[["dt"]], new = "Value")
       } else if (identical(x = data_type, y = "set")) {

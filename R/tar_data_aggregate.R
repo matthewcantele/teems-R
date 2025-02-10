@@ -33,7 +33,9 @@
         d[, let(sigma = NULL, Weight = NULL)]
         d[is.nan(x = Value), let(Value = 1)] # for CGDS, return here
       } else {
-        unique(x = d)
+        # need a more systematic approach here
+        # need weights for RWQH and RWQF gdyn headers
+        d <- d[, .(Value = mean(Value)), by = setdiff(names(d), "Value")]
       }
     })
   } else if (identical(x = data_type, y = "dat")) {

@@ -24,6 +24,7 @@
 
   # check that information is available for each coefficient
   if (any(!grepl("#", coeff[["remainder"]]))) {
+    browser()
     stop("One or more variables or coefficients is missing a information - add # NA # if not descriptive information is available.")
   }
 

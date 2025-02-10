@@ -51,7 +51,7 @@
                                                            dimnames = list(ALLTIME = ALLTIME))
     }
   }
-  
+
   # CGDS to zcgds, lowercase
   ls_array <- lapply(X = ls_array,
                      FUN = function(header) {
@@ -60,13 +60,15 @@
                                                                   FUN = function(ele) {
                                                                     ele <- gsub(pattern = "CGDS",
                                                                                 replacement = "zcgds",
-                                                                                x = ele)
+                                                                                x = ele,
+                                                                                ignore.case = TRUE)
                                                                     ele <- tolower(x = ele)
                                                                   })
                        } else {
                          header[["data"]] <- tolower(x = gsub(pattern = "CGDS",
                                                               replacement = "zcgds",
-                                                              x = header[["data"]]))
+                                                              x = header[["data"]],
+                                                              ignore.case = TRUE))
                        }
                        return(header)
                      })

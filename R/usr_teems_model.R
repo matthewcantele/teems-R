@@ -107,7 +107,7 @@ call <- match.call()
 args_list <- mget(x = names(x = formals()))
 .check_missing_args(call = call,
                     args_list = args_list)
-stopifnot(is.numeric(x = ndigits) && identical(x = ndigits, y = floor(x = ndigits)))
+stopifnot(is.numeric(x = ndigits) && identical(x = ndigits, y = as.integer(x = floor(x = ndigits))))
 args_list[["tab_file"]] <- .check_input(file = tab_file,
                                         valid_ext = "tab",
                                         call = call)
