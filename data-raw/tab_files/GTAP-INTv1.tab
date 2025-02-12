@@ -4178,7 +4178,7 @@ Read
 Coefficient (all,t,ALLTIME)
     LRORG(t) # value of global interest rate #;
 Read
-    LRORG from file INTDATA header "IRAT";
+    LRORG from file INTPARM header "IRAT";
 
 Formula (all,r,REG)(all,t,ALLTIME)
     LINVPRC(r,t) = 1; !Normalised value of ps("zcgds",r,t)!

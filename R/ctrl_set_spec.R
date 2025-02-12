@@ -85,10 +85,10 @@
   ))
   
   if (metadata[["convert"]]) {
-    t_ls_set <- rlang::expr(targets::tar_target_raw(
+    t_converted.ls_set <- rlang::expr(targets::tar_target_raw(
       name = "converted.ls_set",
       command = expression(.convert_data(
-        data = ls_set,
+        ls_array = ls_set,
         data_format = !!metadata[["data_format"]]
       ))
     ))
@@ -99,7 +99,7 @@
       command = expression(.build_tibble(
         ls_data = converted.ls_set,
         preagg_header_replace = NULL,
-        coeff_extract = tablo_sets
+        coeff_extract = tablo_sets[["sets"]]
       ))
     ))
   } else {

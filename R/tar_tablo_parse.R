@@ -28,16 +28,11 @@
   # ############################################################################
 
   # check whether user-provided Tablo, and if exists else retrieve internal
-  if (grepl(pattern = "\\.tab", tab_file)) {
-      tab <- readChar(
-        con = tab_file,
-        nchars = file.info(tab_file)[["size"]]
-      )
-      tab_file <- basename(path = tab_file)
-  } else {
-    tab <- internal_tab[[tab_file]]
-    tab_file <- paste0(tab_file, ".tab")
-  }
+  tab <- readChar(
+    con = tab_file,
+    nchars = file.info(tab_file)[["size"]]
+  )
+  tab_file <- basename(path = tab_file)
 
   # remove comments
   n_comments <- paste(unlist(x = strsplit(x = tab, "![^!]*!", perl = TRUE)), collapse = "")
@@ -55,7 +50,8 @@
   statements <- gsub(pattern = "\r|\n", "", statements, perl = TRUE)
   statements <- statements[statements != ""]
   statements <- trimws(statements)
-
+  statements <- statements[statements != ""]
+  
   extract <- tibble::tibble(
     type = sapply(X = strsplit(x = statements, split = " ", perl = TRUE), "[[", 1),
     remainder = trimws(

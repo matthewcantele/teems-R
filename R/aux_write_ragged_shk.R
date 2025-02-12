@@ -138,6 +138,7 @@
     full_sets <- dtColnames[c(idx - 1, idx)]
     full_sets <- data.table::data.table(rep(full_sets[1], nrow(ele_table)), rep(full_sets[2], nrow(ele_table)))
     lead_table <- cbind(ele_table, full_sets)
+    var_name <- strsplit(x = var_name, split = "\\(")[[1]][1]
     leads <- paste("Shock", paste0(
       var_name,
       "(",

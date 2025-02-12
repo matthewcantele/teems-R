@@ -20,13 +20,25 @@ list(
   tar_target(name = data_format,
              command = c("v6.2", "v7.0")),
   # mapping related --------------------------------------------------
-  tar_target(name = mapping_files,
+  tar_target(name = mapping_repo,
              command = {
-               list.files(path = file.path("data-raw", "mappings", db_version),
+               list.files(path = file.path("../teems-mappings/", db_version),
                           full.names = TRUE,
                           recursive = TRUE)
              },
              pattern = map(db_version),
+             format = "file"),
+  
+  tar_target(name = mapping_files,
+             command = {
+               package_mappings <- file.path("data-raw", "mappings")
+               file.copy(from = mapping_repo,
+                         to = package_mappings,
+                         recursive = T)
+               list.files(path = package_mappings,
+                          recursive = TRUE,
+                          full.names = TRUE)
+             },
              format = "file"),
 
   tar_target(name = mappings,
@@ -34,9 +46,18 @@ list(
                                         db_version = db_version,
                                         data_format = data_format)),
   # tab related ------------------------------------------------------
+  tar_target(name = tab_repo,
+             command =  list.files(path = file.path("../teems-tabs/"),
+                                   full.names = TRUE),
+             format = "file"),
+  
   tar_target(name = tab_files,
              command = {
-               list.files(path = file.path("data-raw", "tab_files"),
+               package_tabs <- file.path("data-raw", "tab_files")
+               file.copy(from = tab_repo,
+                         to = package_tabs,
+                         recursive = TRUE)
+               list.files(path = package_tabs,
                           full.names = TRUE)
              },
              format = "file"),
@@ -109,52 +130,65 @@ list(
              }),
 
   # intertemporal ====================================================
-  tar_target(name = v1_int_param,
-             command = {
-               list(
-                 CPHI = list(
-                   header = "CPHI",
-                   information = "investment adjustment parameter",
-                   coeff = "CPHI",
-                   v_class = "rate",
-                   sets = c("REGr", "ALLTIMEt")
-                 ),
-                 INID = list(
-                   header = "INID",
-                   information = "binary switch mechanism for initial capital condition",
-                   coeff = "INIDELTA",
-                   v_class = "switch",
-                   sets = "null_set"
-                 ),
-                 IRAT = list(
-                   header = "IRAT",
-                   information = "long-term interest rate",
-                   coeff = "LRORG",
-                   v_class = "rate",
-                   sets = "ALLTIMEt"
-                 ),
-                 KAPP = list(
-                   header = "KAPP",
-                   information = "depreciation rate",
-                   coeff = "KAPPA",
-                   v_class = "rate",
-                   sets = c("REGr", "ALLTIMEt")
-                 )
-               )
-             }),
-
-  tar_target(name = v2_int_param,
-             command = NULL),
-
-  tar_target(name = int_params,
-             command = {
-               list(v1 = v1_int_param)
-             }),
+  # tar_target(name = v1_int_param,
+  #            command = {
+  #              list(
+  #                CPHI = list(
+  #                  header = "CPHI",
+  #                  information = "investment adjustment parameter",
+  #                  coeff = "CPHI",
+  #                  v_class = "rate",
+  #                  sets = c("REGr", "ALLTIMEt")
+  #                ),
+  #                INID = list(
+  #                  header = "INID",
+  #                  information = "binary switch mechanism for initial capital condition",
+  #                  coeff = "INIDELTA",
+  #                  v_class = "switch",
+  #                  sets = "null_set"
+  #                ),
+  #                IRAT = list(
+  #                  header = "IRAT",
+  #                  information = "long-term interest rate",
+  #                  coeff = "LRORG",
+  #                  v_class = "rate",
+  #                  sets = "ALLTIMEt"
+  #                ),
+  #                KAPP = list(
+  #                  header = "KAPP",
+  #                  information = "depreciation rate",
+  #                  coeff = "KAPPA",
+  #                  v_class = "rate",
+  #                  sets = c("REGr", "ALLTIMEt")
+  #                )
+  #              )
+  #            }),
+  # 
+  # tar_target(name = v2_int_param,
+  #            command = NULL),
+  # 
+  # tar_target(name = int_params,
+  #            command = {
+  #              list(v1 = v1_int_param)
+  #            }),
 
   # closures ---------------------------------------------------------
+  tar_target(name = closure_repo,
+             command = {
+               list.files(path = file.path("../teems-closures/"),
+                          full.names = TRUE)
+               
+             }),
+  
   tar_target(name = closure_files,
              command = {
-               list.files(path = "./data-raw/closures", full.names = TRUE)
+               package_closures <- file.path("data-raw", "closures")
+               file.copy(from = closure_repo,
+                         to = package_closures,
+                         recursive = T)
+               list.files(path = package_closures,
+                          recursive = TRUE,
+                          full.names = TRUE)
              },
              format = "file"),
 
@@ -316,7 +350,9 @@ list(
 
   # teems_closure()
   tar_target(name = GTAPv6.2_cls_file,
-             command = "./data-raw/closures/GTAPv6.2.cls",
+             command = {
+              closure_files[grepl(pattern = "v6.2", x = closure_files)]
+             },
              format = "file"),
 
   tar_target(name = GTAPv6.2_cls,
@@ -460,7 +496,7 @@ list(
                                  internal_tab,
                                  var_extracts,
                                  param_weights,
-                                 int_params,
+                                 #int_params,
                                  internal_cls,
                                  set_conversion,
                                  param_conversion,

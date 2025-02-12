@@ -34,6 +34,7 @@
   
   shock_targets <- .shock_config(shock = closure_config[["shock"]],
                                  shock_file = closure_config[["shock_file"]],
+                                 metadata = metadata,
                                  ndigits = model_config[["ndigits"]],
                                  write_dir = teems_paths[["launchpad"]])
   
@@ -53,6 +54,9 @@
     )
     !!targets
   })
+  
+  qs2::qs_save(object = metadata,
+               file = file.path(teems_paths[["launchpad"]], "metadata.qs2"))
   
   return(targets)
 }

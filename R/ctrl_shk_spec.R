@@ -17,6 +17,7 @@
 #' @noRd
 .shock_config <- function(shock,
                           shock_file,
+                          metadata,
                           ndigits,
                           write_dir) {
 
@@ -54,7 +55,8 @@
       closure = swapped.out.cls,
       var_extract = tablo_var,
       sets = final.set_tib,
-      time_coeff = time_coeff
+      param = final.par_tib,
+      reference_year = !!metadata[["reference_year"]]
     )),
     cue = targets::tar_cue(mode = "always")
   ))

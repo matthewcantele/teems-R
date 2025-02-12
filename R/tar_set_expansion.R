@@ -7,9 +7,7 @@
                          set_extract) {
 
   if (!is.null(x = time_steps)) {
-    time_sets <- subset(x = set_extract,
-                        subset = {is.element(el = qualifier,
-                                             set = "(intertemporal)")})
+    time_sets <- set_extract[set_extract[["intertemporal"]], ]
     int_sets <- .fill_time_sets(time_steps = time_steps,
                                 time_sets = time_sets)
     sets <- rbind(sets, int_sets)

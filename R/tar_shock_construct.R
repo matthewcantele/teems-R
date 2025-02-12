@@ -25,7 +25,8 @@
                              closure,
                              var_extract,
                              sets,
-                             time_coeff) {
+                             param,
+                             reference_year) {
   # initialize list (we could preallocate memory but performance gain is minimal)
   final_shocks <- list()
   counter <- 0
@@ -54,7 +55,8 @@
 
           if (identical(x = type, y = "scenario")) {
             value <- .convert_scenario(input = value,
-                                       time_coeff = time_coeff,
+                                       reference_year = reference_year,
+                                       AYRS = purrr::pluck(.x = param, "dt", "AYRS"),
                                        sets = sets)
             # now it is effectively a type "custom" shock
             type <- "custom"

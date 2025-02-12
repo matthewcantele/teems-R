@@ -3,13 +3,14 @@
 #' 
 #' @keywords internal
 #' @noRd
-.convert_data <- function(data,
-                          data_format) {
-  browser()
+.convert_data <- function(ls_array,
+                          data_format,
+                          coeff_extract) {
+
   data_type <- attr(x = ls_array, "data_type")
   ls_array <- .convert_format(
     data = ls_array,
-    data_format = metadata[["data_format"]],
+    data_format = data_format,
     data_type = data_type
   )
 
@@ -30,9 +31,14 @@
           ))
 
           extract_col <- purrr::pluck(coeff_extract[id, ], "ls_mixed_idx", 1)
+          if (!identical(x = extract_col, y = "ALLTIMEt")) {
+            extract_col <- setdiff(x = extract_col, y = "ALLTIMEt")
+          }
+          
           if (!identical(x = extract_col, y = "null_set")) {
             existing_col <- colnames(x = dat[["dt"]][, !"Value"])
             if (!identical(x = existing_col, y = extract_col)) {
+              browser()
               data.table::setnames(
                 x = dat[["dt"]],
                 old = existing_col,
@@ -45,6 +51,5 @@
       }
     )
   }
-
-  attr(x = ls_array, which = "data_type") <- data_type
+  return(ls_array)
 }

@@ -2,10 +2,10 @@
     ====================================
     Global Trade Analysis Project
     The GTAP Modeling Framework
-    Recursive Dynamic GTAP Version v3.6
+    Recursive Dynamic GTAP Version v3.1
     Data format: v6.2
-    May 2012
-    ====================================+
+    October 2006
+    ====================================
  
     For documentation see:
     (a) Hertel, T.W. and M.E. Tsigas "Structure of the Standard GTAP Model",
@@ -15,30 +15,13 @@
     Theory and Applications in A Dynamic Computable General Equilibrium Model.
     (c) Ianchovichina, E.I. and R. McDougall, "Theoretical Structure of Dynamic
     GTAP", GTAP Technical Paper No. 17, Dec. 2000
-    (d) Ianchovichina, E.; and Walmsley, T. L., (eds): Dynamic Modeling and 
-    Applications in Global Economic Analysis, Cambridge University Press, 2012. 
-
+ 
  
     --------------------
     HISTORY of this file
     --------------------
  
-    v.3.6 Zero divide added to avoid issues in Welfare decomp highlighted by 
-          Tingsong Jiang.  Correction made by Terrie Walmsley. 
-    v.3.5 Correction to DTOT by Terrie Walmsley. 
-    v.3.4 Correction for welfare decomp made by Terrie Walmsley. 
-    v3.4c is Complementarity version.
-    v3.4s is the New household savings behavior by Golub and McDougall
-         (see reference (d) above).
-
-    v3.3 Correction for income taxes made by Geert Woltjer. GDynView and 
-         Taxrates adjusted to be post sim with changes in RunGDyn.
-
-    v3.2 GDynView, GDynVol, Taxrates and welfare decomp post-sim processing 
-         included.
-
     v3.1 Complementarity removed and separate complementarity version made.
-    v3.1c is Complementarity version.
  
     v3.0 Dynamic GTAP version based on v6.2 of the standard GTAP model
  
@@ -93,9 +76,6 @@
         B.  Equivalent Variation
         C.  Welfare Decomposition
         D.  Terms of Trade Decomposition
-        E.  GDynView post-sim processing
-        F.  TAXRATES post-sim processing
-        G.  GDynVOL post-sim processing
 >!
  
  
@@ -149,14 +129,14 @@ File
     | ENDWM_COMM | ENDWS_COMM |
     |-------------------------|
 >!
- 
-!<
+
+!< 
 Coefficient
     VERNUM # version of GTAP data #;
 Read
     VERNUM from file GTAPDATA header "DVER";
-Update (change)
-    VERNUM = 0.0; force it to be copied to update file
+Update
+    VERNUM = 0.0; force it to be copied to update file 
 >!
  
 Set
@@ -230,15 +210,16 @@ Assertion (initial)
     SLUG.  SLUG is a binary variable that is zero for mobile endowments and
     one for sluggish endowments.  We must define and read in this variable
     before proceeding further.
->!
-!Coefficient (integer,parameter) (all,i,ENDW_COMM)
+
+Coefficient (integer,parameter) (all,i,ENDW_COMM)
     SLUG(i) # sluggish primary factor endowments #;
 Read
     SLUG from file GTAPPARM header "SLUG";
-
+ 
 Set
     ENDWS_COMM
-    # sluggish endowment commodities # = (all,i,ENDW_COMM: SLUG(i)>0);!
+    # sluggish endowment commodities # = (all,i,ENDW_COMM: SLUG(i)>0);
+>!
 Set
     ENDWS_COMM
     # sluggish endowment commodities # (land, natlres);
@@ -685,8 +666,6 @@ Variable (change) (all,r,REG)
     del_taxrimp(r) # change in ratio of import tax to INCOME #;
 Variable (change) (all,r,REG)
     del_taxrinc(r) # change in ratio of income tax to INCOME #;
-Variable (change) (all,r,REG)
-    del_taxrincc(r) # change in ratio of tax on capital to INCOME #;
  
  
 !<
@@ -2472,18 +2451,6 @@ Equation TINCRATIO
         = sum(i,ENDW_COMM,
             VOA(i,r) * [-to(i,r)] + PTAX(i,r) * [pm(i,r) + qo(i,r)]);
  
-Coefficient (all,r,REG)
-    TINCC(r) # income tax payments on capital income in r #;
-Formula (all,r,REG)
-    TINCC(r) = sum(i,ENDWC_COMM, PTAX(i,r));
-
-Equation TINCCRATIO
-# change in ratio of income tax payments to regional income #
-(all,r,REG)
-    100.0 * INCOME(r) * del_taxrincc(r) + TINCC(r) * y(r)
-        = sum(i,ENDWC_COMM,
-            VOA(i,r) * [-to(i,r)] + PTAX(i,r) * [pm(i,r) + qo(i,r)]);
-
 Coefficient (all,i,ENDW_COMM)(all,j,PROD_COMM)(all,r,REG)
     REVSHR(i,j,r) # NA #;
 Formula (all,i,ENDW_COMM)(all,j,PROD_COMM)(all,r,REG)
@@ -2581,8 +2548,7 @@ Equation TOTINCEQY
 Coefficient (all,r,REG)
     FY(r) # primary factor income in r #;
 Formula (all,r,REG)
-    FY(r) = sum(i,ENDW_COMM, VOM(i,r)) - sum(i,ENDWC_COMM, VOM(i,r))
-        + YQHHLD(r) + TINCC(r) ;
+    FY(r) = sum(i,ENDW_COMM, VOM(i,r)) - sum(i,ENDWC_COMM, VOM(i,r));
 Variable (all,r,REG)
     fincome(r) # factor income #;
 Equation FACTORINCOME
@@ -2590,11 +2556,8 @@ Equation FACTORINCOME
 (all,r,REG)
     FY(r) * fincome(r)
         = sum(i,ENDW_COMM, VOM(i,r) * [pm(i,r) + qo(i,r)])
-        - sum(i,ENDWC_COMM, VOM(i,r) * [pm(i,r) + qo(i,r)])
-        + YQHHLD(r)*yqh(r)+
-        + 100.0 * INCOME(r) * del_taxrincc(r)
-        + TINCC(r) * y(r) ;
-
+        - sum(i,ENDWC_COMM, VOM(i,r) * [pm(i,r) + qo(i,r)]);
+ 
 Variable (change)(all,r,REG)
     del_indtaxr(r) # change in ratio of indirect taxes to INCOME in r #;
 Equation DINDTAXRATIO
@@ -2634,9 +2597,11 @@ Equation REGIONALINCOME
 (all,r,REG)
     INCOME(r) * y(r)
         = FY(r) * fincome(r)
+        + YQHHLD(r)*yqh(r)
         + 100.0 * INCOME(r) * del_indtaxr(r)
         + INDTAX(r) * y(r)
         + INCOME(r) * incomeslack(r);
+ 
  
 !<
     7-4. Regional Household Demand System
@@ -4221,7 +4186,6 @@ Equation CNT_EV_cgdsr
         = [0.01 * EVSCALFACT(r)]
         * [NETINV(r) * [pcgds(r)] - SAVE(r) * [psave(r)]];
  
- 
 VARIABLE (LINEAR,CHANGE) (all,r,REG) CNTendwnar(r)
  # Contribution to regional EV of changes in all non-accum endowments # ;
 EQUATION CONT_EV_endwnar (all,r,REG)
@@ -4387,14 +4351,7 @@ Variable (linear,change) (all,r,REG)
 Equation CONT_EV_kbr
 (all,r,REG)
     CNTkbr(r) = - [0.01 * EVSCALFACT(r)] * VDEP(r) * [qk(r) - pop(r)];
-Variable (linear,change) (all,r,REG)
-    CNTendwr(r) # contribution to regional EV of changes in all ENDW_COMM #;
-Equation CONT_EV_endwr
-(all,r,REG)
-    CNTendwr(r)
-        = [0.01 * EVSCALFACT(r)]
-        * [sum(i,ENDW_COMM, VOA(i,r) * [qo(i,r) - pop(r)])
-            - VDEP(r) * [qk(r) - pop(r)]];
+ 
  
 !<
     -------------------------------
@@ -4574,9 +4531,10 @@ Equation TOT2eq
 # trade terms for region r, computed from components #
 (all,r,REG)
     tot2(r) = c1_r(r) + c2_r(r) - c3_r(r);
-
+ 
+ 
 !<
-    =====================
-    END OF GTAP.TAB FILE
-    =====================
+    ====================
+    END OF GDYN.TAB FILE
+    ====================
 >!

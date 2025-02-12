@@ -1,11 +1,13 @@
 #' @importFrom purrr pluck
 .convert_scenario <- function(input,
-                              time_coeff,
-                              sets) {
+                              reference_year,
+                              sets,
+                              AYRS) {
 
   # convert CYRS to ALLTIMEt
   # t0 timestep to remain unshocked
-  chron_yrs <- purrr::pluck(.x = time_coeff, "dt", "CYRS")
+  # function for this snippet below
+  chron_yrs <- AYRS[["Value"]] + reference_year
   # check that chronological years are provied
   if (!is.element(el = "CYRS", set = colnames(x = input))) {
     stop(
@@ -14,7 +16,8 @@
         "type shocks must contain a column CYRS representing chronological years."
       )
     )
-  } else if (!all(is.element(el = chron_yrs[["Value"]], set = input[["CYRS"]]))) {
+  } else if (!all(is.element(el = chron_yrs, set = input[["CYRS"]]))) {
+
     missing_yrs <- chron_yrs[["Value"]][!is.element(
       el = chron_yrs[["Value"]],
       set = input[["CYRS"]]
@@ -33,13 +36,14 @@
     subset = {
       is.element(
         el = CYRS,
-        set = chron_yrs[["Value"]]
+        set = chron_yrs
       )
     }
   )
-
-  r_idx <- match(x = input[["CYRS"]], table = chron_yrs[["Value"]])
-  input[["ALLTIMEt"]] <- chron_yrs[["ALLTIMEt"]][r_idx]
+  
+  AYRS[["CYRS"]] <- chron_yrs
+  r_idx <- match(x = input[["CYRS"]], table = AYRS[["CYRS"]])
+  input[["ALLTIMEt"]] <- AYRS[["ALLTIMEt"]][r_idx]
   input[, CYRS := NULL]
 
   set_maps <- subset(
@@ -71,7 +75,7 @@
 # it's either all ALLTIMEt or not
   # non-Value, non-int columns
   # write function to go between REG to REGr for all sets
-  browser()
+
   non_int_sets <- toupper(x = unlist(x = subset(x = sets, subset = {
     is.element(el = qualifier, set = "(non_intertemporal)")
   }, select = name)))

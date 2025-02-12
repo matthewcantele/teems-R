@@ -6,6 +6,7 @@
 .build_tibble <- function(ls_data,
                           preagg_header_replace,
                           coeff_extract) {
+
   data_type <- attr(x = ls_data, which = "data_type")
 
   # header_replace if != NULL

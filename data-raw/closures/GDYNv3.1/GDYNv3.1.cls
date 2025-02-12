@@ -36,6 +36,13 @@ swqh
 swqhf
 swqht
 time
+tf
+tpm
+tpd
+tgm
+tgd
+tfm
+tfd
 tm
 tms
 to

@@ -24,8 +24,9 @@
     store = store_dir,
     config = file.path(base_dir, "_targets.yaml"),
     project = model_name)
-  
-  if (is.null(x = closure_config)) {
+
+  if (is.null(x = closure_config) || is.null(x = closure_config[["closure_file"]])) {
+    if (is.null(x = closure_config)) {
     if (!quiet) {
       cli::cli_inform(
         c("i" = "{.arg closure_config} is not supplied so the
@@ -37,6 +38,15 @@
                       input files or parsing of model outputs.")
         # point to teems_parse options
       )
+    }
+    } else {
+      if (!quiet) {
+        cli::cli_inform(
+          c("i" = "{.arg closure_config} is not supplied so the
+                      standard closure will be used.")
+          # point to teems_parse options
+        )
+      }
     }
     tab_file <- rlang::call_args(model_config[["call"]])[["tab_file"]]
     closure <- .infer_closure(tab_file = tab_file)

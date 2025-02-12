@@ -112,11 +112,12 @@
   ))
 
   if (metadata[["convert"]]) {
-    t_ls_par <- rlang::expr(targets::tar_target_raw(
+    t_converted.ls_par <- rlang::expr(targets::tar_target_raw(
       name = "converted.ls_par",
       command = expression(.convert_data(
-        data = ls_par,
-        data_format = !!metadata[["data_format"]]
+        ls_array = ls_par,
+        data_format = !!metadata[["data_format"]],
+        coeff_extract = tablo_coeff
       ))
     ))
 

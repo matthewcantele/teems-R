@@ -41,10 +41,12 @@
   # set ALLTIME in premodel to -1
   pre_coeff <- lapply(X = pre_coeff, FUN = function(dt) {
     if (intertemporal) {
-      dt <- dt[ALLTIMEt == 0]
-      dt[, let(ALLTIMEt = -1)]
+      if (is.element(el = "ALLTIMEt", set = colnames(dt))) {
+        dt <- dt[ALLTIMEt == 0]
+        dt[, let(ALLTIMEt = -1)]
+        dt[, let(Year = ..reference_year)]
+      }
     }
-    dt[, let(Year = ..reference_year)]
     return(dt)
   })
 
@@ -91,7 +93,9 @@
     # include percentage change and move "Year" column
     lapply(X = post_base[["final_dat"]],
            FUN = function(dt) {
+             if (is.element(el = "Year", set = colnames(dt))) {
       data.table::setcolorder(dt, "Year", after = ncol(x = dt) - 1)
+             }
       data.table::setkey(x = dt)
       return(dt)
     })
