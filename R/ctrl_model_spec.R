@@ -40,19 +40,20 @@
                                       model_version = !!config[["model_version"]]))
   ))
 
-  # t_tablo_files <- rlang::expr(targets::tar_target_raw(
-  #   name = "tablo_files",
-  #   command = expression(.tablo_files(
-  #     parsed_tablo = parsed.tablo[["extract"]]
-  #   ))
-  # ))
-
+  # extract coefficient information from tab file
+  t_coeff_extract <- rlang::expr(targets::tar_target_raw(
+    name = "coeff_extract",
+    command = expression(.tablo_coeff(
+      parsed_tablo = parsed.tablo[["extract"]]
+    ))
+  ))
+  
   # Append "Write" statements
   t_final.tablo <- rlang::expr(targets::tar_target_raw(
     name = "final.tablo",
     command = expression(.append_tablo(
       tab = parsed.tablo[["tab"]],
-      coeff = tablo_coeff
+      coeff_extract = coeff_extract
     )),
     cue = targets::tar_cue(mode = "always")
   ))

@@ -84,8 +84,9 @@
     name = "mod.par_array",
     command = expression(.modify_array(
       ls_array = par_array,
-      database_version = !!metadata[["database_version"]],
+      metadata = !!metadata,
       set_array = set_array,
+      coeff_extract = coeff_extract,
       sets = final.set_tib,
       time_steps = time_steps
     ))
@@ -95,7 +96,7 @@
     name = "final.par_array",
     command = expression(.update_set_names(
       ls_array = mod.par_array,
-      coeff_extract = tablo_coeff,
+      coeff_extract = coeff_extract,
       metadata = !!metadata
     ))
   ))
@@ -106,18 +107,17 @@
     command = expression(.construct_dt(
       ls_array = final.par_array,
       metadata = !!metadata,
-      coeff_extract = tablo_coeff,
+      coeff_extract = coeff_extract,
       sets = tablo_sets[["sets"]]
     ))
   ))
 
-  if (metadata[["convert"]]) {
     t_converted.ls_par <- rlang::expr(targets::tar_target_raw(
-      name = "converted.ls_par",
+      name = "mod.ls_par",
       command = expression(.convert_data(
         ls_array = ls_par,
         data_format = !!metadata[["data_format"]],
-        coeff_extract = tablo_coeff
+        coeff_extract = coeff_extract
       ))
     ))
 
@@ -125,22 +125,12 @@
     t_init.par_tib <- rlang::expr(targets::tar_target_raw(
       name = "init.par_tib",
       command = expression(.build_tibble(
-        ls_data = converted.ls_par,
+        ls_data = mod.ls_par,
         preagg_header_replace = !!config[["preagg_data"]],
-        coeff_extract = tablo_coeff
+        coeff_extract = coeff_extract
       ))
     ))
-  } else {
-    # construct tibbles from metadata and dts for each data type
-    t_init.par_tib <- rlang::expr(targets::tar_target_raw(
-      name = "init.par_tib",
-      command = expression(.build_tibble(
-        ls_data = ls_par,
-        preagg_header_replace = !!config[["preagg_data"]],
-        coeff_extract = tablo_coeff
-      ))
-    ))
-  }
+
   
   # parameter value calculation
   t_weighted.par_tib <- rlang::expr(targets::tar_target_raw(
@@ -162,7 +152,7 @@
       data_type = "par",
       tib_data = weighted.par_tib,
       sets = final.set_tib,
-      coeff_list = tablo_coeff,
+      coeff_list = coeff_extract,
       data_format = !!metadata[["model_version"]]
     ))
   ))

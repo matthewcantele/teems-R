@@ -15,6 +15,7 @@
   data_type <- attr(x = ls_array, "data_type")
   list2env(x = metadata, envir = rlang::current_env())
   # ship this to internal data
+  browser()
   set_table <- tibble::tibble(v6.2_upper = c("TRAD_COMM", "PROD_COMM", "ENDW_COMM", "MARG_COMM", "ALLTIME"),
                               v6.2_mixed = c("TRAD_COMMi", "PROD_COMMj", "ENDW_COMMi", "MARG_COMMm", "ALLTIMEt"),
                               v7.0_upper = c("COMM", "ACTS", "ENDW", "MARG", "ALLTIME"),

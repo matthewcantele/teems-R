@@ -49,7 +49,6 @@
     command = quote(expr = !!config[["endowment_mapping"]]),
     format = "file"
   ))
-  
   t_time_steps <- rlang::expr(targets::tar_target_raw(
     name = "time_steps",
     command = quote(expr = !!config[["time_steps"]])
@@ -70,7 +69,8 @@
     name = "mod.set_array",
     command = expression(.modify_array(
       ls_array = set_array,
-      database_version = !!metadata[["database_version"]]
+      coeff_extract = coeff_extract,
+      metadata = !!metadata
     ))
   ))
 
@@ -84,35 +84,15 @@
     ))
   ))
   
-  if (metadata[["convert"]]) {
-    t_converted.ls_set <- rlang::expr(targets::tar_target_raw(
-      name = "converted.ls_set",
-      command = expression(.convert_data(
-        ls_array = ls_set,
-        data_format = !!metadata[["data_format"]]
-      ))
+  # construct tibbles from metadata and dts for each data type
+  t_init.set_tib <- rlang::expr(targets::tar_target_raw(
+    name = "init.set_tib",
+    command = expression(.build_tibble(
+      ls_data = ls_set,
+      preagg_header_replace = NULL,
+      coeff_extract = tablo_sets[["sets"]]
     ))
-    
-    # construct tibbles from metadata and dts for each data type
-    t_init.set_tib <- rlang::expr(targets::tar_target_raw(
-      name = "init.set_tib",
-      command = expression(.build_tibble(
-        ls_data = converted.ls_set,
-        preagg_header_replace = NULL,
-        coeff_extract = tablo_sets[["sets"]]
-      ))
-    ))
-  } else {
-    # construct tibbles from metadata and dts for each data type
-    t_init.set_tib <- rlang::expr(targets::tar_target_raw(
-      name = "init.set_tib",
-      command = expression(.build_tibble(
-        ls_data = ls_set,
-        preagg_header_replace = NULL,
-        coeff_extract = tablo_sets[["sets"]]
-      ))
-    ))
-  }
+  ))
 
   t_set_mappings <- rlang::expr(targets::tar_target_raw(
     name = "set_mappings",

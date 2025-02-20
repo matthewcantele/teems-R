@@ -3,17 +3,17 @@
 #' @keywords internal
 #' @noRd
 .modify_array <- function(ls_array,
-                          database_version,
                           sets,
+                          coeff_extract,
+                          metadata,
                           time_steps = NULL,
-                          base_year = NULL,
                           set_array = NULL) {
 
   data_type <- attr(x = ls_array, "data_type")
 
   if (identical(x = data_type, y = "par")) {
     # change ETRE set from ENDWS_COMM to ENDW_COMM and add null values for mobile factors
-    if (is.element(el = database_version, set = c("v9", "v10"))) {
+    if (is.element(el = metadata[["database_version"]], set = c("v9", "v10"))) {
       ETRE_data <- purrr::pluck(.x = ls_array, "ETRE", "data")
       ENDWS_dimnames <- unlist(x = dimnames(x = ETRE_data))
 
@@ -38,20 +38,15 @@
     }
   }
   
-  if (!is.null(x = time_steps)) {
-    ALLTIME <- purrr::pluck(.x = sets, "elements", "ALLTIME")
-    n_time_steps <- length(x = time_steps) + 1
-    if (identical(x = data_type, y = "dat")) {
-      purrr::pluck(.x = ls_array, "NTSP", "data") <- matrix(data = n_time_steps)
-      purrr::pluck(.x = ls_array, "IRAT", "data") <- array(data = rep(purrr::pluck(.x = ls_array, "IRAT", "data"),
-                                                                      n_time_steps),
-                                                           dimnames = list(ALLTIME = ALLTIME))
-    } else  if (identical(x = data_type, y = "par")) {
-      purrr::pluck(.x = ls_array, "AYRS", "data") <- array(data = c(0, cumsum(x = time_steps)),
-                                                           dimnames = list(ALLTIME = ALLTIME))
-    }
+  if (metadata[["convert"]]) {
+    ls_array <- .convert_data(
+      ls_array = ls_array,
+      data_format = metadata[["data_format"]],
+      data_type = data_type,
+      coeff_extract = coeff_extract
+    )
   }
-
+  
   # CGDS to zcgds, lowercase
   ls_array <- lapply(X = ls_array,
                      FUN = function(header) {
@@ -72,6 +67,24 @@
                        }
                        return(header)
                      })
+  
+
+  
+  if (!is.null(x = time_steps)) {
+    ALLTIME <- purrr::pluck(.x = sets, "elements", "ALLTIME")
+    n_time_steps <- length(x = time_steps) + 1
+    if (identical(x = data_type, y = "dat")) {
+      purrr::pluck(.x = ls_array, "NTSP", "data") <- matrix(data = n_time_steps)
+      purrr::pluck(.x = ls_array, "IRAT", "data") <- array(data = rep(purrr::pluck(.x = ls_array, "IRAT", "data"),
+                                                                      n_time_steps),
+                                                           dimnames = list(ALLTIME = ALLTIME))
+    } else  if (identical(x = data_type, y = "par")) {
+      purrr::pluck(.x = ls_array, "AYRS", "data") <- array(data = c(0, cumsum(x = time_steps)),
+                                                           dimnames = list(ALLTIME = ALLTIME))
+    }
+  }
+
+
 
   attr(x = ls_array, "data_type") <- data_type
   return(ls_array)

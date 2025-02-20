@@ -82,10 +82,10 @@
     name = "mod.base_array",
     command = expression(.modify_array(
       ls_array = base_array,
-      database_version = !!metadata[["database_version"]],
+      metadata = !!metadata,
+      coeff_extract = coeff_extract,
       sets = final.set_tib,
-      time_steps = time_steps,
-      base_year = !!metadata[["reference_year"]]
+      time_steps = time_steps
     ))
   ))
 
@@ -93,16 +93,8 @@
     name = "final.base_array",
     command = expression(.update_set_names(
       ls_array = mod.base_array,
-      coeff_extract = tablo_coeff,
+      coeff_extract = coeff_extract,
       metadata = !!metadata
-    ))
-  ))
-
-  # extract coefficient information from tab file
-  t_tablo_coeff <- rlang::expr(targets::tar_target_raw(
-    name = "tablo_coeff",
-    command = expression(.tablo_coeff(
-      parsed_tablo = parsed.tablo[["extract"]]
     ))
   ))
 
@@ -112,7 +104,7 @@
     command = expression(.construct_dt(
       ls_array = final.base_array,
       metadata = !!metadata,
-      coeff_extract = tablo_coeff,
+      coeff_extract = coeff_extract,
       sets = tablo_sets[["sets"]]
     ))
   ))
@@ -123,7 +115,7 @@
       command = expression(.convert_data(
         ls_array = ls_base,
         data_format = !!metadata[["data_format"]],
-        coeff_extract = tablo_coeff
+        coeff_extract = coeff_extract
       ))
     ))
     
@@ -133,7 +125,7 @@
       command = expression(.build_tibble(
         ls_data = converted.ls_base,
         preagg_header_replace = !!config[["preagg_data"]],
-        coeff_extract = tablo_coeff
+        coeff_extract = coeff_extract
       ))
     ))
   } else {
@@ -143,7 +135,7 @@
       command = expression(.build_tibble(
         ls_data = ls_base,
         preagg_header_replace = !!config[["preagg_data"]],
-        coeff_extract = tablo_coeff
+        coeff_extract = coeff_extract
       ))
     ))
   }
@@ -155,7 +147,7 @@
       data_type = "dat",
       tib_data = init.base_tib,
       sets = final.set_tib,
-      coeff_list = tablo_coeff,
+      coeff_list = coeff_extract,
       data_format = !!metadata[["model_version"]]
     ))
   ))

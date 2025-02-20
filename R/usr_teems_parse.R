@@ -70,7 +70,7 @@ if (any(final.set_tib[["intertemporal"]])) {
 .check_set(premodel = final.set_tib, postmodel = set_elements)
 var_union <- .unite_csvs(target = "var_csvs", paths = var_paths)
 targets::tar_load(name = tablo_var, store = file.path(model_dir, "store"))
-targets::tar_load(name = tablo_coeff, store = file.path(model_dir, "store"))
+targets::tar_load(name = coeff_extract, store = file.path(model_dir, "store"))
 if (identical(x = type, y = "variable")) {
   output <- .parse_var(
     paths = var_paths,
@@ -82,7 +82,7 @@ if (identical(x = type, y = "variable")) {
 } else if (is.element(el = type, set = c("coefficient", "basedata"))) {
   output <- .parse_coeff(
     paths = coeff_paths,
-    coeff_extract = tablo_coeff,
+    coeff_extract = coeff_extract,
     sets = set_elements,
     chron_yrs = CYRS
   )
@@ -93,7 +93,7 @@ if (identical(x = type, y = "basedata")) {
     pre_coeff = final.base_tib[["dt"]],
     post_coeff = output,
     sets = final.set_tib,
-    tab_coeff = tablo_coeff,
+    coeff_extract = coeff_extract,
     reference_year = metadata[["reference_year"]],
     intertemporal = intertemporal
   )

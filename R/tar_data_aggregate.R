@@ -102,7 +102,7 @@
       # default values
       header_template <- purrr::pluck(.x = tib_data, "dt", header)
       template_col <- colnames(x = header_template)
-browser()
+
       # check that datasets are equal
       if (!isTRUE(x = all.equal(
         current = custom_header[, !"Value"],

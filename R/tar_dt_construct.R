@@ -18,6 +18,7 @@
   
   data_type <- attr(x = ls_array, "data_type")
   ls_array <- lapply(X = ls_array, FUN = function(header) {
+
     dim_length <- length(x = dimnames(x = header[["data"]]))
     # set file
     if (identical(x = dim_length, y = 0L)) {
@@ -38,7 +39,7 @@
     } 
     return(header)
   })
-
+  browser()
   attr(x = ls_array, which = "data_type") <- data_type
   return(ls_array)
 }

@@ -5,19 +5,19 @@
 #' @noRd
 .convert_data <- function(ls_array,
                           data_format,
-                          coeff_extract) {
+                          data_type,
+                          coeff_extract = NULL) {
 
-  data_type <- attr(x = ls_array, "data_type")
   ls_array <- .convert_format(
-    data = ls_array,
+    ls_array = ls_array,
     data_format = data_format,
     data_type = data_type
   )
-
+browser()
   if (!identical(x = data_type, y = "set")) {
-    # use tablo extract for coefficient, descriptive data, and mixed set names
+    # we could do set info here but no point
+    # use tablo extract for coefficient and descriptive data
     r_idx <- match(x = names(x = ls_array), table = coeff_extract[["header"]])
-
     ls_array <- purrr::map2(
       .x = ls_array,
       .y = r_idx,
@@ -29,23 +29,6 @@
             replacement = "",
             x = purrr::pluck(coeff_extract[id, ], "information", 1)
           ))
-
-          extract_col <- purrr::pluck(coeff_extract[id, ], "ls_mixed_idx", 1)
-          if (!identical(x = extract_col, y = "ALLTIMEt")) {
-            extract_col <- setdiff(x = extract_col, y = "ALLTIMEt")
-          }
-          
-          if (!identical(x = extract_col, y = "null_set")) {
-            existing_col <- colnames(x = dat[["dt"]][, !"Value"])
-            if (!identical(x = existing_col, y = extract_col)) {
-              browser()
-              data.table::setnames(
-                x = dat[["dt"]],
-                old = existing_col,
-                new = extract_col
-              )
-            }
-          }
         }
         return(dat)
       }

@@ -129,49 +129,6 @@ list(
                list(v6.2 = v6.2_weights, v7.0 = v7.0_weights)
              }),
 
-  # intertemporal ====================================================
-  # tar_target(name = v1_int_param,
-  #            command = {
-  #              list(
-  #                CPHI = list(
-  #                  header = "CPHI",
-  #                  information = "investment adjustment parameter",
-  #                  coeff = "CPHI",
-  #                  v_class = "rate",
-  #                  sets = c("REGr", "ALLTIMEt")
-  #                ),
-  #                INID = list(
-  #                  header = "INID",
-  #                  information = "binary switch mechanism for initial capital condition",
-  #                  coeff = "INIDELTA",
-  #                  v_class = "switch",
-  #                  sets = "null_set"
-  #                ),
-  #                IRAT = list(
-  #                  header = "IRAT",
-  #                  information = "long-term interest rate",
-  #                  coeff = "LRORG",
-  #                  v_class = "rate",
-  #                  sets = "ALLTIMEt"
-  #                ),
-  #                KAPP = list(
-  #                  header = "KAPP",
-  #                  information = "depreciation rate",
-  #                  coeff = "KAPPA",
-  #                  v_class = "rate",
-  #                  sets = c("REGr", "ALLTIMEt")
-  #                )
-  #              )
-  #            }),
-  # 
-  # tar_target(name = v2_int_param,
-  #            command = NULL),
-  # 
-  # tar_target(name = int_params,
-  #            command = {
-  #              list(v1 = v1_int_param)
-  #            }),
-
   # closures ---------------------------------------------------------
   tar_target(name = closure_repo,
              command = {
@@ -396,6 +353,14 @@ list(
              command = "./data-raw/aux/Corong and Tsigas - 2017 - The Standard GTAP Model, Version 7.pdf",
              format = "file"),
 
+  tar_target(name = set_table,
+             command = {
+               tibble::tibble(v6.2_upper = c("TRAD_COMM", "PROD_COMM", "ENDW_COMM", "MARG_COMM", "ALLTIME"),
+                              v6.2_mixed = c("TRAD_COMMi", "PROD_COMMj", "ENDW_COMMi", "MARG_COMMm", "ALLTIMEt"),
+                              v7.0_upper = c("COMM", "ACTS", "ENDW", "MARG", "ALLTIME"),
+                              v7.0_mixed = c("COMMc", "ACTSs", "ENDWe", "MARGm", "ALLTIMEt"))
+             }),
+  
   # tables here are not even concordance, just semi related lists
   tar_target(name = set_conversion,
              command = {
@@ -428,16 +393,21 @@ list(
                # missing ESBQ
                ESBQ <- tibble::tibble(14, "ESBQ", "COMM*REG", "1/CES elasticity for commodity sourcing")
                colnames(x = ESBQ) <- colnames(x = v7.0_param)
-               v7.0_param <- rbind(v7.0_param, ESBQ)
 
-               v7.0_param <- .table_fix(single = c(11, 12, 27),
-                                      double = c(1, 3, 5, 7, 9, 13, 15, 17, 19, 25),
-                                      trebble = c(19, 22),
-                                      table = v7.0_param,
-                                      prefix = "v7.0",
-                                      data_type = "par")
+               # missing ESBI
+               ESBI <- tibble::tibble(15, "ESBI", "REG", "Investment expenditure CES elasticity")
+               colnames(x = ESBI) <- colnames(x = v7.0_param)
 
-               v7.0_param[10:14, "idx"] <- 11:15
+               v7.0_param <- rbind(v7.0_param, ESBQ, ESBI)
+
+               v7.0_param <- .table_fix(single = c(11, 12, 27, 28),
+                                        double = c(1, 3, 5, 7, 9, 13, 15, 17, 19, 25),
+                                        trebble = c(19, 22),
+                                        table = v7.0_param,
+                                        prefix = "v7.0",
+                                        data_type = "par")
+
+               v7.0_param[10:15, "idx"] <- 11:16
 
                v6.2_param <- param_table[[1]][, c(1:4)]
 
@@ -496,8 +466,8 @@ list(
                                  internal_tab,
                                  var_extracts,
                                  param_weights,
-                                 #int_params,
                                  internal_cls,
+                                 set_table,
                                  set_conversion,
                                  param_conversion,
                                  base_conversion,

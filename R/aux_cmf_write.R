@@ -103,7 +103,7 @@
   }
 
   if (!in_situ) {
-    coefficient_names <- targets::tar_read(name = tablo_coeff, store = store_dir)[["name"]]
+    coefficient_names <- targets::tar_read(name = coeff_extract, store = store_dir)[["name"]]
   } else {
     coefficient_names <- .tablo_coeff(parsed_tablo = parsed.tablo[["extract"]])[["name"]]
     launchpad_dir <- dirname(path = tab_file)

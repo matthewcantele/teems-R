@@ -12,7 +12,7 @@
 #'
 #' @param pre_coeff A list or data frame containing pre-model coefficients.
 #' @param post_coeff A list or data frame containing post-model coefficients.
-#' @param tab_coeff A list or data frame containing the reference table for
+#' @param coeff_extract A list or data frame containing the reference table for
 #'   matching coefficients.
 #' @param sets A list containing set definitions and their elements.
 #' @param intertemporal Logical; whether intertemporal.
@@ -27,11 +27,11 @@
 .merge_data <- function(pre_coeff,
                         post_coeff,
                         sets,
-                        tab_coeff,
+                        coeff_extract,
                         reference_year,
                         intertemporal) {
   # use elaborated set names to match
-  r_idx <- match(x = names(x = pre_coeff), table = tab_coeff[["header"]])
+  r_idx <- match(x = names(x = pre_coeff), table = coeff_extract[["header"]])
 
   # first check on the merge
   if (!identical(x = length(x = r_idx), y = length(x = pre_coeff))) {
@@ -51,12 +51,12 @@
   })
 
   # rename pre_coeff names from headers to actual names (e.g., VTWR from VTMFSD)
-  r_idx <- match(x = names(x = pre_coeff), table = tab_coeff[["header"]])
-  names(x = pre_coeff) <- tab_coeff[["name"]][r_idx]
+  r_idx <- match(x = names(x = pre_coeff), table = coeff_extract[["header"]])
+  names(x = pre_coeff) <- coeff_extract[["name"]][r_idx]
 
   # filter post_coeff data by pre_coeff
   header_nmes <- unlist(x = subset(
-    x = tab_coeff,
+    x = coeff_extract,
     subset = {
       is.element(el = name, set = names(x = pre_coeff))
     },

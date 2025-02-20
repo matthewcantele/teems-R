@@ -11,7 +11,7 @@
 #' @keywords internal
 #' @noRd
 .append_tablo <- function(tab,
-                          coeff) {
+                          coeff_extract) {
 
   # sets excluded
   # io_files <- io_files[!grepl(pattern = "sets", x = io_files)]
@@ -50,13 +50,13 @@
 
   # coefficient writeout
   tab_appendix <- paste(
-    coeff[["name"]],
+    coeff_extract[["name"]],
     "to file",
-    coeff[["name"]],
+    coeff_extract[["name"]],
     "header",
-    paste0('"', coeff[["name"]], '"'),
+    paste0('"', coeff_extract[["name"]], '"'),
     "longname",
-    paste0('"', trimws(x = gsub(pattern = "#", replacement = "", x = coeff[["information"]])), '"', ";")
+    paste0('"', trimws(x = gsub(pattern = "#", replacement = "", x = coeff_extract[["information"]])), '"', ";")
   )
 
   # here we append still due to potential for more write statements

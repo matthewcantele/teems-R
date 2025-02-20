@@ -3,13 +3,15 @@
 #' 
 #' @keywords internal
 #' @noRd
-.convert_format <- function(data,
+.convert_format <- function(ls_array,
                             data_format,
                             data_type) {
+
   if (identical(x = data_format, y = "v6.2")) {
     if (identical(x = data_type, y = "set")) {
-      data <- lapply(
-        X = data,
+      browser()
+      ls_array <- lapply(
+        X = ls_array,
         FUN = function(header) {
           .convert_id(
             header = header,
@@ -20,17 +22,18 @@
         }
       )
 
-      ACTS <- purrr::pluck(.x = data, "H2")
+      ACTS <- purrr::pluck(.x = ls_array, "H2")
       ACTS[["header_name"]] <- "ACTS"
       colnames(ACTS[["dt"]]) <- "ACTS"
       ACTS <- list(ACTS = ACTS)
 
-      data <- c(data, ACTS)
+      ls_array <- c(ls_array, ACTS)
     } else if (identical(x = data_type, y = "par")) {
+      browser()
       # don't see any drawback to using the regions from here rather than bringing forth the prior set object
-      REGr <- purrr::pluck(.x = data, "RFLX", "dt", "REGr")
-      data <- lapply(
-        X = data,
+      REGr <- purrr::pluck(.x = ls_array, "RFLX", "dt", "REGr")
+      ls_array <- lapply(
+        X = ls_array,
         FUN = function(header) {
           dt <- header[["dt"]]
           nme <- header[["header_name"]]
@@ -62,7 +65,7 @@
 
       # add missing v7 parameters
       REG <- REGr
-      ACTS <- unique(purrr::pluck(.x = data, "ESBV", "dt", "ACTSa"))
+      ACTS <- unique(purrr::pluck(.x = ls_array, "ESBV", "dt", "ACTSa"))
       COMM <- ACTS
       MARG <- c("atp", "otp", "wtp")
 
@@ -117,8 +120,9 @@
           x[["header_name"]]
         }
       )
-      data <- c(data, missing_v7.0)
+      ls_array <- c(ls_array, missing_v7.0)
     } else if (identical(x = data_type, y = "dat")) {
+      browser()
       # TVOM has MAKB and MAKS (net OSEP)
       # missing headers (MAKS, MAKB, VDIB, VDIP, VMIP, VMIB, CSEP)
       missing_v7.0 <- unlist(x = subset(
@@ -136,23 +140,23 @@
             X = missing_v7.0,
             FUN = function(nme) {
               if (identical(x = nme, y = "VDIB")) {
-                dt <- data.table::copy(x = purrr::pluck(.x = data, "VDFM", "dt"))
+                dt <- data.table::copy(x = purrr::pluck(.x = ls_array, "VDFM", "dt"))
                 dt <- dt[ACTSa == "zcgds", !("ACTSa"), with = FALSE]
               } else if (identical(x = nme, y = "VDIP")) {
-                dt <- data.table::copy(x = purrr::pluck(.x = data, "VDFA", "dt"))
+                dt <- data.table::copy(x = purrr::pluck(.x = ls_array, "VDFA", "dt"))
                 dt <- dt[ACTSa == "zcgds", !("ACTSa"), with = FALSE]
               } else if (identical(x = nme, y = "VMIB")) {
-                dt <- data.table::copy(x = purrr::pluck(.x = data, "VIFM", "dt"))
+                dt <- data.table::copy(x = purrr::pluck(.x = ls_array, "VIFM", "dt"))
                 dt <- dt[ACTSa == "zcgds", !("ACTSa"), with = FALSE]
               } else if (identical(x = nme, y = "VMIP")) {
-                dt <- data.table::copy(x = purrr::pluck(.x = data, "VIFA", "dt"))
+                dt <- data.table::copy(x = purrr::pluck(.x = ls_array, "VIFA", "dt"))
                 dt <- dt[ACTSa == "zcgds", !("ACTSa"), with = FALSE]
               } else if (identical(x = nme, y = "CSEP")) {
-                dt <- data.table::copy(x = purrr::pluck(.x = data, "ISEP", "dt"))
+                dt <- data.table::copy(x = purrr::pluck(.x = ls_array, "ISEP", "dt"))
                 dt <- dt[ACTSa != "zcgds"]
                 dt[, Value := Value * -1]
               } else if (is.element(el = nme, set = c("MAKB", "MAKS"))) {
-                dt <- data.table::copy(x = purrr::pluck(.x = data, "TVOM", "dt"))
+                dt <- data.table::copy(x = purrr::pluck(.x = ls_array, "TVOM", "dt"))
                 dt[, ACTSa := COMMc]
                 sectors <- unique(x = dt[["COMMc"]])
                 null_dt <- data.table::CJ(
@@ -164,7 +168,7 @@
                 null_dt <- null_dt[COMMc != ACTSa, ]
                 dt <- data.table::rbindlist(l = list(null_dt, dt), use.names = TRUE)
                 if (identical(x = nme, y = "MAKS")) {
-                  OSEP <- data.table::copy(x = purrr::pluck(.x = data, "OSEP", "dt"))
+                  OSEP <- data.table::copy(x = purrr::pluck(.x = ls_array, "OSEP", "dt"))
                   OSEP[, ACTSa := COMMc]
                   data.table::setnames(x = OSEP, old = "Value", new = "OSEP")
                   dt <- data.table::merge.data.table(
@@ -187,8 +191,8 @@
           )
         }
       )
-      data <- lapply(
-        X = data,
+      ls_array <- lapply(
+        X = ls_array,
         FUN = function(header) {
           dt <- header[["dt"]]
           nme <- header[["header_name"]]
@@ -207,7 +211,7 @@
             new_dt <- dt[ACTSa != "zcgds"]
           } else if (identical(x = nme, y = "EVOA")) {
             # use EVOA with shared out VFM PROD_COMM to recreate EVOS
-            VFM <- data.table::copy(purrr::pluck(.x = data, "VFM", "dt"))
+            VFM <- data.table::copy(purrr::pluck(.x = ls_array, "VFM", "dt"))
             col_names <- colnames(x = VFM)
             VFM <- VFM[ACTSa != "zcgds", ]
             VFM_totals <- VFM[, .(total = sum(Value)), by = c("ENDWe", "REGr")]
@@ -237,8 +241,8 @@
         }
       )
 
-      data <- lapply(
-        X = data,
+      ls_array <- lapply(
+        X = ls_array,
         FUN = function(header) {
           .convert_id(
             header = header,
@@ -247,39 +251,47 @@
           )
         }
       )
-      data <- c(data, missing_v7.0)
+      ls_array <- c(ls_array, missing_v7.0)
     }
   } else if (identical(x = data_format, y = "v7.0")) {
     if (identical(x = data_type, y = "set")) {
       # v7.0 to v6.2 on sets involves changing set names
-      data <- lapply(
-        X = data,
+      ls_array <- lapply(
+        X = ls_array,
         FUN = function(header) {
           .convert_id(
             header = header,
             table = set_conversion,
-            origin = data_format,
-            colname = TRUE
+            origin = data_format
           )
         }
       )
 
-      # add missing v6.2 set
-      missing_v6.2 <- list(H9 = list(
-        header_name = "H9",
+      # add CGDS
+      CGDS <- subset(x = set_conversion,
+                     subset = {is.element(el = v6.2header, set = "H9")})
+      
+      CGDS <- list(CGDS_COMM = list(
+        header_name = CGDS[["v6.2header"]],
         type = "1CFULL",
-        information = "Set CGDS_COMM  capital goods commodities",
-        aggregate = FALSE,
-        dt = data.table::data.table(H9 = "zcgds")
+        information = CGDS[["v6.2description"]],
+        data = "CGDS",
+        aggregate = FALSE
       ))
-
-      data <- c(data, missing_v6.2)
+      
+      ls_array <- c(ls_array, CGDS)
     } else if (identical(x = data_type, y = "par")) {
+      drop_headers <- subset(x = param_conversion,
+                             subset = {is.na(x = v6.2header)},
+                             select = v7.0header)[[1]]
+      
+      ls_array <- ls_array[!is.element(el = names(x = ls_array), set = drop_headers)]
       # v7.0 to v6.2 on parameters involves summing over the additional (uniform) sets and adding zcgds
-      data <- lapply(
-        X = data,
+      ls_array <- lapply(
+        X = ls_array,
         FUN = function(header) {
-          dt <- header[["dt"]]
+          arr <- header[["data"]]
+          orig_dim_names <- names(x = dimnames(x = arr))
           nme <- header[["header_name"]]
           v6.2_colnames <- unlist(x = subset(
             x = param_conversion,
@@ -292,56 +304,67 @@
             select = v6.2set
           ))
 
-          drop_val <- colnames(x = dt)[!is.element(el = colnames(x = dt), set = "Value")]
-          drop_col <- drop_val[!is.element(
-            el = substring(
-              text = drop_val,
-              first = 1,
-              last = nchar(drop_val) - 1
-            ),
-            set = v6.2_colnames
-          )]
+          if (!anyNA(x = v6.2_colnames) && !is.null(x = v6.2_colnames)) {
+          r_idx <- match(x = orig_dim_names, table = set_table[["v7.0_upper"]])
+          cnvrt_dim_names <- ifelse(test = is.na(x = r_idx),
+                                    yes = orig_dim_names,
+                                    no = set_table[["v6.2_upper"]][r_idx])
+          
+          drop_dim <- cnvrt_dim_names[!is.element(el = cnvrt_dim_names,
+                                                  set = v6.2_colnames)]
 
-          dt <- dt[, !(drop_col), with = FALSE]
-          dt <- unique(x = dt)
-
+          if (!identical(x = drop_dim, y = character(0))) {
+          arr <- apply(X = arr,
+                       MARGIN = which(!is.element(el = orig_dim_names,
+                                                 set = drop_dim)),
+                       FUN = unique)
+          }
+          
           # CGDS additions
           if (identical(x = nme, y = "ESBT")) {
-            cgds_row <- list(PROD_COMMj = "zcgds", Value = 0)
-            dt <- rbind(dt, cgds_row)
+            CGDS <- array(data = 0, dimnames = list("CGDS"))
+            arr <- c(arr, CGDS)
           }
 
           if (identical(x = nme, y = "ESBV")) {
-            cgds_row <- list(PROD_COMMj = "zcgds", Value = 1)
-            dt <- rbind(dt, cgds_row)
+            CGDS <- array(data = 1, dimnames = list("CGDS"))
+            arr <- c(arr, CGDS)
           }
 
-          header[["dt"]] <- dt
+          if (!is.array(x = arr)) {
+            arr <- as.array(x = arr)
+          }
+
+          names(x = dimnames(x = arr)) <- v6.2_colnames
+          }
+          header[["data"]] <- arr
           return(header)
         }
       )
     } else if (identical(x = data_type, y = "dat")) {
+      browser()
       # v7.0 to v6.2 on base involves changing names, adding zcgds, and other op
-      data <- lapply(
-        X = data,
+      ls_array <- lapply(
+        X = ls_array,
         FUN = function(header) {
+          browser()
           dt <- header[["dt"]]
           nme <- header[["header_name"]]
 
           if (identical(x = nme, y = "VDFB")) {
-            cgds <- data.table::copy(purrr::pluck(data, "VDIB", "dt"))
+            cgds <- data.table::copy(purrr::pluck(ls_array, "VDIB", "dt"))
             cgds[, let(PROD_COMMj = "zcgds")]
             new_dt <- data.table::rbindlist(l = list(dt, cgds), use.names = TRUE)
           } else if (identical(x = nme, y = "VDFP")) {
-            cgds <- data.table::copy(purrr::pluck(data, "VDIP", "dt"))
+            cgds <- data.table::copy(purrr::pluck(ls_array, "VDIP", "dt"))
             cgds[, let(PROD_COMMj = "zcgds")]
             new_dt <- data.table::rbindlist(l = list(dt, cgds), use.names = TRUE)
           } else if (identical(x = nme, y = "VMFB")) {
-            cgds <- data.table::copy(purrr::pluck(data, "VMIB", "dt"))
+            cgds <- data.table::copy(purrr::pluck(ls_array, "VMIB", "dt"))
             cgds[, let(PROD_COMMj = "zcgds")]
             new_dt <- data.table::rbindlist(l = list(dt, cgds), use.names = TRUE)
           } else if (identical(x = nme, y = "VMFP")) {
-            cgds <- data.table::copy(x = purrr::pluck(data, "VMIP", "dt"))
+            cgds <- data.table::copy(x = purrr::pluck(ls_array, "VMIP", "dt"))
             cgds[, let(PROD_COMMj = "zcgds")]
             new_dt <- data.table::rbindlist(l = list(dt, cgds), use.names = TRUE)
           } else if (is.element(
@@ -360,7 +383,7 @@
           } else if (identical(x = nme, y = "ISEP")) {
             cgds <- data.table::copy(x = dt)
             cgds[, let(PROD_COMMj = "zcgds", Value = Value * -1)]
-            dt <- data.table::copy(purrr::pluck(data, "CSEP", "dt"))
+            dt <- data.table::copy(purrr::pluck(ls_array, "CSEP", "dt"))
             dt[, let(Value = Value * -1)]
             new_dt <- data.table::rbindlist(l = list(dt, cgds), use.names = TRUE)
           }
@@ -372,8 +395,8 @@
           return(header)
         }
       )
-      data <- lapply(
-        X = data,
+      ls_array <- lapply(
+        X = ls_array,
         FUN = function(header) {
           .convert_id(
             header = header,
@@ -384,13 +407,14 @@
       )
     }
   }
-  names(x = data) <- sapply(
-    X = data,
+
+  names(x = ls_array) <- sapply(
+    X = ls_array,
     FUN = function(x) {
       x[["header_name"]]
     }
   )
 
-  attr(x = data, which = "data_type") <- data_type
-  return(data)
+  attr(x = ls_array, which = "data_type") <- data_type
+  return(ls_array)
 }
