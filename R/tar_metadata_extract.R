@@ -1,12 +1,3 @@
-#' Extract Metadata from List Array
-#'
-#' This function extracts har-type specific metadata from a list array.
-#'
-#' @param ls_array A list array of model data which contains metadata produced
-#'   by \code{.read_har()}
-#'
-#' @return Extracted metadata including database_version for all har and
-#'   data_type from "dat"
 #' @keywords internal
 #' @noRd
 .extract_metadata <- function(ls_array,

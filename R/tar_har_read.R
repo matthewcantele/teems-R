@@ -16,14 +16,18 @@
 #' @keywords internal
 #' @noRd
 .read_har <- function(con,
+                      data_type,
                       header_rename,
                       coefficient_rename,
                       full_exclude = NULL,
                       append = NULL) {
 
   # map connection to data type (GTAP database file naming is inconsistent across releases)
-  data_type <- .har_match(con = con)
+  implied_data_type <- .har_match(con = con)
 
+  if (!identical(x = data_type, y = implied_data_type)) {
+    stop("got the wrong file here buster")
+  }
   # Open the file
   if (is.character(x = con)) {
     con <- file(con, "rb")
@@ -466,10 +470,6 @@
   if (!is.null(x = full_exclude)) {
     headers <- headers[!is.element(el = names(x = headers), set = full_exclude)]
   }
-  
-  # give attribute to list to carry on to subsequent function
-  #attr(x = headers, "metadata") <- metadata
-  attr(x = headers, "data_type") <- data_type
 
   return(headers)
 }

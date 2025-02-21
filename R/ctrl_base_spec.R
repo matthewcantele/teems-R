@@ -1,24 +1,11 @@
-#' Data Specifications
-#'
-#' This function manages the specification of data for model execution,
-#' including handling time-related coefficients, aggregating base data,
-#' incorporating external data sources, specifying output data configurations,
-#' and preparing various outputs for both tablo and command file generation. It
-#' utilizes the `targets` package to create a reproducible pipeline for tracking
-#' changes, processing data, and preparing model inputs and outputs.
-#'
-#' @inheritParams teems_base
-#' @inheritParams teems_model
-#' @inheritParams teems_time
-#'
 #' @importFrom rlang expr
 #' @importFrom qs2 qd_read
 #' @importFrom targets tar_target_raw tar_cue
-#' @importFrom data.table fread
-#' @return A list of all generated targets within the data specification process.
+#'
 #' @keywords internal
 #' @noRd
 .base_config <- function(config,
+                         data_type,
                          metadata,
                          ndigits,
                          full_exclude,
@@ -43,6 +30,7 @@
         name = "aux_base_array",
         command = expression(.read_har(
           con = aux_base_file,
+          data_type = !!data_type,
           header_rename = !!config[["header_rename"]],
           coefficient_rename = !!config[["coefficient_rename"]]
         ))
@@ -59,6 +47,7 @@
       name = "base_array",
       command = expression(.read_har(
         con = base_file,
+        data_type = !!data_type,
         header_rename = !!config[["header_rename"]],
         coefficient_rename = !!config[["coefficient_rename"]],
         append = aux_base_array,
@@ -83,6 +72,7 @@
     command = expression(.modify_array(
       ls_array = base_array,
       metadata = !!metadata,
+      data_type = !!data_type,
       coeff_extract = coeff_extract,
       sets = final.set_tib,
       time_steps = time_steps
@@ -94,7 +84,8 @@
     command = expression(.update_set_names(
       ls_array = mod.base_array,
       coeff_extract = coeff_extract,
-      metadata = !!metadata
+      metadata = !!metadata,
+      data_type = !!data_type
     ))
   ))
 
@@ -104,47 +95,27 @@
     command = expression(.construct_dt(
       ls_array = final.base_array,
       metadata = !!metadata,
+      data_type = !!data_type,
       coeff_extract = coeff_extract,
       sets = tablo_sets[["sets"]]
     ))
   ))
-  
-  if (metadata[["convert"]]) {
-    t_converted.ls_base <- rlang::expr(targets::tar_target_raw(
-      name = "converted.ls_base",
-      command = expression(.convert_data(
-        ls_array = ls_base,
-        data_format = !!metadata[["data_format"]],
-        coeff_extract = coeff_extract
-      ))
+
+  # construct tibbles from metadata and dts for each data type
+  t_init.base_tib <- rlang::expr(targets::tar_target_raw(
+    name = "init.base_tib",
+    command = expression(.build_tibble(
+      ls_data = ls_base,
+      preagg_header_replace = !!config[["preagg_data"]],
+      coeff_extract = coeff_extract
     ))
-    
-    # construct tibbles from metadata and dts for each data type
-    t_init.base_tib <- rlang::expr(targets::tar_target_raw(
-      name = "init.base_tib",
-      command = expression(.build_tibble(
-        ls_data = converted.ls_base,
-        preagg_header_replace = !!config[["preagg_data"]],
-        coeff_extract = coeff_extract
-      ))
-    ))
-  } else {
-    # construct tibbles from metadata and dts for each data type
-    t_init.base_tib <- rlang::expr(targets::tar_target_raw(
-      name = "init.base_tib",
-      command = expression(.build_tibble(
-        ls_data = ls_base,
-        preagg_header_replace = !!config[["preagg_data"]],
-        coeff_extract = coeff_extract
-      ))
-    ))
-  }
+  ))
 
   # remove unnecessary headers and map new sets
   t_prepped.base_tib <- rlang::expr(targets::tar_target_raw(
     name = "prepped.base_tib",
     command = expression(.prep_data(
-      data_type = "dat",
+      data_type = !!data_type,
       tib_data = init.base_tib,
       sets = final.set_tib,
       coeff_list = coeff_extract,
@@ -156,7 +127,7 @@
   t_final.base_tib <- rlang::expr(targets::tar_target_raw(
     name = "final.base_tib",
     command = expression(.aggregate_data(
-      data_type = "dat",
+      data_type = !!data_type,
       tib_data = prepped.base_tib,
       sets = final.set_tib,
       postagg_header_replace = !!config[["postagg_data"]]

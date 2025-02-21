@@ -20,7 +20,7 @@
   }
 
 
-  if (data_type == "dat") {
+  if (identical(x = data_type, y = "base")) {
     metadata[["data_format"]] <- switch(as.character(x = DVER),
                                         "5" = "v6.2",
                                         "6" = "v7.0",

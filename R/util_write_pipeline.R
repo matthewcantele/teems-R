@@ -11,17 +11,20 @@
                                  launchpad_dir = teems_paths[["launchpad"]])
   
   set_targets <- .set_config(config = set_config,
+                             data_type = "set",
                              metadata = metadata,
                              full_exclude = model_config[["full_exclude"]],
                              write_dir = teems_paths[["launchpad"]])
   
   param_targets <- .param_config(config = param_config,
+                                 data_type = "par",
                                  metadata = metadata,
                                  ndigits = model_config[["ndigits"]],
                                  full_exclude = model_config[["full_exclude"]],
                                  write_dir = teems_paths[["launchpad"]])
   
   base_targets <- .base_config(config = base_config,
+                               data_type = "base",
                                metadata = metadata,
                                ndigits = model_config[["ndigits"]],
                                full_exclude = model_config[["full_exclude"]],

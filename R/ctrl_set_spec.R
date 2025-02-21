@@ -1,26 +1,10 @@
-#' Set Specifications
-#'
-#' Defines and manages the specification of sets for model execution, including
-#' region, sector, margin mappings, and optionally capital goods and endowment
-#' mappings. It supports intertemporal model configurations by allowing the
-#' specification of time steps and intervals. Utilizes the `targets` package for
-#' reproducible workflows, ensuring that set specifications are tracked and
-#' managed efficiently.
-#'
-#' @inheritParams teems_model
-#' @param config A list of model configuration options generated from
-#'   `teems_sets`.
-#' @param temporal_dynamics An internally generated parameter which evaluate to
-#'   either `static` or `intertemporal` within \link{teems_model}.
-#' @param write_dir A directory to write model input files to as determined
-#'   within \link{teems_write}.
-#'
 #' @importFrom rlang expr
 #' @importFrom targets tar_target_raw tar_cue
-#' @return A list of all generated targets within the set specification process.
+#'
 #' @keywords internal
 #' @noRd
 .set_config <- function(config,
+                        data_type,
                         metadata,
                         full_exclude,
                         write_dir) {
@@ -59,6 +43,7 @@
     name = "set_array",
     command = expression(.read_har(
       con = set_file,
+      data_type = !!data_type,
       header_rename = NULL,
       coefficient_rename = NULL,
       full_exclude = !!full_exclude
@@ -70,7 +55,8 @@
     command = expression(.modify_array(
       ls_array = set_array,
       coeff_extract = coeff_extract,
-      metadata = !!metadata
+      metadata = !!metadata,
+      data_type = !!data_type
     ))
   ))
 
@@ -80,6 +66,7 @@
     command = expression(.construct_dt(
       ls_array = mod.set_array,
       metadata = !!metadata,
+      data_type = !!data_type,
       coeff_extract = tablo_sets[["sets"]]
     ))
   ))

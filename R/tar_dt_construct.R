@@ -1,11 +1,10 @@
 #' @importFrom data.table as.data.table setnames setDT
-#' @importFrom purrr pluck
-#' @return A list of data.tables for each header and metadata file for each data
-#'   type.
+#' 
 #' @keywords internal
 #' @noRd
 .construct_dt <- function(ls_array,
                           metadata,
+                          data_type,
                           coeff_extract,
                           sets = NULL) {
 
@@ -15,10 +14,8 @@
                      subset = intertemporal,
                      select = name)[[1]]
   }
-  
-  data_type <- attr(x = ls_array, "data_type")
-  ls_array <- lapply(X = ls_array, FUN = function(header) {
 
+  ls_array <- lapply(X = ls_array, FUN = function(header) {
     dim_length <- length(x = dimnames(x = header[["data"]]))
     # set file
     if (identical(x = dim_length, y = 0L)) {
@@ -39,7 +36,7 @@
     } 
     return(header)
   })
-  browser()
+
   attr(x = ls_array, which = "data_type") <- data_type
   return(ls_array)
 }

@@ -1,4 +1,5 @@
 #' @importFrom purrr pluck
+#' @importFrom abind abind
 #' @importFrom data.table CJ copy rbindlist setnames merge.data.table
 #' 
 #' @keywords internal
@@ -121,7 +122,7 @@
         }
       )
       ls_array <- c(ls_array, missing_v7.0)
-    } else if (identical(x = data_type, y = "dat")) {
+    } else if (identical(x = data_type, y = "base")) {
       browser()
       # TVOM has MAKB and MAKS (net OSEP)
       # missing headers (MAKS, MAKB, VDIB, VDIP, VMIP, VMIB, CSEP)
@@ -341,60 +342,69 @@
           return(header)
         }
       )
-    } else if (identical(x = data_type, y = "dat")) {
-      browser()
-      # v7.0 to v6.2 on base involves changing names, adding zcgds, and other op
+    } else if (identical(x = data_type, y = "base")) {
+      # v7.0 to v6.2 on base involves changing names, adding CGDS, and other op
       ls_array <- lapply(
         X = ls_array,
         FUN = function(header) {
-          browser()
-          dt <- header[["dt"]]
+          arr <- header[["data"]]
+          arr_dim <- dim(x = arr)
+          arr_dimnames <- dimnames(x = arr)
+          arr_names <- names(x = arr_dimnames)
           nme <- header[["header_name"]]
-
-          if (identical(x = nme, y = "VDFB")) {
-            cgds <- data.table::copy(purrr::pluck(ls_array, "VDIB", "dt"))
-            cgds[, let(PROD_COMMj = "zcgds")]
-            new_dt <- data.table::rbindlist(l = list(dt, cgds), use.names = TRUE)
-          } else if (identical(x = nme, y = "VDFP")) {
-            cgds <- data.table::copy(purrr::pluck(ls_array, "VDIP", "dt"))
-            cgds[, let(PROD_COMMj = "zcgds")]
-            new_dt <- data.table::rbindlist(l = list(dt, cgds), use.names = TRUE)
-          } else if (identical(x = nme, y = "VMFB")) {
-            cgds <- data.table::copy(purrr::pluck(ls_array, "VMIB", "dt"))
-            cgds[, let(PROD_COMMj = "zcgds")]
-            new_dt <- data.table::rbindlist(l = list(dt, cgds), use.names = TRUE)
-          } else if (identical(x = nme, y = "VMFP")) {
-            cgds <- data.table::copy(x = purrr::pluck(ls_array, "VMIP", "dt"))
-            cgds[, let(PROD_COMMj = "zcgds")]
-            new_dt <- data.table::rbindlist(l = list(dt, cgds), use.names = TRUE)
-          } else if (is.element(
-            el = nme,
-            set = c("EVFB", "EVFP", "FBEP", "FTRV")
-          )) {
-            cgds <- data.table::CJ(
-              ENDW_COMMi = unique(dt[["ENDW_COMMi"]]),
-              PROD_COMMj = "zcgds",
-              REGr = unique(dt[["REGr"]]),
-              Value = 0
+          
+          if (is.element(el = nme, set = c("VDFB", "VDFP", "VMFB", "VMFP"))) {
+            CGDS_header <- switch(EXPR = nme,
+              "VDFB" = "VDIB",
+              "VDFP" = "VDIP",
+              "VMFB" = "VMIB",
+              "VMFP" = "VMIP"
             )
-            new_dt <- data.table::rbindlist(l = list(dt, cgds))
+            CGDS_data <- purrr::pluck(.x = ls_array, CGDS_header, "data")
+            CGDS_dim <- c(dim(x = CGDS_data), 1)
+            CGDS_dimnames <- c(dimnames(x = CGDS_data), ACTS = "CGDS")
+            a_idx <- match(x = arr_names, names(x = CGDS_dimnames), nomatch = 0)
+
+            CGDS_dimnames <- CGDS_dimnames[a_idx]
+            CGDS_dim <- CGDS_dim[a_idx]
+            CGDS_data <- array(CGDS_data, dim = CGDS_dim, dimnames = CGDS_dimnames)
+            bind_dim <- which(is.element(el = names(x = CGDS_dimnames), set = "ACTS"))
+            arr <- abind::abind(arr, CGDS_data, along = bind_dim)
+            names(x = dimnames(x = arr)) <- arr_names
+          } else if (is.element(el = nme, set = c("EVFB", "EVFP", "FBEP", "FTRV"))) {
+            ACTS_dim <- which(is.element(el = arr_names, set = "ACTS"))
+            CGDS_dim <- arr_dim
+            CGDS_dim[ACTS_dim] <- 1
+            CGDS_dimnames <- arr_dimnames
+            CGDS_dimnames[ACTS_dim] <- list(ACTS = "CGDS")
+            CGDS_data <- array(data = 0, dim = CGDS_dim, dimnames = CGDS_dimnames)
+            arr <- abind::abind(arr, CGDS_data, along = ACTS_dim)
+            names(x = dimnames(x = arr)) <- arr_names
           } else if (identical(x = nme, y = "EVOS")) {
-            new_dt <- dt[, .(Value = sum(Value)), by = c("ENDW_COMMi", "REGr")]
+            sum_dim <- "ACTS"
+            xACTS_dim <- which(!is.element(el = arr_names, set = sum_dim))
+            arr <- apply(X = arr, MARGIN = xACTS_dim, FUN = sum)
           } else if (identical(x = nme, y = "ISEP")) {
-            cgds <- data.table::copy(x = dt)
-            cgds[, let(PROD_COMMj = "zcgds", Value = Value * -1)]
-            dt <- data.table::copy(purrr::pluck(ls_array, "CSEP", "dt"))
-            dt[, let(Value = Value * -1)]
-            new_dt <- data.table::rbindlist(l = list(dt, cgds), use.names = TRUE)
+            CGDS_dim <- c(dim(x = arr), 1)
+            CGDS_dimnames <- c(arr_dimnames, list(ACTS = "CGDS"))
+            CGDS_data <- array(arr, dim = CGDS_dim, dimnames = CGDS_dimnames)
+            CGDS_data <- CGDS_data * -1
+            
+            arr <- purrr::pluck(ls_array, "CSEP", "data")
+            arr <- arr * -1
+            arr_names <- names(x = dimnames(x = arr))
+            
+            a_idx <- match(arr_names, names(CGDS_dimnames))
+            CGDS_data <- aperm(a = CGDS_data, perm = a_idx)
+            ACTS_dim <- which(is.element(el = arr_names, set = "ACTS"))
+            arr <- abind::abind(arr, CGDS_data, along = ACTS_dim)
+            names(x = dimnames(x = arr)) <- arr_names
           }
-
-          if (exists(x = "new_dt")) {
-            header[["dt"]] <- new_dt
-          }
-
+          header[["data"]] <- arr
           return(header)
         }
       )
+      
       ls_array <- lapply(
         X = ls_array,
         FUN = function(header) {
@@ -415,6 +425,5 @@
     }
   )
 
-  attr(x = ls_array, which = "data_type") <- data_type
   return(ls_array)
 }

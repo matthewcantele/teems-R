@@ -149,7 +149,7 @@
   coeff[["mixed_idx"]] <- paste0("(", coeff[["mixed_idx"]], ")")
   coeff[["data_type"]] <- ifelse(test = grepl(pattern = "parameter", coeff[["qualifier_list"]]),
                                  yes = "par",
-                                 no = "dat")
+                                 no = "base")
   # full standard writeout
   data.table::setnames(x = coeff,
                        old = "remainder",

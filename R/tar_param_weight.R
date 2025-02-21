@@ -1,17 +1,3 @@
-#' Weight Parameters for Model
-#'
-#' This function adjusts weights for model parameters based on a mapping and weights provided. It handles
-#' negative weights, renames columns for parameter weighting, and calculates final weights for parameters.
-#' Additionally, it can adjust parameters based on rate of return flexibility and delta values if provided.
-#'
-#' @inheritParams .set_specs
-#' @inheritParams .retrieve_mappings
-#' @inheritParams .aggregate_data
-#' @inheritParams teems_parameters
-#'
-#' @param weights A data frame of weights with headers.
-#' @param par The parameters data frame to be weighted.
-#'
 #' @importFrom purrr pluck map2
 #' @importFrom data.table copy rbindlist let
 #' @importFrom tibble tibble

@@ -13,7 +13,7 @@
     data_format = data_format,
     data_type = data_type
   )
-browser()
+
   if (!identical(x = data_type, y = "set")) {
     # we could do set info here but no point
     # use tablo extract for coefficient and descriptive data
@@ -21,16 +21,16 @@ browser()
     ls_array <- purrr::map2(
       .x = ls_array,
       .y = r_idx,
-      .f = function(dat, id) {
+      .f = function(header, id) {
         if (!is.na(x = id)) {
-          dat[["coefficient"]] <- purrr::pluck(coeff_extract[id, ], "name", 1)
-          dat[["information"]] <- trimws(x = gsub(
+          header[["coefficient"]] <- purrr::pluck(coeff_extract[id, ], "name", 1)
+          header[["information"]] <- trimws(x = gsub(
             pattern = "#",
             replacement = "",
             x = purrr::pluck(coeff_extract[id, ], "information", 1)
           ))
         }
-        return(dat)
+        return(header)
       }
     )
   }

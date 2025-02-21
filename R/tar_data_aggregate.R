@@ -38,7 +38,7 @@
         d <- d[, .(Value = mean(Value)), by = setdiff(names(d), "Value")]
       }
     })
-  } else if (identical(x = data_type, y = "dat")) {
+  } else if (identical(x = data_type, y = "base")) {
     tib_data[["dt"]] <- purrr::map2(
       .x = tib_data[["dt"]],
       .y = tib_data[["aggregate"]],

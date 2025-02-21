@@ -1,25 +1,11 @@
-#' Parameter Specifications
-#'
-#' This function manages the specification of parameters for model execution,
-#' including handling intertemporal parameters, aggregating parameter data, and
-#' preparing parameter outputs for both tablo and command file generation. It
-#' utilizes the `targets` package to create a reproducible pipeline for tracking
-#' changes, processing parameter data, and preparing model inputs and outputs.
-#'
-#' @inheritParams teems_parameters
-#' @inheritParams teems_model
-#' @param config A list of model configuration options generated from
-#'   `teems_parameters`.
-#'
 #' @importFrom rlang expr
 #' @importFrom qs2 qd_read
 #' @importFrom targets tar_target_raw tar_cue
-#' @importFrom tibble tibble
-#' @return A list of all generated targets within the parameter specification
-#'   process.
+#' 
 #' @keywords internal
 #' @noRd
 .param_config <- function(config,
+                          data_type,
                           metadata,
                           ndigits,
                           full_exclude,
@@ -44,6 +30,7 @@
         name = "aux_par_array",
         command = expression(.read_har(
           con = aux_par_file,
+          data_type = !!data_type,
           header_rename = !!config[["header_rename"]],
           coefficient_rename = !!config[["coefficient_rename"]]
         ))
@@ -60,6 +47,7 @@
       name = "par_array",
       command = expression(.read_har(
         con = par_file,
+        data_type = !!data_type,
         header_rename = !!config[["header_rename"]],
         coefficient_rename = !!config[["coefficient_rename"]],
         append = aux_par_array,
@@ -85,6 +73,7 @@
     command = expression(.modify_array(
       ls_array = par_array,
       metadata = !!metadata,
+      data_type = !!data_type,
       set_array = set_array,
       coeff_extract = coeff_extract,
       sets = final.set_tib,
@@ -97,7 +86,8 @@
     command = expression(.update_set_names(
       ls_array = mod.par_array,
       coeff_extract = coeff_extract,
-      metadata = !!metadata
+      metadata = !!metadata,
+      data_type = !!data_type
     ))
   ))
 
@@ -107,25 +97,17 @@
     command = expression(.construct_dt(
       ls_array = final.par_array,
       metadata = !!metadata,
+      data_type = !!data_type,
       coeff_extract = coeff_extract,
       sets = tablo_sets[["sets"]]
     ))
   ))
 
-    t_converted.ls_par <- rlang::expr(targets::tar_target_raw(
-      name = "mod.ls_par",
-      command = expression(.convert_data(
-        ls_array = ls_par,
-        data_format = !!metadata[["data_format"]],
-        coeff_extract = coeff_extract
-      ))
-    ))
-
     # construct tibbles from metadata and dts for each data type
     t_init.par_tib <- rlang::expr(targets::tar_target_raw(
       name = "init.par_tib",
       command = expression(.build_tibble(
-        ls_data = mod.ls_par,
+        ls_data = ls_par,
         preagg_header_replace = !!config[["preagg_data"]],
         coeff_extract = coeff_extract
       ))
