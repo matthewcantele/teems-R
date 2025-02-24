@@ -13,7 +13,6 @@
   if (identical(x = data_type, y = "par")) {
     # change ETRE set from ENDWS_COMM to ENDW_COMM and add null values for mobile factors
     if (is.element(el = metadata[["database_version"]], set = c("v9", "v10"))) {
-      browser()
       ETRE_data <- purrr::pluck(.x = ls_array, "ETRE", "data")
       ENDWS_dimnames <- unlist(x = dimnames(x = ETRE_data))
 

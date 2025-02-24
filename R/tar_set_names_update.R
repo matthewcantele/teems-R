@@ -8,7 +8,7 @@
                               metadata,
                               data_type) {
   list2env(x = metadata, envir = rlang::current_env())
-  # ship this to internal data
+
   ls_array <- lapply(
     X = ls_array,
     FUN = function(header) {

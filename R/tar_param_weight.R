@@ -5,7 +5,6 @@
 #' @keywords internal
 #' @noRd
 .weight_param <- function(weights,
-                          RDLT,
                           par,
                           data_format) {
 
@@ -85,7 +84,11 @@
       .y = par_weights[["dt"]],
       .f = function(ls_weights, par_header) {
         sets <- setdiff(x = colnames(x = par_header), y = "Value")
+        # adjust indexing on weights
         data.table::rbindlist(l = lapply(X = ls_weights, FUN = function(weight) {
+          if (is.element(el = "ACTSs", set = colnames(x = weight))) {
+            data.table::setnames(x = weight, old = "ACTSs", new = "ACTSa")
+          }
           weight[, .(Value = sum(Value)), by = sets]
         }))[, .(Weight = sum(Value)), by = sets]
       }

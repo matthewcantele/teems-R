@@ -10,33 +10,32 @@
 
   if (identical(x = data_format, y = "v6.2")) {
     if (identical(x = data_type, y = "set")) {
-      browser()
+      # change header names and duplicate H2/COMM for ACTS
       ls_array <- lapply(
         X = ls_array,
         FUN = function(header) {
           .convert_id(
             header = header,
             table = set_conversion,
-            origin = data_format,
-            colname = TRUE
+            origin = data_format
           )
         }
       )
 
       ACTS <- purrr::pluck(.x = ls_array, "H2")
       ACTS[["header_name"]] <- "ACTS"
-      colnames(ACTS[["dt"]]) <- "ACTS"
       ACTS <- list(ACTS = ACTS)
 
       ls_array <- c(ls_array, ACTS)
     } else if (identical(x = data_type, y = "par")) {
-      browser()
       # don't see any drawback to using the regions from here rather than bringing forth the prior set object
-      REGr <- purrr::pluck(.x = ls_array, "RFLX", "dt", "REGr")
+      REG <- dimnames(x = purrr::pluck(.x = ls_array, "RFLX", "data"))[["REG"]]
+      ACTS <- dimnames(x = purrr::pluck(.x = ls_array, "ESBD", "data"))[["TRAD_COMM"]]
+
       ls_array <- lapply(
         X = ls_array,
         FUN = function(header) {
-          dt <- header[["dt"]]
+          arr <- header[["data"]]
           nme <- header[["header_name"]]
           v7.0_colnames <- unlist(x = subset(
             x = param_conversion,
@@ -48,27 +47,28 @@
             },
             select = v7.0set
           ))
-          if (is.element(el = nme, set = c("ESBD", "ESBM", "ETRE", "ESBT", "ESBV"))) {
-            set_col <- setdiff(x = colnames(x = dt), y = "Value")
-            new_dt <- dt[, .(REGr, Value), by = set_col]
-            if (is.element(el = nme, set = c("ESBT", "ESBV"))) {
-              new_dt <- new_dt[ACTSa != "zcgds", ]
-            }
-          }
 
-          if (exists(x = "new_dt")) {
-            header[["dt"]] <- new_dt
+          if (is.element(el = nme, set = c("ESBD", "ESBM", "ETRE", "ESBT", "ESBV"))) {
+            if (is.element(el = nme, set = c("ESBT", "ESBV"))) {
+              # drop CGDS
+              arr <- arr[-length(x = dimnames(x = arr)[[1]])]
+            }
+            # add region set
+            arr_dimnames <- dimnames(x = arr)[[1]]
+            arr_names <- names(x = dimnames(x = arr))
+            arr <- array(data = arr, dim = c(length(x = arr), length(x = REG)), dimnames = list(arr_dimnames, REG))
+            names(x = dimnames(x = arr)) <- c(arr_names, "REG")
+            header[["data"]] <- arr
           }
 
           return(header)
         }
       )
-
       # add missing v7 parameters
-      REG <- REGr
-      ACTS <- unique(purrr::pluck(.x = ls_array, "ESBV", "dt", "ACTSa"))
-      COMM <- ACTS
-      MARG <- c("atp", "otp", "wtp")
+      set_ele <- list(REG = REG,
+                      ACTS = ACTS,
+                      COMM = ACTS,
+                      MARG = c("atp", "otp", "wtp"))
 
       missing_v7.0 <- unlist(x = subset(
         x = param_conversion,
@@ -86,12 +86,9 @@
             X = missing_v7.0,
             FUN = function(nme) {
               r_idx <- grep(pattern = nme, x = v7.0header)
-              sets <- v7.0set[r_idx][[1]]
-              # descr <- v7.0description[r_idx][[1]]
-              set_ele <- mget(x = sets, parent.frame(n = 5))
-              lower_idx <- tolower(x = substr(x = names(x = set_ele), start = 1, stop = 1))
-              names(x = set_ele) <- paste0(names(x = set_ele), lower_idx)
-
+              sets <- with(data = set_ele,
+                           expr = {mget(x = v7.0set[r_idx][[1]])})
+              
               if (is.element(el = nme, set = c("ESBG", "ESBS"))) {
                 value <- 1
               } else if (identical(x = nme, y = "ETRQ")) {
@@ -100,15 +97,13 @@
                 value <- 0
               }
 
-              dt <- do.call(
-                what = data.table::CJ,
-                args = c(set_ele, Value = value)
-              )
-
+              arr <- array(data = value,
+                           dim = lapply(X = sets, FUN = length),
+                           dimnames = sets)
+              
               list(
                 header_name = nme,
-                # information = descr,
-                dt = dt
+                data = arr
               )
             }
           )
@@ -123,7 +118,6 @@
       )
       ls_array <- c(ls_array, missing_v7.0)
     } else if (identical(x = data_type, y = "base")) {
-      browser()
       # TVOM has MAKB and MAKS (net OSEP)
       # missing headers (MAKS, MAKB, VDIB, VDIP, VMIP, VMIB, CSEP)
       missing_v7.0 <- unlist(x = subset(
@@ -134,110 +128,117 @@
         select = v7.0header
       ))
 
-      missing_v7.0 <- with(
-        data = base_conversion,
-        expr = {
-          lapply(
-            X = missing_v7.0,
-            FUN = function(nme) {
-              if (identical(x = nme, y = "VDIB")) {
-                dt <- data.table::copy(x = purrr::pluck(.x = ls_array, "VDFM", "dt"))
-                dt <- dt[ACTSa == "zcgds", !("ACTSa"), with = FALSE]
-              } else if (identical(x = nme, y = "VDIP")) {
-                dt <- data.table::copy(x = purrr::pluck(.x = ls_array, "VDFA", "dt"))
-                dt <- dt[ACTSa == "zcgds", !("ACTSa"), with = FALSE]
-              } else if (identical(x = nme, y = "VMIB")) {
-                dt <- data.table::copy(x = purrr::pluck(.x = ls_array, "VIFM", "dt"))
-                dt <- dt[ACTSa == "zcgds", !("ACTSa"), with = FALSE]
-              } else if (identical(x = nme, y = "VMIP")) {
-                dt <- data.table::copy(x = purrr::pluck(.x = ls_array, "VIFA", "dt"))
-                dt <- dt[ACTSa == "zcgds", !("ACTSa"), with = FALSE]
-              } else if (identical(x = nme, y = "CSEP")) {
-                dt <- data.table::copy(x = purrr::pluck(.x = ls_array, "ISEP", "dt"))
-                dt <- dt[ACTSa != "zcgds"]
-                dt[, Value := Value * -1]
-              } else if (is.element(el = nme, set = c("MAKB", "MAKS"))) {
-                dt <- data.table::copy(x = purrr::pluck(.x = ls_array, "TVOM", "dt"))
-                dt[, ACTSa := COMMc]
-                sectors <- unique(x = dt[["COMMc"]])
-                null_dt <- data.table::CJ(
-                  COMMc = sectors,
-                  ACTSa = sectors,
-                  REGr = unique(x = dt[["REGr"]]),
-                  Value = 0
-                )
-                null_dt <- null_dt[COMMc != ACTSa, ]
-                dt <- data.table::rbindlist(l = list(null_dt, dt), use.names = TRUE)
-                if (identical(x = nme, y = "MAKS")) {
-                  OSEP <- data.table::copy(x = purrr::pluck(.x = ls_array, "OSEP", "dt"))
-                  OSEP[, ACTSa := COMMc]
-                  data.table::setnames(x = OSEP, old = "Value", new = "OSEP")
-                  dt <- data.table::merge.data.table(
-                    x = dt,
-                    y = OSEP,
-                    by = c("COMMc", "ACTSa", "REGr"),
-                    all.x = TRUE
-                  )
-                  dt[, Value := Value + OSEP]
-                  dt[is.na(x = Value), Value := 0]
-                  dt[, OSEP := NULL]
+      missing_v7.0 <- lapply(
+        X = missing_v7.0,
+        FUN = function(nme) {
+          data_header <- switch(EXPR = nme,
+            "VDIB" = "VDFM",
+            "VDIP" = "VDFA",
+            "VMIB" = "VIFM",
+            "VMIP" = "VIFA",
+            "CSEP" = "ISEP",
+            "MAKB" = "TVOM",
+            "MAKS" = "TVOM"
+          )
+          arr <- purrr::pluck(.x = ls_array, data_header, "data")
+          if (is.element(el = nme, set = c("VDIB", "VDIP", "VMIB", "VMIP"))) {
+            # get CGDS
+            PROD_dim <- which(is.element(el = names(x = dimnames(x = arr)), set = "PROD_COMM"))
+            arr <- arr[, dim(arr)[PROD_dim], ]
+          } else if (identical(x = nme, y = "CSEP")) {
+            PROD_dim <- which(is.element(el = names(x = dimnames(x = arr)), set = "PROD_COMM"))
+            arr <- arr[, -dim(arr)[PROD_dim], , ]
+            arr <- arr * -1
+          } else if (is.element(el = nme, set = c("MAKB", "MAKS"))) {
+            sectors <- dimnames(x = arr)["TRAD_COMM"][[1]]
+            regions <- dimnames(x = arr)["REG"][[1]]
+
+            new_arr <- array(
+              data = 0,
+              dim = c(length(x = sectors), length(x = sectors), length(x = regions)),
+              dimnames = list(TRAD_COMM = sectors, PROD_COMM = sectors, REG = regions)
+            )
+            # diagonal make
+            for (k in 1:length(x = regions)) {
+              for (i in 1:length(x = sectors)) {
+                new_arr[i, i, k] <- arr[i, k]
+              }
+            }
+            if (identical(x = nme, y = "MAKS")) {
+              MAK_sub <- purrr::pluck(.x = ls_array, "OSEP", "data")
+              sub_arr <- array(
+                data = 0,
+                dim = c(length(x = sectors), length(x = sectors), length(x = regions)),
+                dimnames = list(TRAD_COMM = sectors, PROD_COMM = sectors, REG = regions)
+              )
+              for (k in 1:length(x = regions)) {
+                for (i in 1:length(x = sectors)) {
+                  sub_arr[i, i, k] <- MAK_sub[i, k]
                 }
               }
-
-              list(
-                header_name = nme,
-                dt = dt
-              )
+              arr <- new_arr + sub_arr
+            } else {
+              arr <- new_arr
             }
+          }
+
+          list(
+            header_name = nme,
+            data = arr
           )
         }
       )
+      
       ls_array <- lapply(
         X = ls_array,
         FUN = function(header) {
-          dt <- header[["dt"]]
+          arr <- header[["data"]]
           nme <- header[["header_name"]]
 
-          if (is.element(el = nme, set = c(
-            "EVFA",
-            "VFM",
-            "FBEP",
-            "FTRV",
-            "FBEP",
-            "VDFA",
-            "VDFM",
-            "VIFA",
-            "VIFM"
-          ))) {
-            new_dt <- dt[ACTSa != "zcgds"]
+          if (is.element(el = nme, set = c("EVFA", "VFM", "FBEP", "FTRV", "FBEP", "VDFA", "VDFM", "VIFA", "VIFM"))) {
+            arr_dimnames <- dimnames(x = arr)
+            PROD_dim <- which(is.element(el = names(x = arr_dimnames), set = "PROD_COMM"))
+            arr_indices <- rep(list(bquote()), length(x = arr_dimnames))
+            
+            # Modify only the PROD_COMM dimension to exclude last element
+            PROD_ele <- arr_dimnames[[PROD_dim]]
+            arr_indices[[PROD_dim]] <- -length(x = PROD_ele)
+            arr <- do.call(what = "[", args = c(list(arr), arr_indices))
           } else if (identical(x = nme, y = "EVOA")) {
             # use EVOA with shared out VFM PROD_COMM to recreate EVOS
-            VFM <- data.table::copy(purrr::pluck(.x = ls_array, "VFM", "dt"))
-            col_names <- colnames(x = VFM)
-            VFM <- VFM[ACTSa != "zcgds", ]
-            VFM_totals <- VFM[, .(total = sum(Value)), by = c("ENDWe", "REGr")]
-            VFM <- data.table::merge.data.table(
-              x = VFM,
-              y = VFM_totals,
-              by = c("ENDWe", "REGr")
+            VFM_arr <- purrr::pluck(.x = ls_array, "VFM", "data")
+            VFM_arr <- VFM_arr[,-length(x = dimnames(x = VFM_arr)[[2]]),]
+            VFM_arr_dimnames <- dimnames(x = VFM_arr)
+            VFM_arr_total <- apply(
+              X = VFM_arr,
+              MARGIN = c(1, 3),
+              FUN = sum
             )
-            VFM[, phi := Value / total]
-            dt <- data.table::merge.data.table(
-              x = dt,
-              y = VFM[, c("ENDWe", "REGr", "ACTSa", "phi")]
-            )
-            dt[, Value := Value * phi]
-            new_dt <- dt[, phi := NULL]
-            data.table::setcolorder(x = new_dt, neworder = col_names)
+            
+            phi_arr <- array(data = 0,
+                             dim = dim(x = VFM_arr),
+                             dimnames = dimnames(x = VFM_arr))
+            
+            new_arr <- array(data = 0,
+                             dim = dim(x = VFM_arr),
+                             dimnames = dimnames(x = VFM_arr))
+
+            # calculate percentage along REG,ENDW and use share with EVOA
+            for(i in 1:length(x = VFM_arr_dimnames[["ENDW_COMM"]])) {
+              for(k in 1:length(x = VFM_arr_dimnames[["REG"]])) {
+                phi_arr[i, , k] <- VFM_arr[i, , k] / VFM_arr_total[i, k]
+                new_arr[i, , k] <- phi_arr[i, , k] * arr[i, k]
+              }
+            }
+            
+            arr <- new_arr
           } else if (identical(x = nme, y = "ISEP")) {
-            new_dt <- dt[ACTSa == "zcgds"]
-            new_dt <- new_dt[, let(ACTSa = NULL, Value = Value * -1)]
+            # just grab CGDS and *-1
+            arr <- arr[,length(x = dimnames(x = arr)[["PROD_COMM"]]),,]
+            arr <- arr * -1
           }
-
-          if (exists(x = "new_dt")) {
-            header[["dt"]] <- new_dt
-          }
-
+          
+          header[["data"]] <- arr
           return(header)
         }
       )

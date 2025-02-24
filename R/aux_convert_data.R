@@ -29,7 +29,21 @@
             replacement = "",
             x = purrr::pluck(coeff_extract[id, ], "information", 1)
           ))
+        } else {
+          header[["coefficient"]] <- header[["header_name"]]
+          header[["information"]] <- NA
         }
+
+        # missing aggregate info (TRUE if missing)
+        if (!is.element(el = "aggregate", set = names(x = header))) {
+          header[["aggregate"]] <- TRUE
+        }
+        
+        # missing type info (REFULL if missing)
+        if (!is.element(el = "type", set = names(x = header))) {
+          header[["type"]] <- "REFULL"
+        }
+
         return(header)
       }
     )

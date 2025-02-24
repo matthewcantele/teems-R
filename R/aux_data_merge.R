@@ -1,27 +1,6 @@
-#' Data Merge for Pre and Post Coefficients
-#'
-#' Merges pre-model and post-model coefficient data based on specified criteria,
-#' handling intertemporal data by reducing it to a single pre-model time step
-#' entry and renaming the step. It matches coefficients with a reference table,
-#' sets the year to a base year, renames coefficients, filters post-model data
-#' by pre-model data, checks for consistency, and finally merges the data. It
-#' also distinguishes between pre and post "Value" columns and calculates the
-#' percentage change for non-intertemporal data.
-#'
-#' @inheritParams .build_tibble
-#'
-#' @param pre_coeff A list or data frame containing pre-model coefficients.
-#' @param post_coeff A list or data frame containing post-model coefficients.
-#' @param coeff_extract A list or data frame containing the reference table for
-#'   matching coefficients.
-#' @param sets A list containing set definitions and their elements.
-#' @param intertemporal Logical; whether intertemporal.
-#'
-#' @return A list containing the merged pre-model and post-model data, with
-#'   additional processing for intertemporal data and calculation of percentage
-#'   changes for non-intertemporal data.
 #' @importFrom purrr map2
-#' @importFrom data.table merge.data.table setkey rbindlist setcolorder
+#' @importFrom data.table setkey rbindlist setcolorder
+#' 
 #' @keywords internal
 #' @noRd
 .merge_data <- function(pre_coeff,
@@ -30,6 +9,7 @@
                         coeff_extract,
                         reference_year,
                         intertemporal) {
+
   # use elaborated set names to match
   r_idx <- match(x = names(x = pre_coeff), table = coeff_extract[["header"]])
 
@@ -106,7 +86,7 @@
       .y = post_base[["dat"]],
       .f = function(pre, post) {
         post[, Year := paste("post", reference_year, sep = "_")]
-        pre[, Year := paste("ante", as.character(x = Year), sep = "_")]
+        pre[, Year := paste("ante", reference_year, sep = "_")]
         final <- data.table::rbindlist(l = list(pre, post))
         data.table::setcolorder(x = final, "Value", after = ncol(x = final))
         return(final)

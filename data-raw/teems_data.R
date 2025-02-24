@@ -395,19 +395,19 @@ list(
                colnames(x = ESBQ) <- colnames(x = v7.0_param)
 
                # missing ESBI
-               ESBI <- tibble::tibble(15, "ESBI", "REG", "Investment expenditure CES elasticity")
-               colnames(x = ESBI) <- colnames(x = v7.0_param)
+               # ESBI <- tibble::tibble(15, "ESBI", "REG", "Investment expenditure CES elasticity")
+               # colnames(x = ESBI) <- colnames(x = v7.0_param)
 
-               v7.0_param <- rbind(v7.0_param, ESBQ, ESBI)
+               v7.0_param <- rbind(v7.0_param, ESBQ)
 
-               v7.0_param <- .table_fix(single = c(11, 12, 27, 28),
+               v7.0_param <- .table_fix(single = c(11, 12, 27),
                                         double = c(1, 3, 5, 7, 9, 13, 15, 17, 19, 25),
                                         trebble = c(19, 22),
                                         table = v7.0_param,
                                         prefix = "v7.0",
                                         data_type = "par")
 
-               v7.0_param[10:15, "idx"] <- 11:16
+               v7.0_param[10:14, "idx"] <- 11:15
 
                v6.2_param <- param_table[[1]][, c(1:4)]
 
