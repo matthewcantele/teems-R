@@ -1,23 +1,7 @@
-#' Closure Specifications
-#'
-#' This function defines and manages the specification of model
-#' closures, including the option for standard or custom closures, and
-#' the ability to swap variables in and out of the closure. It
-#' leverages the `targets` package to create a reproducible pipeline
-#' for specifying closures, ensuring that changes are tracked and
-#' managed efficiently.
-#'
-#' @inheritParams teems_model
-#' @inheritParams teems_deploy
-#'
-#' @param config A list of model configuration options generated from
-#'   `teems_closure`.
-#'
-#' @importFrom rlang expr enquos
+#' @importFrom rlang expr enquos current_env
 #' @importFrom purrr pluck list_flatten
 #' @importFrom targets tar_target_raw tar_cue
-#' @return A list of all generated targets within the closure
-#'   specification process.
+#' 
 #' @keywords internal
 #' @noRd
 .closure_config <- function(config,
@@ -108,6 +92,8 @@
 
   ##############################################################################
   # gather and check all generated targets
-  targets <- .gather_targets(criteria = "t_")
+  envir <- rlang::current_env()
+  targets <- .gather_targets(criteria = "t_",
+                             envir = envir)
   return(targets)
 }

@@ -15,7 +15,7 @@
   files[["names"]] <- trimws(x = purrr::map(sapply(X = files[["remainder"]], FUN = strsplit, split = " "), 1))
   browser()
   files[["remainder"]] <- .advance_remainder(
-    type = "files",
+    remainder = files[["remainder"]],
     pattern = files[["names"]]
   )
 

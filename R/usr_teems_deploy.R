@@ -87,7 +87,7 @@
 #'                                 ndigits = 8,
 #'                                 verbose = TRUE)
 #'
-#' v6.2_base_config <- teems_base(dat_har = "~/dat/GTAP/v9/2011/gddat.har")
+#' v6.2_base_config <- teems_base(base_har = "~/dat/GTAP/v9/2011/gddat.har")
 #'
 #' v6.2_param_config <- teems_param(par_har = "~/dat/GTAP/v9/2011/gdpar.har")
 #'
@@ -116,7 +116,7 @@
 #'                                   ndigits = 8,
 #'                                   verbose = TRUE)
 #'
-#' INTv1_base_config <- teems_base(dat_har = "~/dat/GTAP/v9/2011/gddat.har")
+#' INTv1_base_config <- teems_base(base_har = "~/dat/GTAP/v9/2011/gddat.har")
 #'
 #' INTv1_param_config <- teems_param(par_har = "~/dat/GTAP/v9/2011/gdpar.har")
 #'
@@ -250,13 +250,14 @@ teems_deploy <- function(model_config,
                          model_name = "teems",
                          base_dir = tempdir(),
                          quiet = FALSE,
+                         tar_load_everything = FALSE,
+                         tar_visnetwork = FALSE,
                          .testing = FALSE)
 {
 call <- match.call()
 args_list <- mget(x = names(x = formals()))
 .check_missing_args(call = call,
                     args_list = args_list)
-
 teems_paths <- .path_ledger(base_dir = base_dir,
                             model_name = model_name,
                             call)
@@ -268,7 +269,7 @@ closure_config <- .assert_config(model_config = model_config,
                                  model_name = model_name,
                                  call = set_config[["call"]],
                                  quiet = quiet)
-metadata <- .get_metadata(con = base_config[["dat_har"]],
+metadata <- .get_metadata(con = base_config[["base_har"]],
                           model = model_config[["model_version"]])
 targets <- .write_pipeline(model_config = model_config,
                            base_config = base_config,
@@ -282,6 +283,7 @@ cmf_path  <- .execute_pipeline(teems_paths = teems_paths,
                                model_name = model_name,
                                metadata = metadata,
                                quiet = quiet,
+                               tar_load_everything = tar_load_everything,
                                .testing = .testing)
 cmf_path
 }

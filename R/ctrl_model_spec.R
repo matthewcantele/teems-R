@@ -1,20 +1,7 @@
-#' Model Specifications
-#'
-#' This function defines and manages the workflow for general model
-#' specifications. It leverages the `targets` package to create a reproducible
-#' pipeline that tracks changes, processes data, and prepares outputs for
-#' modeling.
-#'
-#' @inheritParams teems_model
-#' @param config A list of model configuration options.
-#' @param launchpad_dir A directory to write all input files to generated from
-#'   `teems_write`.
-#'
-#' @importFrom rlang expr
+#' @importFrom rlang expr current_env
 #' @importFrom targets tar_target_raw tar_cue
 #' @importFrom purrr pluck
-#' @return A list of all generated targets within the general model
-#'   specification process.
+#' 
 #' @keywords internal
 #' @noRd
 .model_config <- function(config,
@@ -72,6 +59,8 @@
 
   ##############################################################################
   # gather and check all generated targets
-  targets <- .gather_targets(criteria = "t_")
+  envir <- rlang::current_env()
+  targets <- .gather_targets(criteria = "t_",
+                             envir = envir)
   return(targets)
 }

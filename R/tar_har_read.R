@@ -43,6 +43,8 @@
   while (length(x = charRead <- readBin(con, raw())) > 0) {
     cf <- c(cf, charRead)
   }
+  
+  har_file <- basename(path = summary(object = con)[["description"]])
 
   # Close the file
   close(con)
@@ -461,6 +463,15 @@
                       }
                       return(h)
                     })
+  
+  # GDYN database uses natres instead of natlres for whatever reason (support email submitted)
+  # temporarily disable GDYN runs
+  if (identical(x = har_file, y = "gdset.har")) {
+    if (any(grepl(pattern = "NatRes", purrr::pluck(.x = headers, "ENDW", "data")))) {
+      stop("GDYN 11c database temporarily incompatible due to NatRes/NatlRes mismatch in set file.")
+    }
+  }
+  
 
 # 1CFULL = character
 # 2IFULL = integer

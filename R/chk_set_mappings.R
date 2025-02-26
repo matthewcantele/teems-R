@@ -33,15 +33,15 @@
                      valid_ext = "csv",
                      call = call)
         if (identical(x = mapping_name, y = "endowment_mapping")) {
-          map <- .set_ele_read(file = mapping,
+          map <- .read_set_ele(file = mapping,
                                col = 2,
                                set_name = mappings[["endowment_mapping"]])
         } else if (identical(x = mapping_name, y = "region_mapping")) {
-          map <- .set_ele_read(file = mapping,
+          map <- .read_set_ele(file = mapping,
                                col = 2,
                                set_name = mappings[["region_mapping"]])
         } else if (identical(x = mapping_name, y = "sector_mapping")) {
-          map <- .set_ele_read(file = mapping,
+          map <- .read_set_ele(file = mapping,
                                col = 2,
                                set_name = mappings[["sector_mapping"]])
         }
@@ -67,13 +67,13 @@
   ))
   if (!quiet) {
     with(data = ls_set_ele, expr = {
-      .set_ele_inform(set_ele = endowment_mapping,
+      .inform_set_ele(set_ele = endowment_mapping,
                       set_name = "endowment",
                       model_set = endowment_set)
-      .set_ele_inform(set_ele = region_mapping,
+      .inform_set_ele(set_ele = region_mapping,
                       set_name = "region",
                       model_set = region_set)
-      .set_ele_inform(set_ele = sector_mapping,
+      .inform_set_ele(set_ele = sector_mapping,
                       set_name = "sector",
                       model_set = tradables_set)
     })

@@ -1,15 +1,3 @@
-#' Retrieve Mappings for Different Data Formats
-#'
-#' This function retrieves mappings for regions, sectors, margins, capital goods, and endowments
-#' based on the specified data format version.
-#'
-#' @inheritParams .aggregate_data
-#'
-#' @param region_mapping A mapping of regions.
-#' @param sector_mapping A mapping of sectors.
-#' @param endowment_mapping A mapping of endowments.
-#'
-#' @return A list of mappings specific to the provided data format version.
 #' @keywords internal
 #' @noRd
 .retrieve_mappings <- function(region_mapping,

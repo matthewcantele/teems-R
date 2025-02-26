@@ -63,7 +63,8 @@
   no = NA
   )
 
-  var[["remainder"]] <- .advance_remainder(type = "var", pattern = var[["qualifier_list"]])
+  var[["remainder"]] <- .advance_remainder(remainder = var[["remainder"]],
+                                           pattern = var[["qualifier_list"]])
 
   # pull out names
   var[["name"]] <- unlist(x = purrr::map(
@@ -92,7 +93,8 @@
 
   names(x = var[["ls_lower_idx"]]) <- var[["name"]]
 
-  var[["remainder"]] <- .advance_remainder(pattern = var[["name"]], type = "var")
+  var[["remainder"]] <- .advance_remainder(remainder = var[["remainder"]],
+                                           pattern = var[["name"]])
 
   # remove subindex from name
   var[["name"]] <- unlist(x = purrr::map(.x = sapply(X = var[["name"]], FUN = strsplit, split = "\\("), 1))
@@ -155,7 +157,8 @@
     split = "FROM FILE"
   ), 1))
 
-  r[["remainder"]] <- .advance_remainder(pattern = paste(r[["name"]], "from file"), type = "r")
+  r[["remainder"]] <- .advance_remainder(remainder = r[["remainder"]],
+                                         pattern = paste(r[["name"]], "from file"))
 
   r[["file"]] <- .get_element(input = r[["remainder"]], split = " ", index = 1)
   r[["header"]] <- gsub(

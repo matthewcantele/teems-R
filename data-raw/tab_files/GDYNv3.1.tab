@@ -608,7 +608,7 @@ Variable (all,i,NSAV_COMM)(all,r,REG)
 >!
 Variable (orig_level=VIM)(all,i,TRAD_COMM)(all,s,REG)
     qim(i,s) # aggregate imports of i in region s, market price weights #;
-Variable (all, r, REG)
+Variable (all,r,REG)
     qcgds(r) # Output of capital goods sector = qo("zcgds",r) #;
 Variable
     yqt # income of the global trust #;
@@ -719,9 +719,9 @@ Formula (all,i,NMRG_COMM)(all,r,REG)
 Formula (all,h,CGDS_COMM)(all,r,REG)
     VOM(h,r) = VOA(h,r);
  
-Coefficient (all, r, REG)
+Coefficient (all,r,REG)
     NETINV(r) # regional NET investment in region r #;
-Formula (all, r, REG)
+Formula (all,r,REG)
     NETINV(r) = sum(k,CGDS_COMM, VOA(k,r)) - VDEP(r);
 Coefficient
     GLOBINV # global expenditures on net investment #;
@@ -737,9 +737,9 @@ Coefficient
 Formula
     GLOBEK = sum{r, REG, EK(r) };
  
-Coefficient (all, r, REG)
+Coefficient (all,r,REG)
     YQHHLD(r) # regional household equity income #;
-Formula (all, r, REG)
+Formula (all,r,REG)
     YQHHLD(r) = YQHFIRM(r) + YQHTRUST(r);
  
 Coefficient (all,r,REG)
@@ -749,12 +749,12 @@ Formula (all,r,REG)
  
 Coefficient (all,r,REG)
     YQ_FHHLDSHR(r) # local capital income share #;
-Formula (all, r, REG)
+Formula (all,r,REG)
     YQ_FHHLDSHR(r) = YQHFIRM(r)/YQ_FIRM(r);
  
 Coefficient (all,r,REG)
     WQ_FHHLDSHR(r) # local capital ownership share #;
-Formula (all, r, REG)
+Formula (all,r,REG)
     WQ_FHHLDSHR(r) = YQ_FHHLDSHR(r);
  
 Coefficient (all,r,REG)
@@ -779,12 +779,12 @@ Formula (all,r,REG)
  
 Coefficient (all,r,REG)
     YQ_FTRUSTSHR(r) # foreign capital income share #;
-Formula (all, r, REG)
+Formula (all,r,REG)
     YQ_FTRUSTSHR(r) = YQTFIRM(r)/YQ_FIRM(r) ;
  
 Coefficient (all,r,REG)
     WQ_FTRUSTSHR(r) # foreign capital ownership share #;
-Formula (all, r, REG)
+Formula (all,r,REG)
     WQ_FTRUSTSHR(r) = YQ_FTRUSTSHR(r);
  
 Coefficient (all,r,REG)
@@ -1629,7 +1629,7 @@ Equation ZEROPROFITS
  
 Variable (change)(all,r,REG)
     DKHAT(r) # normal rate of growth in capital #;
-Variable (all, r, REG)
+Variable (all,r,REG)
     rental(r) # rental rate on capital = ps("capital",r) #;
 Variable (all,r,REG)
     rorga(r) # actual rate of return #;
@@ -1649,9 +1649,9 @@ Read
     to reduce the gross rate of return by RORGFLEX %
 >!
  
-Coefficient (all, r, REG)
+Coefficient (all,r,REG)
     REGINV(r) # regional GROSS investment in r (value of "zcgds" output) #;
-Formula (all, r, REG)
+Formula (all,r,REG)
     REGINV(r) = sum(k,CGDS_COMM, VOA(k,r));
  
 Coefficient (all,r,REG)
@@ -1704,7 +1704,7 @@ Equation PRCGOODS
 (all,r,REG)
     pcgds(r) = sum(h,CGDS_COMM, [VOA(h,r) / REGINV(r)] * ps(h,r));
  
-Variable (all, r, REG)
+Variable (all,r,REG)
     sqk(r) # Arbitrary region-specific shock to capital stock #;
 Variable
     sqkworld # Arbitrary region-generic shock to capital stock #;
@@ -1845,14 +1845,14 @@ Equation NET_ROR_EXTRA
 (all,r,REG)
     DROR(r) = SDRORW + SDROR(r);
  
-Variable (all, r, REG)
+Variable (all,r,REG)
     rorwqht(r) # rate of return to foreign equity owned by a region #;
 Equation RRWRTEQY
 # equation defines rate of return to foreign equity owned by a region #
 (all,r,REG)
     rorwqht(r) = yqt - wq_t;
  
-Variable (all, r, REG)
+Variable (all,r,REG)
     rorwqtf(r) # rate of return to equity owned by foreigners in a region #;
 Equation RRWTFEQY
 # eqn defines rate of return to equity owned by foreigners in a reg #
@@ -1946,7 +1946,7 @@ Variable (all,r,REG)
     swq_f(r) # shift in wealth of region r #;
 Equation REGEQYLCL
 # This equation determines the change in VK(r) #
-(all, r, REG)
+(all,r,REG)
     wq_f(r) = qk(r) + pcgds(r) + swq_f(r);
 !<
      (NEQ 6)
@@ -1986,7 +1986,7 @@ Equation PKWRLD
  
 Equation INCFNDLCLEQY
 # eq'n determines the income of the global fund from equity in region r #
-(all, r, REG)
+(all,r,REG)
     yqtf(r) = yq_f(r) + wqtf(r) - wq_f(r);
 !<
     (NEQ 8)
@@ -2493,7 +2493,7 @@ Equation EQYHOLDWLTH
  
 Equation REGINCEQY
 # eq'n determines the income from capital in region r #
-(all, r, REG)
+(all,r,REG)
     YQ_FIRM(r) * yq_f(r)
         = sum(h,ENDWC_COMM, VOA(h,r) * [ps(h,r) + qo(h,r)] )
         - VDEP(r) * (qk(r) + pcgds(r));
@@ -2505,7 +2505,7 @@ Variable (all,r,REG)
     swqh(r) # shift in wealth of region r #;
 Equation REGWLTH
 # This equation determines the change in regional wealth #
-(all, r, REG)
+(all,r,REG)
     WQHHLD(r) * wqh(r)
         = WQHFIRM(r) * pcgds(r) + WQHTRUST(r) * pqtrust
         + 100 * SAVE(r) * time + WQHHLD(r) * swqh(r);
@@ -2515,7 +2515,7 @@ Equation REGWLTH
  
 Equation INCHHDLCLEQY
 # This equation determines the income of the household from local equity #
-(all, r, REG)
+(all,r,REG)
     yqhf(r) = yq_f(r) + wqhf(r) - wq_f(r);
 !<
     (NEQ 7)
@@ -2523,7 +2523,7 @@ Equation INCHHDLCLEQY
  
 Equation REGGLBANK
 # the change in the income of region r from its shares in the global trust #
-(all, r, REG)
+(all,r,REG)
     yqht(r) = yqt + wqht(r) - wq_t;
 !<
       (NEQ 10)
@@ -3080,9 +3080,9 @@ Equation PRIMFACTPRWLD
 # computes % change in global price index of primary factors #
     VENDWWLD * pfactwld = sum(r,REG, VENDWREG(r) * pfactor(r));
  
-Variable (all,i,ENDW_COMM)(all, r, REG)
+Variable (all,i,ENDW_COMM)(all,r,REG)
     qfactsup(i,r) # factor supply in region r #;
-Variable (all, r, REG)
+Variable (all,r,REG)
     empl(r) # Employment rate in region r #;
 Equation EMPLOY_FACTOR # employment determination condition #
     (all,i,ENDW_COMM)(all,r,REG)

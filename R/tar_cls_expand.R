@@ -1,16 +1,5 @@
-#' Expand Closure
-#'
-#' This function expands a closure.
-#'
-#' @param closure Character vector. The closure file to be used. Must be
-#'   provided if standardClosure is FALSE.
-#' @param var_extract A tibble containing variable information extracted from
-#'   the Tablo file.
-#' @param sets A list containing set definitions and their elements.
-#'
-#' @importFrom tibble tibble
-#' @importFrom purrr list_flatten compact map2
-#' @return A list containing the closure and the closure file.
+#' @importFrom purrr pmap
+#' 
 #' @keywords internal
 #' @noRd
 .expand_closure <- function(closure,

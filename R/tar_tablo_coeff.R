@@ -71,7 +71,8 @@
   no = NA
   )
 
-  coeff[["remainder"]] <- .advance_remainder(type = "coeff", pattern = coeff[["qualifier_list"]])
+  coeff[["remainder"]] <- .advance_remainder(remainder = coeff[["remainder"]],
+                                             pattern = coeff[["qualifier_list"]])
 
   # pull out names
   coeff[["name"]] <- unlist(x = purrr::map(
@@ -100,7 +101,8 @@
 
   names(x = coeff[["ls_lower_idx"]]) <- coeff[["name"]]
 
-  coeff[["remainder"]] <- .advance_remainder(pattern = coeff[["name"]], type = "coeff")
+  coeff[["remainder"]] <- .advance_remainder(remainder = coeff[["remainder"]],
+                                             pattern = coeff[["name"]])
 
   # remove subindex from name
   coeff[["name"]] <- unlist(x = purrr::map(.x = sapply(X = coeff[["name"]], FUN = strsplit, split = "\\("), 1))
@@ -166,7 +168,8 @@
     split = "FROM FILE"
   ), 1))
 
-  r[["remainder"]] <- .advance_remainder(pattern = paste(r[["name"]], "from file"), type = "r")
+  r[["remainder"]] <- .advance_remainder(remainder = r[["remainder"]],
+                                         pattern = paste(r[["name"]], "from file"))
 
   r[["file"]] <- .get_element(input = r[["remainder"]], split = " ", index = 1)
   r[["header"]] <- gsub(

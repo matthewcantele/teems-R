@@ -147,7 +147,7 @@ teems_solve <- function(cmf_path = NULL,
 .check_docker(image_name = "teems")
 if (!missing(x = ...)) {
   io_files <- list(...)
-  cmf_path <- .cmf_write(tab_file = tab_file,
+  cmf_path <- .write_cmf(tab_file = tab_file,
                          shock_file = shock_file,
                          closure_file = closure_file,
                          io_files = io_files,

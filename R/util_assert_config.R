@@ -13,17 +13,12 @@
                            model_name,
                            quiet) {
   if (model_config[["intertemporal"]]) {
-    #model_config[["full_exclude"]] <- c(model_config[["full_exclude"]], "RDLT", "RFLX")
     if (is.null(x = set_config[["time_steps"]])) {
       cli::cli_abort(c("x" = "{.arg time_steps} is a required argument for 
                        intertemporal models."),
                      call = call)
     }
   }
-  targets::tar_config_set(
-    store = store_dir,
-    config = file.path(base_dir, "_targets.yaml"),
-    project = model_name)
 
   if (is.null(x = closure_config) || is.null(x = closure_config[["closure_file"]])) {
     if (is.null(x = closure_config)) {

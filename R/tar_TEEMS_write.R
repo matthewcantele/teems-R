@@ -37,7 +37,7 @@
                 sep = "\n",
                 append = TRUE)
           } else if (identical(x = shk[["type"]], y = "custom")) {
-            .ragged_shk_write(
+            .write_ragged_shk(
               dt = shk[["dt"]],
               ndigits = ndigits,
               var_name = shk[["var_name"]],

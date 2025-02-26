@@ -1,4 +1,4 @@
-#' @importFrom rlang expr
+#' @importFrom rlang expr current_env
 #' @importFrom qs2 qd_read
 #' @importFrom targets tar_target_raw tar_cue
 #' 
@@ -163,6 +163,8 @@
 
   ##############################################################################
   # gather and check all generated targets
-  targets <- .gather_targets(criteria = "t_")
+  envir <- rlang::current_env()
+  targets <- .gather_targets(criteria = "t_",
+                             envir = envir)
   return(targets)
 }

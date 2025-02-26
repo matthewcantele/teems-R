@@ -1,4 +1,4 @@
-#' @importFrom rlang expr
+#' @importFrom rlang expr current_env
 #' @importFrom qs2 qd_read
 #' @importFrom targets tar_target_raw tar_cue
 #'
@@ -13,7 +13,7 @@
   # track any changes to designated har files
   t_base_file <- rlang::expr(targets::tar_target_raw(
     name = "base_file",
-    command = quote(expr = !!config[["dat_har"]]),
+    command = quote(expr = !!config[["base_har"]]),
     format = "file"
   ))
 
@@ -148,6 +148,8 @@
 
   ##############################################################################
   # gather and check all generated targets
-  targets <- .gather_targets(criteria = "t_")
+  envir <- rlang::current_env()
+  targets <- .gather_targets(criteria = "t_",
+                             envir = envir)
   return(targets)
 }

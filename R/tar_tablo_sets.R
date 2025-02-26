@@ -44,7 +44,7 @@
 
   # clear qualifier from remainder
   sets[["remainder"]] <- .advance_remainder(
-    type = "sets",
+    remainder = sets[["remainder"]],
     pattern = sets[["qualifier"]]
   )
 
@@ -57,7 +57,7 @@
 
   # clear name from remainder
   sets[["remainder"]] <- .advance_remainder(
-    type = "sets",
+    remainder = sets[["remainder"]],
     pattern = sets[["name"]]
   )
 
@@ -70,7 +70,7 @@
 
   # clear information from remainder
   sets[["remainder"]] <- .advance_remainder(
-    type = "sets",
+    remainder = sets[["remainder"]],
     pattern = sets[["information"]]
   )
 
@@ -88,7 +88,7 @@
   ))
 
   sets[["remainder"]] <- .advance_remainder(
-    type = "sets",
+    remainder = sets[["remainder"]],
     pattern = sets[["max_size"]]
   )
 
@@ -125,7 +125,7 @@
   sets[["header"]] <- gsub(pattern = "\"", replacement = "", x = sets[["header"]])
 
   sets[["remainder"]] <- .advance_remainder(
-    type = "sets",
+    remainder = sets[["remainder"]],
     pattern = sets[["full_read"]]
   )
 
@@ -135,7 +135,7 @@
   )
 
   sets[["remainder"]] <- .advance_remainder(
-    type = "sets",
+    remainder = sets[["remainder"]],
     pattern = sets[["size"]]
   )
 
@@ -146,7 +146,7 @@
 
   # final set check
   sets[["remainder"]] <- .advance_remainder(
-    type = "sets",
+    remainder = sets[["remainder"]],
     pattern = sets[["definition"]]
   )
 

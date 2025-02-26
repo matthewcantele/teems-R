@@ -1,13 +1,3 @@
-#' ShockCheck function
-#'
-#' This function checks the validity of shocks for a model run. It verifies that
-#' shock variables exist within the model, are assigned exogenous status, and
-#' that any set elements specified for shocks indeed belong to the set.
-#'
-#' @param shocks Shocks to be checked.
-#' @param var_extract
-#'
-#' @return A prepared list of shocks.
 #' @keywords internal
 #' @noRd
 .shock_prep <- function(shocks,

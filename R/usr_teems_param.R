@@ -88,7 +88,6 @@
 #' @export
 teems_param <- function(...,
                         par_har,
-                        RORDELTA = TRUE,
                         header_rename = NULL,
                         coefficient_rename = NULL,
                         preagg_data = NULL,
@@ -108,8 +107,6 @@ if (!missing(...)) {
 args_list["..."] <- NULL
 .check_missing_args(call = call,
                     args_list = args_list)
-stopifnot(is.logical(x = RORDELTA))
-RORDELTA <- as.integer(x = RORDELTA)
 args_list[["par_har"]] <- .check_input(file = par_har,
                                        valid_ext = "har",
                                        call = call,
