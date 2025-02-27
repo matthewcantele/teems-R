@@ -85,15 +85,17 @@ teems_swap <- function(var,
 if (!missing(x = ...)) {
   swap_ele <- list(...)
   swap_sets <- names(x = swap_ele)
+  full_swap <- FALSE
   } else {
   swap_ele <- list(NA)
   swap_sets <- NA
+  full_swap <- TRUE
 }
 swap <- list(var = var,
              swap_sets = swap_sets,
              swap_ele = swap_ele)
 swap_names <- names(x = swap)
 swap <- c(swap, list(swap_names))
-attr(x = swap, which = "swap") <- TRUE
+attr(x = swap, which = "full_swap") <- full_swap
 swap
 }

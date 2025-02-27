@@ -22,33 +22,35 @@
 
   if (is.null(x = closure_config) || is.null(x = closure_config[["closure_file"]])) {
     if (is.null(x = closure_config)) {
-    if (!quiet) {
-      cli::cli_inform(
-        c("i" = "{.arg closure_config} is not supplied so the
-                      standard closure will be used with a null shock.",
-          "i" = "A null shock will return all model coefficients as
-                      they are provided and/or calculated in the Tablo file.",
-          "!" = "Any significantion deviation under these
-                      conditions would indicate an error in the loading of
-                      input files or parsing of model outputs.")
-        # point to teems_parse options
-      )
-    }
-    } else {
       if (!quiet) {
         cli::cli_inform(
-          c("i" = "{.arg closure_config} is not supplied so the
-                      standard closure will be used.")
+          c(
+            "i" = "{.arg closure_config} is not supplied so the
+                      standard closure will be used with a null shock.",
+            "i" = "A null shock will return all model coefficients as
+                      they are provided and/or calculated in the Tablo file.",
+            "!" = "Any significantion deviation under these
+                      conditions would indicate an error in the loading of
+                      input files or parsing of model outputs."
+          )
           # point to teems_parse options
         )
+        Sys.sleep(time = 3)
+      }
+    } else {
+      if (!quiet) {
+        cli::cli_inform(c("i" = "No {.arg closure_file} has been provided so the standard model-specific closure will be used."))
+        Sys.sleep(time = 1)
       }
     }
     tab_file <- rlang::call_args(model_config[["call"]])[["tab_file"]]
     closure <- .infer_closure(tab_file = tab_file)
-    closure_file <- .teems_cache(input = closure,
-                                 file = tab_file,
-                                 ext = "cls",
-                                 dir = "cls_files")
+    closure_file <- .teems_cache(
+      input = closure,
+      file = tab_file,
+      ext = "cls",
+      dir = "cls_files"
+    )
     closure_config[["closure_file"]] <- closure_file
   }
 

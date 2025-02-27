@@ -7,6 +7,8 @@
 #'   variable swaps can be directly specified here or passed in as
 #'   output from [`teems_swap()`].
 #'
+#' @importFrom rlang current_env
+#' 
 #' @param swap_in Character of length 1 (default is `NULL`) or in the
 #'   case of a swap, output of [`teems_swap()`]. Multiple swaps "in"
 #'   should be provided in the form of a list of objects created with
@@ -113,40 +115,18 @@ teems_closure <- function(swap_in = NULL,
                           closure_file = NULL,
                           shock_file = NULL)
 {
-fun_call <- match.call()
-if (!is.null(x = swap_in)) {
-  if (!is.symbol(x = substitute(expr = swap_in))) {
-    fun_call <- .harmonize_swap(raw_swap = swap_in, fun_call = fun_call)
-  } else if (!attr(x = swap_in, which = "swap")) {
-    stop("Invalid swap-in value detected.")
-  }
-}
-if (!is.null(x = swap_out)) {
-  if (!is.symbol(x = substitute(expr = swap_out))) {
-    fun_call <- .harmonize_swap(raw_swap = swap_out, fun_call = fun_call)
-  } else if (!attr(x = swap_out, which = "swap")) {
-    stop("Invalid swap-out value detected.")
-  }
-}
-args_list <- as.list(.match_call(fun_call = fun_call,
-                                 eval_args = c("swap_in",
-                                               "swap_out",
-                                               "shock"))[-1])
-if (is.null(x = closure_file)) {
-message("The standard model-specific closure will be used.")
-} else if (!file.exists(closure_file)) {
-  stop("The closure specified has not been found.")
-} else {
-  args_list[["closure_file"]] <- path.expand(path = closure_file)
-}
-if (!is.null(x = shock_file)) {
-  if (!file.exists(shock_file)) {
-    stop("The `shock_file` specified has not been found.")
-  }
-  if (!is.null(x = shock)) {
-    stop("A final `shock_file` was provided therefore no additional shocks or modifications are accepted via `shock`.")
-  }
-  args_list[["shock_file"]] <- path.expand(path = shock_file)
-}
+call <- match.call()
+call <- .check_swaps(swap_in = swap_in,
+                     swap_out = swap_out,
+                     call = call)
+envir <- rlang::current_env()
+args_list <- .selective_eval(call = call,
+                             envir = envir,
+                             eval_args = c("swap_in", "swap_out", "shock"))
+args_list <- .check_closure_inputs(closure_file = closure_file,
+                                   shock_file = shock_file,
+                                   shock = shock,
+                                   args_list = args_list,
+                                   call = call)
 args_list
 }

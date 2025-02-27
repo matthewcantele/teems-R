@@ -145,21 +145,12 @@ teems_shock <- function(var,
                         file = NULL,
                         ...)
 {
-if (missing(x = type)) {
-  stop("The 'type' argument must be provided for all shocks.")
-} else {
-  type <- match.arg(type)
-}
-if (missing(x = var)) {
-  stop("The 'var' argument must be provided for all shock types.")
-}
-if (is.element(el = type, set = c("custom", "scenario"))) {
-  if (is.null(x = file)) {
-    stop("An 'file' argument must be provided for shock types 'custom' and 'scenario'.")
-  } else if (!file.exists(file)) {
-      stop("The shock file provided:", file, "does not exist.")
-  }
-}
+call <- match.call()
+.check_shock_input(var = var,
+                   type = type,
+                   file = file,
+                   call = call)
+
 if (!missing(x = ...)) {
 args_list <- list(var = var,
      type = type,

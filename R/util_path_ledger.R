@@ -9,7 +9,8 @@
   if (!identical(x = base_dir, y = tempdir())) {
     base_dir <- path.expand(path = base_dir)
     if (!dir.exists(path = base_dir)) {
-      cli::cli_abort(c("x" = "{.path {base_dir}} does not exist."),
+      .dev_trace()
+      cli::cli_abort(c("x" = "The path provided for {.arg base_dir}, {.path {base_dir}}, does not exist."),
                      call = call)
     }
   }
