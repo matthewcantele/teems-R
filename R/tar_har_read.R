@@ -20,19 +20,17 @@
                       header_rename,
                       coefficient_rename,
                       full_exclude = NULL,
-                      append = NULL) {
+                      append = NULL,
+                      call) {
 
-  # map connection to data type (GTAP database file naming is inconsistent across releases)
-  implied_data_type <- .har_match(con = con)
-
-  if (!identical(x = data_type, y = implied_data_type)) {
-    stop("got the wrong file here buster")
-  }
   # Open the file
   if (is.character(x = con)) {
     con <- file(con, "rb")
   }
 
+  # map connection to data type (GTAP database file naming is inconsistent across releases)
+  full_har_path <- summary(object = con)[["description"]]
+  
   # Read all bytes into a vector
   cf <- raw()
   while (length(x = a <- readBin(con, raw(), n = 1e9)) > 0) {
@@ -44,11 +42,19 @@
     cf <- c(cf, charRead)
   }
   
-  har_file <- basename(path = summary(object = con)[["description"]])
-
   # Close the file
   close(con)
 
+  implied_data_type <- .har_match(con = full_har_path)
+  har_file <- basename(path = full_har_path)
+
+  if (!identical(x = data_type, y = implied_data_type)) {
+    .cli_action(action = "abort",
+                msg = "The HAR file provided {.val {full_har_path}} has been
+                loaded as a {.val {data_type}} file but appears to be a {.val
+                {implied_data_type}} file.",
+                call = call)
+  }
   if (cf[1] == 0xfd) {
     currentHeader <- ""
     headers <- list()
@@ -409,7 +415,9 @@
     if (!all(is.element(el = names(x = header_rename), set = names(x = headers)))) {
       errant_headers <- names(x = header_rename)[!is.element(el = names(x = header_rename),
                                                              set = names(x = headers))]
-      stop(paste("The header(s) specified for renaming:", errant_headers, "is(are) not found in the HAR file."))
+      .cli_action(action = "abort",
+                  msg = "The header(s) specified for renaming, {.val {errant_headers}} is(are) not found in the {.val {full_har_path}} HAR file.",
+                  call = call)
     }
 
     r_idx <- match(x = names(x = header_rename), table = names(x = headers))
@@ -427,11 +435,14 @@
       h[["coefficient"]]
     })
     if (!all(is.element(el = names(x = coefficient_rename), set = coefficient_names))) {
-      errant_headers <- names(x = coefficient_rename)[!is.element(
+      errant_coefficients <- names(x = coefficient_rename)[!is.element(
         el = names(x = coefficient_rename),
         set = coefficient_names
       )]
-      stop(paste("The header(s) specified for renaming:", errant_headers, "is(are) not found in the HAR file."))
+      
+      .cli_action(action = "abort",
+                  msg = "The header(s) specified for renaming, {.val {errant_coefficients}} is(are) not found in the {.val {full_har_path}} HAR file.",
+                  call = call)
     }
 
     for (nme in seq_along(coefficient_rename)) {

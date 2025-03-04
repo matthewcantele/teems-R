@@ -113,7 +113,8 @@ teems_closure <- function(swap_in = NULL,
                           swap_out = NULL,
                           shock = NULL,
                           closure_file = NULL,
-                          shock_file = NULL)
+                          shock_file = NULL,
+                          quiet = FALSE)
 {
 call <- match.call()
 call <- .check_swaps(swap_in = swap_in,
@@ -127,6 +128,7 @@ args_list <- .check_closure_inputs(closure_file = closure_file,
                                    shock_file = shock_file,
                                    shock = shock,
                                    args_list = args_list,
-                                   call = call)
+                                   call = call,
+                                   quiet = quiet)
 args_list
 }

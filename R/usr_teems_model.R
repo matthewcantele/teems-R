@@ -118,7 +118,6 @@ args_list[["model_version"]] <- .check_model_version(tab_file = args_list[["tab_
                                                      call = call,
                                                      quiet = quiet)
 args_list[["intertemporal"]] <- .inform_temp_dyn(tab_file = args_list[["tab_file"]],
-                                                 call = call,
                                                  quiet = quiet)
 config <- c(args_list, call = call)
 config

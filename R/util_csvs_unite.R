@@ -5,7 +5,8 @@
 #' @keywords internal
 #' @noRd
 .unite_csvs <- function(target,
-                      paths) {
+                        paths,
+                        call) {
   # Check if the directories exist
   if (!all(sapply(X = paths, FUN = dir.exists))) {
     stop("One or more paths do not exist.")

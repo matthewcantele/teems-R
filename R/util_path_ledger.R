@@ -1,5 +1,3 @@
-#' @importFrom cli cli_abort
-#' 
 #' @keywords internal 
 #' @noRd
 .path_ledger <- function(base_dir,
@@ -9,9 +7,9 @@
   if (!identical(x = base_dir, y = tempdir())) {
     base_dir <- path.expand(path = base_dir)
     if (!dir.exists(path = base_dir)) {
-      .dev_trace()
-      cli::cli_abort(c("x" = "The path provided for {.arg base_dir}, {.path {base_dir}}, does not exist."),
-                     call = call)
+      .cli_action(action = "abort",
+                  msg = "The path provided for {.arg base_dir}, {.path {base_dir}}, does not exist.",
+                  call = call)
     }
   }
   
@@ -25,6 +23,8 @@
   if (dir.exists(paths = launchpad_dir)) {
     unlink(x = launchpad_dir, recursive = TRUE, force = TRUE)
   }
+  dir.create(path = file.path(launchpad_dir, "out", "sets"),
+             recursive = TRUE)
   dir.create(path = file.path(launchpad_dir, "out", "coefficients"),
              recursive = TRUE)
   dir.create(path = file.path(launchpad_dir, "out", "variables", "bin"),

@@ -1,7 +1,8 @@
 #' @keywords internal
 #' @noRd
-.check_set <- function(premodel,
-                     postmodel) {
+.check_set_consistency <- function(premodel,
+                                  postmodel,
+                                  call) {
   postmodel[["setname"]] <- toupper(x = postmodel[["setname"]])
 
   # match pre and post ()
@@ -26,7 +27,11 @@
   # check that the sets and elements parsed from tablo code are identical
   # to the postmodel binary output
   if (!isTRUE(x = all.equal(target = premodel[["elements"]], current = premodel[["post_ele"]]))) {
-    stop("Tablo-parsed sets and/or elements are not identical to post-model binary outputs")
+    .cli_action(action = "abort",
+                msg = "Tablo-parsed sets and/or elements are not identical to 
+                post-model binary set outputs. This is likely an internal error 
+                and should be forwarded to the package maintainer",
+                call = call)
   }
   return(invisible(NULL))
 }

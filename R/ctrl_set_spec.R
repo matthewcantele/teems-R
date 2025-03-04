@@ -8,6 +8,12 @@
                         metadata,
                         full_exclude,
                         write_dir) {
+  
+  t_set_call <- rlang::expr(targets::tar_target_raw(
+    name = "set_call",
+    command = rlang::expr(quote(expr = !!config[["call"]]))
+  ))
+
   # track any changes to designated har files
   t_set_file <- rlang::expr(targets::tar_target_raw(
     name = "set_file",
@@ -46,7 +52,8 @@
       data_type = !!data_type,
       header_rename = NULL,
       coefficient_rename = NULL,
-      full_exclude = !!full_exclude
+      full_exclude = !!full_exclude,
+      call = set_call
     ))
   ))
 

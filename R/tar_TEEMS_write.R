@@ -17,10 +17,6 @@
                          write_object,
                          write_dir) {
 
-  # Check if the write_dir exist
-  if (!dir.exists(paths = write_dir)) {
-    stop(paste("The write directory", dQuote(x = write_dir), "does not exist."))
-  }
   # full write path
   write_path <- file.path(write_dir, file)
   if (is.element(el = write_object, set = c("cmf"))) {

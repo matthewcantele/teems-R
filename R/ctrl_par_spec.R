@@ -10,6 +10,11 @@
                           ndigits,
                           full_exclude,
                           write_dir) {
+  t_par_call <- rlang::expr(targets::tar_target_raw(
+    name = "par_call",
+    command = rlang::expr(quote(expr = !!config[["call"]]))
+  ))
+  
   # track any changes to designated har files
   t_par_file <- rlang::expr(targets::tar_target_raw(
     name = "par_file",
@@ -32,7 +37,9 @@
           con = aux_par_file,
           data_type = !!data_type,
           header_rename = !!config[["header_rename"]],
-          coefficient_rename = !!config[["coefficient_rename"]]
+          coefficient_rename = !!config[["coefficient_rename"]],
+          full_exclude = !!full_exclude,
+          call = par_call
         ))
       ))
     } else if (identical(x = file_type, y = "qs2")) {
@@ -51,7 +58,8 @@
         header_rename = !!config[["header_rename"]],
         coefficient_rename = !!config[["coefficient_rename"]],
         append = aux_par_array,
-        full_exclude = !!full_exclude
+        full_exclude = !!full_exclude,
+        call = par_call
       ))
     ))
   } else {

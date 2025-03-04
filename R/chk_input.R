@@ -1,4 +1,3 @@
-#' @importFrom cli cli_abort
 #' @importFrom tools file_ext
 #'
 #' @keywords internal
@@ -34,11 +33,13 @@
                             arg = arg,
                             call) {
   if (!file.exists(file)) {
-    cli::cli_abort(c("x" = "Cannot open file {.file {file}}: No such file."),
-                   call = call)
+    .cli_action(action = "abort",
+                msg = "Cannot open file {.file {file}}: No such file.",
+                call = call)
   } else if (!is.element(el = file_ext, set = valid_ext)) {
-      cli::cli_abort(c("x" = "{.arg {arg}} must be a {.or {valid_ext}} file, not {?a/an} {file_ext} file."),
-                     call = call)
+    .cli_action(action = "abort",
+                msg = "{.arg {arg}} must be a {.or {valid_ext}} file, not {?a/an} {file_ext} file.",
+                call = call)
   }
   file <- path.expand(path = file)
   attr(x = file, which = "file_ext") <- file_ext
@@ -57,13 +58,12 @@
       "tab" = "Tablo",
       "cls" = "closure"
     )
-    
-    .dev_trace()
-    cli::cli_abort(c("x" = "The specified internal {file_type} file: {.val {file}} is not supported.",
-                     "i" = "Currently supported {file_type} files include: {.val {file_names}}.",
-                     "i" = "Alternatively, path to a user-provided {file_type} file is supported.",
-                     "!" = "Note that user-provided {file_type} files may need to be modified for compatibility with various {.pkg teems} functions."),
-                   call = call)
+    .cli_action("Currently supported {file_type} files include: {.val {file_names}}.",
+                "Alternatively, path to a user-provided {file_type} file is supported.",
+                "Note that user-provided {file_type} files may need to be modified for compatibility with various {.pkg teems} functions.",
+                action = "abort",
+                msg = "The specified internal {file_type} file: {.val {file}} is not supported.",
+                call = call)
   } else {
     input <- valid_internal_files[[file]]
     dir <- paste(ext, "files", sep = "_")

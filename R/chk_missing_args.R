@@ -1,5 +1,4 @@
 #' @importFrom rlang fn_fmls caller_fn
-#' @importFrom cli cli_abort
 #' 
 #' @keywords internal
 #' @noRd
@@ -12,9 +11,8 @@
   
   missing_args <- names(x = args_list[req_args & args_list == ""])
   if (length(missing_args) > 0) {
-    .dev_trace()
-    cli::cli_abort(c("x" = "Missing required arguments: {.arg {missing_args}}.") ,
-      call = call
-    )
+    .cli_action(action = "abort",
+                msg = "Missing required arguments: {.arg {missing_args}}.",
+                call = call)
   }
 }

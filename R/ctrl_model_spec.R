@@ -7,6 +7,11 @@
 .model_config <- function(config,
                           launchpad_dir) {
 
+  t_model_call <- rlang::expr(targets::tar_target_raw(
+    name = "model_call",
+    command = rlang::expr(quote(expr = !!config[["call"]]))
+  ))
+  
   # Tablo file identification and tracking -------------------------------------
   t_tab_path <- rlang::expr(targets::tar_target_raw(
     name = "tab_path",
@@ -31,7 +36,8 @@
   t_coeff_extract <- rlang::expr(targets::tar_target_raw(
     name = "coeff_extract",
     command = expression(.tablo_coeff(
-      parsed_tablo = parsed.tablo[["extract"]]
+      parsed_tablo = parsed.tablo[["extract"]],
+      call = model_call
     ))
   ))
   
@@ -40,7 +46,8 @@
     name = "final.tablo",
     command = expression(.append_tablo(
       tab = parsed.tablo[["tab"]],
-      coeff_extract = coeff_extract
+      coeff_extract = coeff_extract,
+      sets = final.set_tib
     )),
     cue = targets::tar_cue(mode = "always")
   ))

@@ -1,5 +1,3 @@
-#' @importFrom cli cli_abort cli_inform
-#'
 #' @keywords internal
 #' @noRd
 .get_model_version <- function(tab_file,
@@ -17,17 +15,19 @@
   } else if (any(grepl(pattern = "7.0|7", x = lines))) {
     model_version <- "v7.0"
   } else {
-    cli::cli_abort(c("x" = "Model version was not successfully extracted from 
-                     {.path {tab_file}}.",
-                     "i" = "Try inputing {.arg model_version} explicitly or 
+    .cli_action("i" = "Try inputing {.arg model_version} explicitly or 
                      modifying the Tablo file.",
-                     "i" = "If not explicitly provided, {.pkg teems} currently 
-                     calls {.fn grepl} on the first {n_char} lines using patterns {.val 6.2} and {.val 7.0|7}."),
-                   call = call)
+                "i" = "If not explicitly provided, {.pkg teems} currently 
+                     calls {.fn grepl} on the first {n_char} lines using patterns {.val 6.2} and {.val 7.0|7}.",
+                action = "abort",
+                msg = "Model version was not successfully extracted from 
+                     {.path {tab_file}}.",
+                call = call)
   }
   if (!quiet) {
-  cli::cli_inform(c("i" = "Model version for {tab_name} has been determined as 
-                    {.val {model_version}}."))
+    .cli_action(action = "inform",
+                msg = "Model version for {tab_name} has been determined as 
+                    {.val {model_version}}.")
   }
   return(model_version)
 }

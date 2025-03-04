@@ -75,6 +75,7 @@ teems_sets <- function(set_har,
                        quiet = FALSE)
 {
 call <- match.call()
+trace <- rlang::trace_back(bottom = rlang::current_env())
 args_list <- mget(x = names(x = formals()))
 .check_missing_args(call = call,
                     args_list = args_list)
@@ -95,6 +96,8 @@ args_list[["time_steps"]] <- .check_time_steps(t0 = metadata[["reference_year"]]
                                                call = call,
                                                quiet = quiet)
 }
-config <- c(args_list, call = call)
+config <- c(args_list,
+            call = call,
+            trace = trace)
 config
 }

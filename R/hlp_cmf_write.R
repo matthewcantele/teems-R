@@ -107,6 +107,7 @@
 
   if (!in_situ) {
     coefficient_names <- targets::tar_read(name = coeff_extract, store = store_dir)[["name"]]
+    set_names <- toupper(x = targets::tar_read(name = final.set_tib, store = store_dir)[["name"]])
   } else {
     coefficient_names <- .tablo_coeff(parsed_tablo = parsed.tablo[["extract"]])[["name"]]
     launchpad_dir <- dirname(path = tab_file)
@@ -120,6 +121,20 @@
     }
   }
 
+  # set writeout
+  set_writeout <- paste("outdata",
+                              paste0('"', set_names, '"'),
+                              paste0(
+                                '"',
+                                file.path(
+                                  launchpad_dir,
+                                  "out",
+                                  "sets",
+                                  paste0(set_names, ".csv")
+                                ),
+                                '"',
+                                ";"
+                              ))
   # coefficient writeout
   coefficient_writeout <- paste("outdata",
                                 paste0('"', coefficient_names, '"'),
@@ -151,6 +166,7 @@
     iodata,
     cmf_components,
     variable_output,
+    set_writeout,
     coefficient_writeout,
     sep = "\n"
   ))

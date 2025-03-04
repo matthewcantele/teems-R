@@ -9,7 +9,8 @@
 #'   and the file name.
 #' @keywords internal
 #' @noRd
-.tablo_coeff <- function(parsed_tablo) {
+.tablo_coeff <- function(parsed_tablo,
+                         call) {
   # here
   coeff <- subset(
     x = parsed_tablo,
@@ -24,8 +25,11 @@
 
   # check that information is available for each coefficient
   if (any(!grepl("#", coeff[["remainder"]]))) {
-    browser()
-    stop("One or more variables or coefficients is missing a information - add # NA # if not descriptive information is available.")
+    .cli_action(action = "abort",
+                msg = "One or more variables or coefficients within the provided
+                Tablo file is missing information - add # NA # if descriptive 
+                information is not available.",
+                call = call)
   }
 
   coeff[["information"]] <- paste(

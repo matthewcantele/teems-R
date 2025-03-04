@@ -124,9 +124,11 @@ args_list[["base_har"]] <- .check_input(file = base_har,
 metadata <- .get_metadata(con = base_har)
 .check_database_version(vetted =  c("v9A", "v10A", "v11c"),
                         provided = metadata[["full_database_version"]],
+                        call = call,
                         quiet = quiet)
 .inform_metadata(metadata = metadata,
                  quiet = quiet)
-config <- c(args_list, call = call)
+config <- c(args_list,
+            call = call)
 config
 }

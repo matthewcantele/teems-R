@@ -10,6 +10,17 @@
                          ndigits,
                          full_exclude,
                          write_dir) {
+  
+  t_base_call <- rlang::expr(targets::tar_target_raw(
+    name = "base_call",
+    command = rlang::expr(quote(expr = !!config[["call"]]))
+  ))
+
+  t_base_fn <- rlang::expr(targets::tar_target_raw(
+    name = "base_fn",
+    command = quote(expr = "teems_base")
+  ))
+
   # track any changes to designated har files
   t_base_file <- rlang::expr(targets::tar_target_raw(
     name = "base_file",
@@ -32,7 +43,9 @@
           con = aux_base_file,
           data_type = !!data_type,
           header_rename = !!config[["header_rename"]],
-          coefficient_rename = !!config[["coefficient_rename"]]
+          coefficient_rename = !!config[["coefficient_rename"]],
+          full_exclude = !!full_exclude,
+          call = base_call
         ))
       ))
     } else if (identical(x = file_type, y = "qs2")) {
@@ -51,7 +64,8 @@
         header_rename = !!config[["header_rename"]],
         coefficient_rename = !!config[["coefficient_rename"]],
         append = aux_base_array,
-        full_exclude = !!full_exclude
+        full_exclude = !!full_exclude,
+        call = base_call
       ))
     ))
   } else {

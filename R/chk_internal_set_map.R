@@ -1,5 +1,4 @@
 #' @importFrom purrr pluck
-#' @importFrom cli cli_abort
 #'
 #' @keywords internal
 #' @noRd
@@ -18,14 +17,11 @@
   available_mappings <- colnames(x = set_mappings)[-1]
 
   if (!is.element(el = mapping, set = available_mappings)) {
-    .dev_trace()
-    cli::cli_abort(
-      c("x" = "The internal mapping selected: {.val {mapping}}, for set: {set} does not exist.",
-        "i" = "Available mappings for {set} include {.val {available_mappings}}"
-      ),
+    .cli_action("Available mappings for {set} include {.val {available_mappings}}",
+                action = "abort",
+                msg = "The internal mapping selected: {.val {mapping}}, for set: {set} does not exist.",
+                call = call)
       # add information for what the mappings are ??mappings
-      call = call
-    )
   } else {
     sel_mapping <- set_mappings[, mget(x = c(colnames(x = set_mappings)[1], ..mapping))]
     file <- paste(database_version, set, mapping, sep = "_")
