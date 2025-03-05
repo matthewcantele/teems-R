@@ -27,7 +27,7 @@
 #'   type.
 #' @export
 teems_parse <- function(cmf_path,
-                        type = c("variable", "coefficient", "set"),
+                        type = c("variable", "coefficient", "set", "basedata"),
                         merge_premodel = FALSE) {
 call <- match.call()
 type <- rlang::arg_match(arg = type)
@@ -37,22 +37,12 @@ sets <- .check_sets(var_paths = paths[["var"]],
                     call = call)
 int <- .check_intertemporal(launchpad_dir = paths[["launchpad"]],
                             model_dir = paths[["model"]],
+                            metadata_path = paths[["metadata"]],
                             sets = sets[["postmodel"]])
 output <- .retrieve_output(type = type,
                            paths = paths,
+                           sets = sets,
+                           int = int,
                            call = call)
-
-
-if (identical(x = type, y = "basedata")) {
-  targets::tar_load(name = final.base_tib, store = file.path(model_dir, "store"))
-  output <- .merge_data(
-    pre_coeff = final.base_tib[["dt"]],
-    post_coeff = output,
-    sets = final.set_tib,
-    coeff_extract = coeff_extract,
-    reference_year = metadata[["reference_year"]],
-    intertemporal = intertemporal
-  )
-  }
 output
 }

@@ -8,9 +8,16 @@
                        var_extract,
                        vars,
                        sets,
-                       chron_yrs = NULL) {
+                       chron_yrs = NULL,
+                       call) {
 
-  # now we turn to the var csvs
+  if (!all(sapply(X = paths, FUN = file.exists))) {
+    .cli_action(
+      action = "abort",
+      msg = "One or more variable file paths does not exist.",
+      call = call
+    )
+  }
   # split up the set ids for matching
   vars[["setid"]] <- strsplit(x = vars[["setid"]], split = ",")
 
@@ -76,16 +83,15 @@
   # check that matsize equals nrow for each dt and total n rows equals total data
   if (!all(lapply(X = vars[["dt"]], nrow) == vars[["matsize"]]) ||
     !identical(sum(x = unlist(x = lapply(X = vars[["dt"]], nrow))), nrow(x = dt))) {
-    stop("INDICES MISMATCH")
-  } else {
-    print("No mismatch detected.")
-  }
+    .cli_action(action = "abort",
+                msg = "Index mismatch detected on output variables.",
+                call = call)
+  } 
 
   data.table::setnames(dt, old = c("V1", "V2"), new = c("r_idx", "Value"))
 
   # bring in variable names by matrix size
   dt[["var"]] <- rep(x = vars[["cofname"]], vars[["matsize"]])
-  #dt[, let(var = rep(x = vars[["cofname"]], vars[["matsize"]]))]
 
   var_out <- sapply(X = vars[["cofname"]], function(nm) {
     sets <- vars[["dt"]][[nm]]
@@ -105,7 +111,10 @@
     }
   )))
   if (!lax_check) {
-    stop("Lax check:\nOne or more column names in parsed variable data.tables is not present in the tab extract.")
+    .cli_action(action = "abort",
+                msg = "Lax check failed: One or more column names in parsed 
+                variable data.tables is not present in the tab extract.",
+                call = call)
   }
 
   # this is a strict check so column order matters
@@ -117,12 +126,19 @@
     }
   )))
   if (!strict_check) {
-    message('Strict check:\nOne or more column names is either not present (see "Lax check") or in a different order than that of the tab extract.')
+    .cli_action(action = "abort",
+                msg = "Strict check failed: One or more column names is either 
+                not present or in a different order than that of the tab 
+                extract.",
+                call = call)
   }
 
   # name check
   if (!all(names(var_out) == tolower(x = var_extract[["name"]]))) {
-    stop("Name mismatch in parsed variables with respect to variable extract names")
+    .cli_action(action = "abort",
+                msg = "Name mismatch in parsed variables with respect to 
+                variable extract names.",
+                call = call)
   }
 
   # bring back the order-specific subindices

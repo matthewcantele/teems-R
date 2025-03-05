@@ -14,6 +14,7 @@
                 call = call)
   }
   
+  metadata_path <- file.path(launchpad_dir, "metadata.qs2")
   var_paths <- list.files(
     path = file.path(
       launchpad_dir,
@@ -45,6 +46,7 @@
 
   paths <- list(launchpad = launchpad_dir,
                 model = model_dir,
+                metadata = metadata_path,
                 var = var_paths,
                 coeff = coeff_paths,
                 set = set_paths)

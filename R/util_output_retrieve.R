@@ -1,34 +1,59 @@
+#' @importFrom targets tar_read
+#' @importFrom qs2 qs_read
+#' 
+#' @keywords internal
+#' @noRd
 .retrieve_output <- function(type,
                              paths,
+                             sets,
+                             int,
                              call) {
-  browser()
+  #UseMethod here eventually
   if (identical(x = type, y = "variable")) {
     var_union <- .unite_csvs(target = "var_csvs",
-                             paths = var_paths,
+                             paths = paths[["var"]],
                              call = call)
-    targets::tar_load(name = tablo_var, store = file.path(model_dir, "store"))
+    tablo_var <- targets::tar_read(name = tablo_var,
+                                   store = file.path(paths[["model"]],
+                                                     "store"))
     output <- .parse_var(
-      paths = var_paths,
+      paths = paths[["var"]],
       var_extract = tablo_var,
       vars = var_union,
-      sets = set_elements,
-      chron_yrs = CYRS
+      sets = sets[["postmodel"]],
+      chron_yrs = int[["CYRS"]],
+      call = call
     )
-  } else if (identical(x = type, y = "coefficient")) {
+  } else if (is.element(el = type, set = c("coefficient", "basedata"))) {
     coeff_extract <- targets::tar_read(name = coeff_extract,
-                                       store = file.path(model_dir, "store"))
+                                       store = file.path(paths[["model"]],
+                                                         "store"))
     output <- .parse_coeff(
-      paths = coeff_paths,
+      paths = paths[["coeff"]],
       coeff_extract = coeff_extract,
-      sets = set_elements,
-      chron_yrs = CYRS
+      sets = sets[["postmodel"]],
+      chron_yrs = int[["CYRS"]],
+      call = call
     )
+    
+    if (identical(x = type, y = "basedata")) {
+      pre_coeff <- targets::tar_read(name = final.base_tib,
+                                     store = file.path(paths[["model"]],
+                                                       "store"))
+      reference_year <- qs2::qs_read(file = paths[["metadata"]])[["reference_year"]]
+      output <- .merge_data(
+        pre_coeff = pre_coeff[["dt"]],
+        post_coeff = output,
+        sets = sets[["premodel"]],
+        coeff_extract = coeff_extract,
+        reference_year = reference_year,
+        intertemporal = int[["intertemporal"]]
+      )
+    }
   } else if (identical(x = type, y = "set")) {
-    output <- .parse_set(
-      paths = coeff_paths,
-      coeff_extract = coeff_extract,
-      sets = set_elements,
-      chron_yrs = CYRS
-    )
+    output <- .parse_set(paths = paths[["set"]],
+                         sets = sets[["premodel"]],
+                         call = call)
   }
+  return(output)
 }

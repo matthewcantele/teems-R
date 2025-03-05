@@ -6,8 +6,9 @@
 #' @noRd
 .check_intertemporal <- function(launchpad_dir,
                                  model_dir,
+                                 metadata_path,
                                  sets) {
-  metadata <- qs2::qs_read(file = file.path(launchpad_dir, "metadata.qs2"))
+  metadata <- qs2::qs_read(file = metadata_path)
   if (any(sets[["intertemp"]])) {
     intertemporal <- TRUE
     CYRS <- purrr::pluck(.x = targets::tar_read(

@@ -9,7 +9,6 @@
                         coeff_extract,
                         reference_year,
                         intertemporal) {
-
   # use elaborated set names to match
   r_idx <- match(x = names(x = pre_coeff), table = coeff_extract[["header"]])
 
@@ -62,7 +61,7 @@
 
   if (intertemporal) {
     # final dt merge
-    post_base[["final_dat"]] <- purrr::map2(
+    post_base[["dat"]] <- purrr::map2(
       .x = post_base[["pre_dat"]],
       .y = post_base[["dat"]],
       .f = function(pre, post) {
@@ -71,17 +70,19 @@
     )
 
     # include percentage change and move "Year" column
-    lapply(X = post_base[["final_dat"]],
-           FUN = function(dt) {
-             if (is.element(el = "Year", set = colnames(dt))) {
-      data.table::setcolorder(dt, "Year", after = ncol(x = dt) - 1)
-             }
-      data.table::setkey(x = dt)
-      return(dt)
-    })
+    lapply(
+      X = post_base[["dat"]],
+      FUN = function(dt) {
+        if (is.element(el = "Year", set = colnames(dt))) {
+          data.table::setcolorder(dt, "Year", after = ncol(x = dt) - 1)
+        }
+        data.table::setkey(x = dt)
+        return(dt)
+      }
+    )
   } else {
     # add "Year" indicator for post-model data and stack
-    post_base[["final_dat"]] <- purrr::map2(
+    post_base[["dat"]] <- purrr::map2(
       .x = post_base[["pre_dat"]],
       .y = post_base[["dat"]],
       .f = function(pre, post) {
@@ -93,10 +94,12 @@
       }
     )
 
-    lapply(X = post_base[["final_dat"]],
-           FUN = data.table::setkey)
+    lapply(
+      X = post_base[["dat"]],
+      FUN = data.table::setkey
+    )
   }
 
-  post_base <- subset(x = post_base, select = -c(pre_dat, dat))
+  post_base <- subset(x = post_base, select = -pre_dat)
   return(post_base)
 }

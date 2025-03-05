@@ -7,31 +7,41 @@
 .parse_coeff <- function(paths,
                          coeff_extract,
                          sets,
-                         chron_yrs = NULL) {
+                         chron_yrs = NULL,
+                         call) {
   # check paths
   if (!all(sapply(X = paths, FUN = file.exists))) {
-    stop("One or more coefficient file paths does not exist")
+    .cli_action(
+      action = "abort",
+      msg = "One or more coefficient file paths does not exist.",
+      call = call
+    )
   }
+
   # metadata in the first line of each "csv", rest is ragged data
   ls_data <- lapply(X = paths, FUN = readLines)
 
-  list_coeff <- lapply(X = ls_data,
-                       FUN = function(dat) {
-    lead <- dat[1]
-    # remove last NULL
-    dat <- dat[-length(x = dat)]
-    # remove lead
-    dat <- dat[-1]
-    # get name
-    name <- purrr::pluck(.x = strsplit(x = lead, split = '"'), 1, 2)
-    # get information
-    information <- purrr::pluck(.x = strsplit(x = lead, split = '"'), 1, 4)
-    # get dim
-    dim <- as.integer(x = strsplit(x = trimws(x = sapply(
-      X = strsplit(x = lead, split = "Real|Integer"), "[[", 1
-    )), "\\s")[[1]])
-    list(name, information, dim, dat)
-  })
+  list_coeff <- lapply(
+    X = ls_data,
+    FUN = function(dat) {
+      lead <- dat[1]
+      # remove last NULL
+      dat <- dat[-length(x = dat)]
+      # remove lead
+      dat <- dat[-1]
+      # get name
+      name <- purrr::pluck(.x = strsplit(x = lead, split = '"'), 1, 2)
+      # get information
+      information <- purrr::pluck(.x = strsplit(x = lead, split = '"'), 1, 4)
+      # get dim
+      dim <- as.integer(x = strsplit(x = trimws(x = sapply(
+        X = strsplit(x = lead, split = "Real|Integer"), "[[", 1
+      )), "\\s")[[1]])
+      
+      coeff <- list(name, information, dim, dat)
+      return(coeff)
+    }
+  )
 
   transposed <- purrr::transpose(.l = list_coeff)
 
@@ -45,19 +55,28 @@
 
   # filter by specified outdata coefficients
   coeff_extract <- subset(x = coeff_extract, subset = {
-    is.element(el = name,
-               set = gsub(pattern = ".csv", replacement = "", x = basename(path = paths)))
+    is.element(
+      el = name,
+      set = gsub(pattern = ".csv", replacement = "", x = basename(path = paths))
+    )
   })
 
   # check that outdata coefficients align with tab extract coefficients
   if (!all(is.element(el = coeff_extract[["name"]], set = coeff_tib[["name"]]))) {
-    stop("One or more coefficients identified from the Tablo extract was not found in the output csvs.")
+    .cli_action(
+      action = "abort",
+      msg = "One or more coefficients identified from the Tablo
+                extract was not found in the output csvs.",
+      call = call
+    )
   }
 
   # bring mixed set names over from the extract
   r_idx <- match(x = coeff_tib[["name"]], table = coeff_extract[["name"]])
   coeff_tib[["set_nmes"]] <- coeff_extract[["ls_mixed_idx"]][r_idx]
 
+  # if there is a gap in the coefficient declaration like (all, r, REG) we have
+  # an error. This should be fixed in the tab parsing section
   coeff_tib[["dat"]] <- purrr::pmap(
     .l = list(
       dimen = coeff_tib[["dim"]],
@@ -66,13 +85,19 @@
     ),
     .f = function(dimen, col_nmes, num_ls) {
       dim_length <- length(x = dimen)
-if (identical(col_nmes, " REGr")) browser()
+
       if (!identical(x = dimen, y = 1L)) {
         plain_col <- tolower(x = substring(text = col_nmes, 1, nchar(x = col_nmes) - 1))
         r_idx <- match(x = plain_col, table = sets[["setname"]])
         setele <- sets[["elements"]][r_idx]
         if (is.null(x = setele)) {
-          stop("It appears that a set isn't found which at this stage means that there is likely a space around a coefficient set declaration.")
+          .cli_action(
+            action = "abort",
+            msg = "It appears that a set isn't found which likely
+                      means a space around a coefficient set declaration
+                      (e.g., (all, r, REG) instead of (all,r,REG).",
+            call = call
+          )
         }
       }
 
@@ -85,8 +110,10 @@ if (identical(col_nmes, " REGr")) browser()
         }
       } else if (identical(x = dim_length, y = 2L)) {
         flat_vec <- as.numeric(x = unlist(x = strsplit(x = num_ls, split = ",")))
-        arr <- t(x = array(data = flat_vec,
-                           dim = rev(x = dimen)))
+        arr <- t(x = array(
+          data = flat_vec,
+          dim = rev(x = dimen)
+        ))
         dimnames(x = arr) <- setele
         names(x = dimnames(x = arr)) <- col_nmes
         df <- array2DF(x = arr)
@@ -121,10 +148,12 @@ if (identical(col_nmes, " REGr")) browser()
 
   # add year information if time_sets != NULL
   if (!is.null(x = chron_yrs)) {
-    coeff_tib[["dat"]] <- lapply(X = coeff_tib[["dat"]],
-                                 FUN = .match_year,
-                                 sets = sets,
-                                 chron_yrs = chron_yrs)
+    coeff_tib[["dat"]] <- lapply(
+      X = coeff_tib[["dat"]],
+      FUN = .match_year,
+      sets = sets,
+      chron_yrs = chron_yrs
+    )
   }
 
   # setkey
