@@ -16,11 +16,6 @@
     command = rlang::expr(quote(expr = !!config[["call"]]))
   ))
 
-  t_base_fn <- rlang::expr(targets::tar_target_raw(
-    name = "base_fn",
-    command = quote(expr = "teems_base")
-  ))
-
   # track any changes to designated har files
   t_base_file <- rlang::expr(targets::tar_target_raw(
     name = "base_file",

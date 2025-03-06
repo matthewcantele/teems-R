@@ -19,13 +19,13 @@
     current_length <- 0
 
     for (i in seq_along(final_closure)) {
-      current_length <- current_length + nchar(final_closure[i])
-      # Insert "here" into the vector at 500 character intervals
+      current_length <- current_length + nchar(x = final_closure[i])
+
       if (current_length >= tab_readline) {
         modified_vector <- c(modified_vector, ";", "exogenous")
         current_length <- 0
       }
-      # Append the current element from the input vector to the modified vector
+
       modified_vector <- c(modified_vector, final_closure[i])
     }
     final_closure <- modified_vector

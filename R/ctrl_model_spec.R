@@ -32,6 +32,15 @@
                                       model_version = !!config[["model_version"]]))
   ))
 
+  # extract var information from tab file
+  t_tablo_var <- rlang::expr(targets::tar_target_raw(
+    name = "tablo_var",
+    command = expression(.tablo_variables(
+      parsed_tablo = parsed.tablo[["extract"]],
+      call = model_call
+    ))
+  ))
+  
   # extract coefficient information from tab file
   t_coeff_extract <- rlang::expr(targets::tar_target_raw(
     name = "coeff_extract",

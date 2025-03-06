@@ -1,22 +1,11 @@
-#' Check Closure
-#'
-#' This function checks a closure.
-#'
-#' @inheritParams teems_model
-#' @param closure Character vector. File with model-specific list of exogenous
-#'   variables.
-#' @param sets A list containing set definitions and their elements.
-#'
 #' @importFrom tibble tibble
 #' @importFrom purrr pluck pmap
-#' @return A tibble containing the original closure, variable names, and logical
-#'   classification of entry type
+#' 
 #' @keywords internal
 #' @noRd
 .check_closure <- function(closure,
                            sets,
                            tab_file) {
-
   # expand standard closure to possible set and element combinations
   exogenous <- tibble::tibble(orig_closure = closure)
 

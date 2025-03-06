@@ -9,6 +9,11 @@
                             write_dir,
                             model_name) {
 
+  t_closure_call <- rlang::expr(targets::tar_target_raw(
+    name = "closure_call",
+    command = rlang::expr(quote(expr = !!config[["call"]]))
+  ))
+  
   # track closure file and any changes
   t_closure.file <- rlang::expr(targets::tar_target_raw(
     name = "closure_file",
@@ -22,13 +27,6 @@
       closure <- tail(head(readLines(con = closure_file), -3), -1)
       return(closure)
     })
-  ))
-
-  t_tablo_var <- rlang::expr(targets::tar_target_raw(
-    name = "tablo_var",
-    command = expression(.tablo_variables(
-      parsed_tablo = parsed.tablo[["extract"]]
-    ))
   ))
 
   t_check.closure <- rlang::expr(targets::tar_target_raw(

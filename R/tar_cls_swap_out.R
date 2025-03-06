@@ -1,22 +1,14 @@
-#' Expand Closure
-#'
-#' This function expands a closure.
-#'
-#' @inheritParams teems_closure
-#' @param sets A list containing set definitions and their elements.
-#' @param closure A list containing set definitions and their elements.
-#'
 #' @importFrom tibble tibble
 #' @importFrom purrr pluck pluck_depth pmap list_flatten map2 compact
 #' @importFrom data.table as.data.table setnames
-#' @return A list containing the closure and the closure file.
+#' 
 #' @keywords internal
 #' @noRd
 .swap_out <- function(closure,
                       swap_out,
                       sets,
                       var_extract) {
-
+browser()
   if (!is.null(x = swap_out)) {
     list_depth <- purrr::pluck_depth(x = swap_out)
 

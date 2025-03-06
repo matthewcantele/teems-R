@@ -1,24 +1,6 @@
-#' ShockCheck function
-#'
-#' This function checks the validity of shocks for a model run. It verifies that
-#' shock variables exist within the model, are assigned exogenous status, and
-#' that any set elements specified for shocks indeed belong to the set.
-#'
-#' @param shock_list Shocks to be checked.
-#' @param closure A vector of variables assigned exogenous status.
-#' @param var_extract A data frame containing the model extract.
-#' @param sets A data frame of set information.
-#' @param time_coeff Time related data
-#' @note if a set error occurs due to choice of subindex REGr vs REGs, provide
-#'   more explicit error message
-#' @note provide var name for errors on set checks
-#' @note future iterations allow for custom shock over entire variable with
-#'   granular exo/endo status
-#' @note single shocks not working
-#'
 #' @importFrom purrr pluck map2
 #' @importFrom tibble tibble
-#' @return A list containing the original shocks and the name of the shock file.
+#' 
 #' @keywords internal
 #' @noRd
 .shock_construct <- function(shock_list,
@@ -27,6 +9,7 @@
                              sets,
                              param,
                              reference_year) {
+  browser()
   # initialize list (we could preallocate memory but performance gain is minimal)
   final_shocks <- list()
   counter <- 0
@@ -38,7 +21,6 @@
     final_shocks[[shock_ID]] <- with(
       data = ls_shock,
       expr = {
-
         fct_names <- names(x = ls_shock)
 
         if (is.element(el = type, set = c("scenario", "custom"))) {
@@ -47,17 +29,21 @@
 
           # make sure there's a value column
           if (!is.element(el = "Value", set = colnames(x = value))) {
-            stop(paste(dQuote(x = "custom"),
-                       "and",
-                       dQuote("scenario"),
-                       "shocks require a 'Value' column."))
+            stop(paste(
+              dQuote(x = "custom"),
+              "and",
+              dQuote("scenario"),
+              "shocks require a 'Value' column."
+            ))
           }
 
           if (identical(x = type, y = "scenario")) {
-            value <- .convert_scenario(input = value,
-                                       reference_year = reference_year,
-                                       AYRS = purrr::pluck(.x = param, "dt", "AYRS"),
-                                       sets = sets)
+            value <- .convert_scenario(
+              input = value,
+              reference_year = reference_year,
+              AYRS = purrr::pluck(.x = param, "dt", "AYRS"),
+              sets = sets
+            )
             # now it is effectively a type "custom" shock
             type <- "custom"
           }
@@ -150,9 +136,11 @@
             # This check needs to be shock type agnostic
             # full variable not exogenous
             if (!is.element(el = var, set = closure[["var_name"]])) {
-              stop(paste("The variable",
-                         dQuote(x = var),
-                         "has been allocated a shock but is not identified as exogenous."))
+              stop(paste(
+                "The variable",
+                dQuote(x = var),
+                "has been allocated a shock but is not identified as exogenous."
+              ))
             }
 
             expanded_shk <- .expand_closure(
@@ -161,20 +149,30 @@
               sets = sets
             )
 
-            var_specific_exo <- purrr::list_flatten(x = subset(x = closure,
-                                       subset = {is.element(el = var_name, set = var)},
-                                       select = struct)[[1]])
+            var_specific_exo <- purrr::list_flatten(x = subset(
+              x = closure,
+              subset = {
+                is.element(el = var_name, set = var)
+              },
+              select = struct
+            )[[1]])
 
             if (length(x = var_specific_exo) > 1) {
-              var_specific_exo <- data.table::rbindlist(l = var_specific_exo,
-                                                        use.names = FALSE)
+              var_specific_exo <- data.table::rbindlist(
+                l = var_specific_exo,
+                use.names = FALSE
+              )
             }
 
-            exo_list <- .convert_var(structured_data = var_specific_exo,
-                                     var_name = var)
+            exo_list <- .convert_var(
+              structured_data = var_specific_exo,
+              var_name = var
+            )
 
-            shk_list <- .convert_var(structured_data = purrr::list_flatten(x = expanded_shk[["struct"]])[[1]],
-                                     var_name = var)
+            shk_list <- .convert_var(
+              structured_data = purrr::list_flatten(x = expanded_shk[["struct"]])[[1]],
+              var_name = var
+            )
 
             if (!all(is.element(el = shk_list, set = exo_list))) {
               stop(cat("The following tuples have been allocated a shock but are not identified as exogenous:",
@@ -291,17 +289,25 @@
             )
 
             # var specific exo
-            var_specific_exo <- purrr::list_flatten(x = subset(x = closure,
-                                                               subset = {is.element(el = var_name, set = var)},
-                                                               select = struct)[[1]])
+            var_specific_exo <- purrr::list_flatten(x = subset(
+              x = closure,
+              subset = {
+                is.element(el = var_name, set = var)
+              },
+              select = struct
+            )[[1]])
 
             if (length(x = var_specific_exo) > 1) {
-              var_specific_exo <- data.table::rbindlist(l = var_specific_exo,
-                                                        use.names = FALSE)
+              var_specific_exo <- data.table::rbindlist(
+                l = var_specific_exo,
+                use.names = FALSE
+              )
             }
 
-            exo_list <- .convert_var(structured_data = var_specific_exo,
-                                     var_name = var)
+            exo_list <- .convert_var(
+              structured_data = var_specific_exo,
+              var_name = var
+            )
 
             if (!all(is.element(el = concat, set = exo_list))) {
               stop(cat("The following tuples have been allocated a shock but are not identified as exogenous:",

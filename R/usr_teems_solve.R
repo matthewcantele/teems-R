@@ -144,7 +144,9 @@ teems_solve <- function(cmf_path = NULL,
                         shock_file = NULL,
                         ...)
 {
-.check_docker(image_name = "teems")
+call <- match.call()
+.check_docker(image_name = "teems",
+              call = call)
 if (!missing(x = ...)) {
   io_files <- list(...)
   cmf_path <- .write_cmf(tab_file = tab_file,
@@ -153,7 +155,9 @@ if (!missing(x = ...)) {
                          io_files = io_files,
                          in_situ = TRUE)[["cmf_path"]]
 }
-cmf_path <- path.expand(path = cmf_path)
+paths <- .get_solver_paths(cmf_path = cmf_path,
+                           call = call)
+browser()
 stopifnot(all(is.numeric(x = n_tasks), n_tasks == as.integer(x = n_tasks)))
 stopifnot(all(is.numeric(x = n_subintervals), n_subintervals == as.integer(x = n_subintervals)))
 matrix_method <- match.arg(arg = matrix_method)
@@ -164,7 +168,7 @@ if (!(all(steps %% 2 == 0) || all(steps %% 2 == 1))) {
 if (!all(is.numeric(steps), length(steps) == 3)) {
   stop("The argument must be a numeric vector of length 3.")
 }
-run_dir <- dirname(path = cmf_path)
+
 tab <- .cmf_retrieve(file = "tabfile",
                      cmf_path = cmf_path,
                      run_dir = run_dir)
@@ -186,7 +190,7 @@ if (is.element(el = matsol, set = c("SBBD", "NDBBD")) && !enable_time) {
              "only applicable to intertemporal model runs."))
 }
 # check int compatibility with LU and DBBD
-timeID <- format(x = Sys.time(), "%H%M")
+
 if (identical(x = matrix_method, y = "NDBBD")) {
 nesteddbbd <- 1
 time_data <- .cmf_retrieve(file = "INTDATA",
@@ -205,9 +209,8 @@ if (identical(x = solution_method, y = "mod_midpoint")) {
   solmed <- "Johansen"
   n_subintervals <- 1
 }
-diagnostic_out <- file.path(run_dir, "out", paste0("solver_out", "_", timeID, ".txt"))
-docker_run_dir <- "/home/launchpad"
-docker_cmf_path <- sub(pattern = dirname(path = cmf_path), replacement = docker_run_dir, x = cmf_path)
+
+
 docker_preamble <- paste(
   "docker run --rm --privileged --volume",
   paste0(run_dir, ":/home/launchpad"),
@@ -215,9 +218,9 @@ docker_preamble <- paste(
   "/bin/bash -c")
 exec_preamble <- paste(
   docker_preamble,
-  '"singularity exec --bind /home/launchpad /home/solver.sif /home/cgepack/lib/mpi/bin/mpiexec',
+  '"singularity exec --bind /home/launchpad /home/solver.sif /home/teems-solver/lib/mpi/bin/mpiexec',
   "-n", n_tasks,
-  "/home/cgepack/solver/hsl",
+  "/home/teems-solver/solver/hsl",
   "-cmdfile", docker_cmf_path)
 docker_diagnostic_out <- file.path(docker_run_dir, "out", paste0("solver_out", "_", timeID, ".txt"))
 solver_param <- paste(

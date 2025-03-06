@@ -13,10 +13,10 @@
 #'   Choices:
 #'   * `"variable"`: Percentage change values for model variables
 #'   * `"coefficient"`: Absolute values for model coefficients
-#'   * `"basedata"`: Merged pre- and post-model base data values
+#'   * `"set"`: Model sets
+#'   * `"basedata"`: Merged pre- and post-model basedata values
 #'
-#' @importFrom targets tar_load
-#' @importFrom purrr pluck
+#' @importFrom rlang arg_match
 #'
 #' @seealso [`teems_solve()`] for running the model simulation.
 #'
@@ -27,8 +27,8 @@
 #'   type.
 #' @export
 teems_parse <- function(cmf_path,
-                        type = c("variable", "coefficient", "set", "basedata"),
-                        merge_premodel = FALSE) {
+                        type = c("variable", "coefficient", "set", "basedata"))
+{
 call <- match.call()
 type <- rlang::arg_match(arg = type)
 paths <- .get_postmodel_paths(cmf_path = cmf_path)

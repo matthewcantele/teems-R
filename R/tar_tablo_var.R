@@ -1,23 +1,21 @@
-#' .parse_tablo function
-#'
-#' This function extracts variable information from the model Tablo file.
-#'
-#' @param parsed_tablo Parsed Tablo file produced by \code{.parse_tablo()}.
-#'
-#' @importFrom purrr map
-#' @return A list containing the original Tablo data, the extracted components,
-#'   and the file name.
+#' @importFrom purrr map map2
+#' @importFrom data.table setnames setcolorder
+#' 
 #' @keywords internal
 #' @noRd
-.tablo_variables <- function(parsed_tablo) {
-
+.tablo_variables <- function(parsed_tablo,
+                             call) {
   var <- subset(x = parsed_tablo, subset = {
     is.element(el = tolower(x = type), set = "variable")
   })
 
   # check that information is available for each variable and coefficient
   if (any(!grepl("#", var[["remainder"]]))) {
-    stop("One or more variables or coefficients is missing a information - add # NA # if not descriptive information is available.")
+    .cli_action(action = "abort",
+                msg = "One or more variables or coefficients is missing an 
+                information - add # NA # if not descriptive information is 
+                available.",
+                call = call)
   }
 
   var[["information"]] <- paste(
@@ -63,8 +61,10 @@
   no = NA
   )
 
-  var[["remainder"]] <- .advance_remainder(remainder = var[["remainder"]],
-                                           pattern = var[["qualifier_list"]])
+  var[["remainder"]] <- .advance_remainder(
+    remainder = var[["remainder"]],
+    pattern = var[["qualifier_list"]]
+  )
 
   # pull out names
   var[["name"]] <- unlist(x = purrr::map(
@@ -93,8 +93,10 @@
 
   names(x = var[["ls_lower_idx"]]) <- var[["name"]]
 
-  var[["remainder"]] <- .advance_remainder(remainder = var[["remainder"]],
-                                           pattern = var[["name"]])
+  var[["remainder"]] <- .advance_remainder(
+    remainder = var[["remainder"]],
+    pattern = var[["name"]]
+  )
 
   # remove subindex from name
   var[["name"]] <- unlist(x = purrr::map(.x = sapply(X = var[["name"]], FUN = strsplit, split = "\\("), 1))
@@ -143,9 +145,11 @@
   var[["mixed_idx"]] <- paste0("(", var[["mixed_idx"]], ")")
 
   # full standard writeout
-  data.table::setnames(x = var,
-                       old = "remainder",
-                       new = "full_set")
+  data.table::setnames(
+    x = var,
+    old = "remainder",
+    new = "full_set"
+  )
 
   # Read statements ############################################################
   r <- subset(parsed_tablo, subset = {
@@ -157,8 +161,10 @@
     split = "FROM FILE"
   ), 1))
 
-  r[["remainder"]] <- .advance_remainder(remainder = r[["remainder"]],
-                                         pattern = paste(r[["name"]], "from file"))
+  r[["remainder"]] <- .advance_remainder(
+    remainder = r[["remainder"]],
+    pattern = paste(r[["name"]], "from file")
+  )
 
   r[["file"]] <- .get_element(input = r[["remainder"]], split = " ", index = 1)
   r[["header"]] <- gsub(
@@ -176,18 +182,20 @@
   var[["header"]] <- r[["header"]][r_idx]
   var[["file"]] <- r[["file"]][r_idx]
 
-  data.table::setcolorder(x = var, neworder = c("name",
-                                                "header",
-                                                "information",
-                                                "file",
-                                                "qualifier_list",
-                                                "full_set",
-                                                "mixed_idx",
-                                                "upper_idx",
-                                                "lower_idx",
-                                                "ls_mixed_idx",
-                                                "ls_upper_idx",
-                                                "ls_lower_idx"))
+  data.table::setcolorder(x = var, neworder = c(
+    "name",
+    "header",
+    "information",
+    "file",
+    "qualifier_list",
+    "full_set",
+    "mixed_idx",
+    "upper_idx",
+    "lower_idx",
+    "ls_mixed_idx",
+    "ls_upper_idx",
+    "ls_lower_idx"
+  ))
 
 
   return(var)
