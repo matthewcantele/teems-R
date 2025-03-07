@@ -38,7 +38,8 @@
                 call = call)
   } else if (!is.element(el = file_ext, set = valid_ext)) {
     .cli_action(action = "abort",
-                msg = "{.arg {arg}} must be a {.or {valid_ext}} file, not {?a/an} {file_ext} file.",
+                msg = "{.arg {arg}} must be a {.or {.val {valid_ext}}} file, 
+                not {?a/an} {.val {file_ext}} file.",
                 call = call)
   }
   file <- path.expand(path = file)

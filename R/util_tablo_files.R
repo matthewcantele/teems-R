@@ -1,6 +1,6 @@
 #' @importFrom purrr map
-#' @return A list containing the original Tablo data, the extracted components,
-#'   and the file name.
+#' @importFrom data.table setnames
+#'
 #' @keywords internal
 #' @noRd
 .tablo_files <- function(parsed_tablo) {
@@ -12,16 +12,19 @@
     )
   })
 
-  files[["names"]] <- trimws(x = purrr::map(sapply(X = files[["remainder"]], FUN = strsplit, split = " "), 1))
-  browser()
+  files[["names"]] <- trimws(x = purrr::map(sapply(X = files[["remainder"]],
+                                                   FUN = strsplit, split = " "), 1))
+
   files[["remainder"]] <- .advance_remainder(
     remainder = files[["remainder"]],
     pattern = files[["names"]]
   )
 
-  data.table::setnames(x = files,
-                       old = "remainder",
-                       new = "information")
+  data.table::setnames(
+    x = files,
+    old = "remainder",
+    new = "information"
+  )
 
   return(files)
 }

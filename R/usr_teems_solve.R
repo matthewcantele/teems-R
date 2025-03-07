@@ -142,75 +142,31 @@ teems_solve <- function(cmf_path = NULL,
                         tab_file = NULL,
                         closure_file = NULL,
                         shock_file = NULL,
+                        in_situ_writeout = TRUE,
+                        quiet = FALSE,
                         ...)
 {
 call <- match.call()
-.check_docker(image_name = "teems",
-              call = call)
-if (!missing(x = ...)) {
-  io_files <- list(...)
-  cmf_path <- .write_cmf(tab_file = tab_file,
-                         shock_file = shock_file,
-                         closure_file = closure_file,
-                         io_files = io_files,
-                         in_situ = TRUE)[["cmf_path"]]
-}
+cmf_path <- .execute_in_situ(... = ...,
+                             tab_file = tab_file,
+                             closure_file = closure_file,
+                             shock_file = shock_file,
+                             cmf_path = cmf_path,
+                             in_situ_writeout = in_situ_writeout,
+                             call = call,
+                             quiet = quiet)
 paths <- .get_solver_paths(cmf_path = cmf_path,
                            call = call)
 browser()
-stopifnot(all(is.numeric(x = n_tasks), n_tasks == as.integer(x = n_tasks)))
-stopifnot(all(is.numeric(x = n_subintervals), n_subintervals == as.integer(x = n_subintervals)))
-matrix_method <- match.arg(arg = matrix_method)
-solution_method <- match.arg(arg = solution_method)
-if (!(all(steps %% 2 == 0) || all(steps %% 2 == 1))) {
-  stop("The 'n_subintervals' argument must contain all even numbers or all odd numbers.")
-}
-if (!all(is.numeric(steps), length(steps) == 3)) {
-  stop("The argument must be a numeric vector of length 3.")
-}
-
-tab <- .cmf_retrieve(file = "tabfile",
-                     cmf_path = cmf_path,
-                     run_dir = run_dir)
-if (any(grepl(pattern = "(intertemporal)", x = tab))) {
-  enable_time <- TRUE
-} else {
-  enable_time <- FALSE
-}
-matsol <- switch(
-  EXPR = matrix_method,
-  "LU" = 0,
-  "SBBD" = 1,
-  "DBBD" = 2,
-  "NDBBD" = 3
-)
-if (is.element(el = matsol, set = c("SBBD", "NDBBD")) && !enable_time) {
-  stop(paste("Matrix solution method",
-             matsol,
-             "only applicable to intertemporal model runs."))
-}
-# check int compatibility with LU and DBBD
-
-if (identical(x = matrix_method, y = "NDBBD")) {
-nesteddbbd <- 1
-time_data <- .cmf_retrieve(file = "INTDATA",
-                           cmf_path = cmf_path,
-                           run_dir = run_dir)
-n_timesteps <- time_data[grep(pattern = "NTSP", x = time_data) + 1]
-} else {
-  nesteddbbd <- 0
-}
-if (identical(x = solution_method, y = "mod_midpoint")) {
-  step1 <- steps[1]
-  step2 <- steps[2]
-  step3 <- steps[3]
-  solmed <- "Mmid"
-} else {
-  solmed <- "Johansen"
-  n_subintervals <- 1
-}
-
-
+.check_solver_arg(n_tasks = n_tasks,
+                  n_subintervals = n_subintervals,
+                  matrix_method = matrix_method,
+                  solution_method = solution_method,
+                  steps = steps,
+                  paths = paths,
+                  call = call)
+.check_docker(image_name = "teems",
+              call = call)
 docker_preamble <- paste(
   "docker run --rm --privileged --volume",
   paste0(run_dir, ":/home/launchpad"),

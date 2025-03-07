@@ -2,7 +2,6 @@
 #' @noRd
 .get_solver_paths <- function(cmf_path,
                               call) {
-  cmf_path <- path.expand(path = cmf_path)
   if (!file.exists(cmf_path)) {
     .cli_action(action = "abort",
                 msg = "The {.arg cmf_path} provided {.path {cmf_path}} does not
@@ -18,10 +17,10 @@
   docker_cmf_path <- sub(pattern = dirname(path = cmf_path),
                          replacement = docker_run_dir,
                          x = cmf_path)
-  paths <- list(cmf = cmf_path,
+  paths <- list(cmf = unname(obj = cmf_path),
                 run = run_dir,
                 diag_out = diagnostic_out,
                 docker_run = docker_run_dir,
-                docker_cmf = docker_cmf_path)
+                docker_cmf = unname(obj = docker_cmf_path))
   return(paths)
 }
