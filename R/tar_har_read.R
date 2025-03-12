@@ -415,9 +415,17 @@
     if (!all(is.element(el = names(x = header_rename), set = names(x = headers)))) {
       errant_headers <- names(x = header_rename)[!is.element(el = names(x = header_rename),
                                                              set = names(x = headers))]
-      .cli_action(action = "abort",
-                  msg = "The header(s) specified for renaming, {.val {errant_headers}} is(are) not found in the {.val {full_har_path}} HAR file.",
-                  call = call)
+      error_var <- deparse(substitute(variables <- list(errant_headers = errant_headers, full_har_path = full_har_path, call = call)),
+        width.cutoff = 500L
+      )
+      var2env <- deparse(substitute(list2env(variables, envir = rlang::current_env())))
+      error_fun <- deparse(substitute(.cli_action(action = "abort", msg = "The header(s) specified for renaming,
+              {.val {errant_headers}} is(are) not found in the
+              {.val {full_har_path}} HAR file.", call = call)),
+        width.cutoff = 500L
+      )
+      error_inputs <- paste(c(error_var, var2env, error_fun), collapse = ";")
+      stop(error_inputs)
     }
 
     r_idx <- match(x = names(x = header_rename), table = names(x = headers))
@@ -441,7 +449,9 @@
       )]
       
       .cli_action(action = "abort",
-                  msg = "The header(s) specified for renaming, {.val {errant_coefficients}} is(are) not found in the {.val {full_har_path}} HAR file.",
+                  msg = "The header(s) specified for renaming, 
+                  {.val {errant_coefficients}} is(are) not found in the 
+                  {.val {full_har_path}} HAR file.",
                   call = call)
     }
 

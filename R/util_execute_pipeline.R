@@ -5,13 +5,26 @@
 .execute_pipeline <- function(teems_paths,
                               model_name,
                               metadata,
+                              base_call,
                               quiet,
                               tar_load_everything,
                               .testing) {
   if (!.testing) {
-    targets::tar_make(
-      script = teems_paths[["pipeline"]],
-      store = teems_paths[["store"]])
+    output <- try({
+      targets::tar_make(
+        script = teems_paths[["pipeline"]],
+        store = teems_paths[["store"]])
+    }, silent = TRUE)
+    if (inherits(x = output, what = "try-error")) {
+      errored_tar <- targets::tar_errored(store = teems_paths[["store"]])
+      raw_error <- targets::tar_meta(names = errored_tar,
+                                     store = teems_paths[["store"]])[["error"]]
+      error_inputs <- trimws(x = strsplit(x = raw_error,
+                                          split =  "(?<!:):(?!:)",
+                                          perl = TRUE)[[1]][2])
+      expr <- parse(text = error_inputs)
+      eval(expr = expr)
+    }
   } else {
     targets::tar_make(
       script = teems_paths[["pipeline"]],

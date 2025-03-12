@@ -74,8 +74,17 @@
     }
 
     io_files <- sapply(X = io_files, FUN = path.expand)
-    launchpad_dir <- dirname(path = tab_file)
-    model_dir <- dirname(path = launchpad_dir)
+    model_dir <- dirname(path = tab_file)
+    launchpad_dir <- file.path(model_dir, "launchpad")
+    if (dir.exists(paths = launchpad_dir)) {
+      unlink(x = launchpad_dir, recursive = TRUE, force = TRUE)
+    }
+    dir.create(path = file.path(launchpad_dir, "out", "sets"),
+               recursive = TRUE)
+    dir.create(path = file.path(launchpad_dir, "out", "coefficients"),
+               recursive = TRUE)
+    dir.create(path = file.path(launchpad_dir, "out", "variables", "bin"),
+               recursive = TRUE)
 
     if (in_situ_writeout) {
       coeff_extract <- .tablo_coeff(parsed_tablo = parsed_tablo[["extract"]])

@@ -1,6 +1,7 @@
 #' @keywords internal
 #' @noRd
 .get_solver_paths <- function(cmf_path,
+                              timeID,
                               call) {
   if (!file.exists(cmf_path)) {
     .cli_action(action = "abort",
@@ -9,7 +10,6 @@
                 call = call)
   }
   run_dir <- dirname(path = cmf_path)
-  timeID <- format(x = Sys.time(), "%H%M")
   diagnostic_out <- file.path(run_dir,
                               "out",
                               paste0("solver_out", "_", timeID, ".txt"))

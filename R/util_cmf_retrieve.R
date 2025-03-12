@@ -1,18 +1,16 @@
-#' @importFrom purrr pluck
-#' 
 #' @keywords internal
 #' @noRd
 .cmf_retrieve <- function(file,
                           cmf_path,
                           run_dir) {
-file_end <- purrr::pluck(.x = strsplit(
+file_end <- strsplit(
   x = grep(
     pattern = file,
-    x = readLines(cmf_path),
+    x = readLines(con = cmf_path),
     value = TRUE
   ),
   split = "launchpad/"
-), 1, 2)
+)[[1]][2]
 
 file_name <- sub(pattern = "\";",
                  replacement = "",

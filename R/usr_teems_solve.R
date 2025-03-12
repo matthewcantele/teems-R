@@ -147,6 +147,8 @@ teems_solve <- function(cmf_path = NULL,
                         ...)
 {
 call <- match.call()
+.check_docker(image_name = "teems",
+              call = call)
 cmf_path <- .execute_in_situ(... = ...,
                              tab_file = tab_file,
                              closure_file = closure_file,
@@ -155,83 +157,35 @@ cmf_path <- .execute_in_situ(... = ...,
                              in_situ_writeout = in_situ_writeout,
                              call = call,
                              quiet = quiet)
+timeID <- format(x = Sys.time(), "%H%M")
 paths <- .get_solver_paths(cmf_path = cmf_path,
+                           timeID = timeID,
                            call = call)
-browser()
-.check_solver_arg(n_tasks = n_tasks,
-                  n_subintervals = n_subintervals,
-                  matrix_method = matrix_method,
-                  solution_method = solution_method,
-                  steps = steps,
-                  paths = paths,
-                  call = call)
-.check_docker(image_name = "teems",
-              call = call)
-docker_preamble <- paste(
-  "docker run --rm --privileged --volume",
-  paste0(run_dir, ":/home/launchpad"),
-  paste0("teems", ":", docker_tag),
-  "/bin/bash -c")
-exec_preamble <- paste(
-  docker_preamble,
-  '"singularity exec --bind /home/launchpad /home/solver.sif /home/teems-solver/lib/mpi/bin/mpiexec',
-  "-n", n_tasks,
-  "/home/teems-solver/solver/hsl",
-  "-cmdfile", docker_cmf_path)
-docker_diagnostic_out <- file.path(docker_run_dir, "out", paste0("solver_out", "_", timeID, ".txt"))
-solver_param <- paste(
-  "-matsol", matsol,
-  if (identical(x = solution_method, y = "mod_midpoint")) {
-    paste("-step1", step1, "-step2", step2, "-step3", step3)
-  },
-  if (any(is.element(el = matsol, set = c(0, 2, 3)))) {
-    paste("-regset", "REG")
-  },
-  if (enable_time) {
-    "-enable_time"
-  },
-  "-nsubints", n_subintervals,
-  "-solmed", solmed,
-  "-nesteddbbd", nesteddbbd,
-  if (identical(matrix_method, "NDBBD")) {
-    paste('-ndbbd_bl_rank', n_timesteps)
-  },
-  "-presol", 1,
-  "-laA", laA,
-  "-laDi", laDi,
-  "-laD", laD,
-  paste0("-x OMP_NUM_THREADS=", 1),
-  paste("-maxthreads", 1),
-  "| tee",
-    paste(docker_diagnostic_out, '&& chown -R 1000:1000', paste0(docker_run_dir, '"'))
-)
-exec <- paste(exec_preamble, solver_param)
-if (terminal_run) {
-  cat(exec, file = file.path(run_dir, "model_exec.txt"))
-  message(paste("Run the following command at the terminal:\n",
-             exec))
-  return()
-}
-elapsed_time <- system.time(system(command = exec))
-print(elapsed_time)
-cat(exec, file = file.path(run_dir, "model_exec.txt"))
-out_file <- readLines(con = diagnostic_out)
-if (any(grepl(pattern = "Error", x = out_file))) {
-error <- TRUE
-} else {
-error <- FALSE
-}
-if (any(grepl(pattern = "singular", x = out_file))) {
-singularity <- TRUE
-} else {
-  singularity <- FALSE
-}
-if (!error && !singularity) {
-sol_parse_cmd <- paste(sub(pattern = "--privileged ", replacement = "", x = docker_preamble),
-                           '"make -C /home/sol_parser && chown -R 1000:1000 /home/launchpad/out/variables/bin"')
-system(command = sol_parse_cmd, ignore.stdout = TRUE)
-}
-diagnostics_out <- .run_diagnostics(out_file, error, singularity)
-cat(diagnostics_out, "\n")
-cmf_path
+mod_arg <- .check_solver_arg(n_tasks = n_tasks,
+                             n_subintervals = n_subintervals,
+                             matrix_method = matrix_method,
+                             solution_method = solution_method,
+                             steps = steps,
+                             paths = paths,
+                             call = call)
+cmd <- .construct_cmd(paths = paths,
+                      terminal_run = terminal_run,
+                      docker_tag = docker_tag,
+                      timeID = timeID,
+                      n_tasks = n_tasks,
+                      steps = steps,
+                      laA = laA,
+                      laDi = laDi,
+                      laD = laD,
+                      matsol = mod_arg[["matsol"]],
+                      solmed = mod_arg[["solmed"]],
+                      n_subintervals = mod_arg[["n_subintervals"]],
+                      n_timesteps = mod_arg[["n_timesteps"]],
+                      nesteddbbd = mod_arg[["nesteddbbd"]],
+                      enable_time = mod_arg[["enable_time"]])
+.solve_model(exec_cmd = cmd[["exec"]],
+             sol_parse_cmd = cmd[["sol_parse"]],
+             paths = paths,
+             quiet = quiet)
+return(invisible(NULL))
 }

@@ -281,6 +281,7 @@ targets <- .write_pipeline(model_config = model_config,
                            teems_paths = teems_paths)
 cmf_path  <- .execute_pipeline(teems_paths = teems_paths,
                                model_name = model_name,
+                               base_call = base_config[["call"]],
                                metadata = metadata,
                                quiet = quiet,
                                tar_load_everything = tar_load_everything,
