@@ -37,6 +37,7 @@
         command = expression(.read_har(
           con = aux_base_file,
           data_type = !!data_type,
+          coeff_extract = coeff_extract,
           header_rename = !!config[["header_rename"]],
           coefficient_rename = !!config[["coefficient_rename"]],
           full_exclude = !!full_exclude,
@@ -56,6 +57,7 @@
       command = expression(.read_har(
         con = base_file,
         data_type = !!data_type,
+        coeff_extract = coeff_extract,
         header_rename = !!config[["header_rename"]],
         coefficient_rename = !!config[["coefficient_rename"]],
         append = aux_base_array,
@@ -70,9 +72,11 @@
       command = expression(.read_har(
         con = base_file,
         data_type = !!data_type,
+        coeff_extract = coeff_extract,
         header_rename = !!config[["header_rename"]],
         coefficient_rename = !!config[["coefficient_rename"]],
-        full_exclude = !!full_exclude
+        full_exclude = !!full_exclude,
+        call = base_call
       ))
     ))
   }

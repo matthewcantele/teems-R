@@ -38,7 +38,7 @@
       ls_array[["ETRE"]][["data"]] <- ENDW
     }
   }
-  
+
   if (metadata[["convert"]]) {
     ls_array <- .convert_data(
       ls_array = ls_array,

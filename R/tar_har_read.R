@@ -11,12 +11,13 @@
 #' @details Function modified from
 #'   https://rdrr.io/github/USDA-ERS/MTED-HARr/src/R/read_har.r
 #'
-#' @importFrom purrr pluck
+#' @importFrom purrr pluck map2
 #' @return A list of arrays corresponding to GTAP database headers
 #' @keywords internal
 #' @noRd
 .read_har <- function(con,
                       data_type,
+                      coeff_extract = NULL,
                       header_rename,
                       coefficient_rename,
                       full_exclude = NULL,
@@ -49,12 +50,24 @@
   har_file <- basename(path = full_har_path)
 
   if (!identical(x = data_type, y = implied_data_type)) {
-    .cli_action(action = "abort",
-                msg = "The HAR file provided {.val {full_har_path}} has been
+    error_fun <- substitute(expr = .cli_action(
+      action = "abort",
+      msg = "The HAR file provided {.val {full_har_path}} has been
                 loaded as a {.val {data_type}} file but appears to be a {.val
                 {implied_data_type}} file.",
-                call = call)
+      call = call
+    ))
+    
+    error_var <-  substitute(variables <- list(full_har_path = full_har_path,
+                                               data_type = data_type,
+                                               implied_data_type = implied_data_type))
+    
+    error_inputs <- .package_error(error_var = error_var,
+                                   error_fun = error_fun,
+                                   call = call)
+    stop(message = error_inputs)
   }
+  
   if (cf[1] == 0xfd) {
     currentHeader <- ""
     headers <- list()
@@ -397,35 +410,38 @@
 
       headers[[h]]$data <- m
     }
-    
-    # records missing for the following parameter headers
-    if (identical(x = data_type, y = "par")) {
-      if (identical(x = purrr::pluck(headers, h, "header_name"), y = "RDLT")) {
-        purrr::pluck(headers, h, "coefficient") <- "RORDELTA"
-      }
-
-      if (identical(x = purrr::pluck(headers, h, "header_name"), y = "SLUG")) {
-        purrr::pluck(headers, h, "coefficient") <- "SLUG"
-      }
-    }
   }
 
+  # records missing for the following parameter headers
+  if (identical(x = data_type, y = "par")) {
+    if (is.element(el = "RDLT", set = names(x = headers))) {
+    purrr::pluck(headers, "RDLT", "coefficient") <- "RORDELTA"
+    }
+    if (is.element(el = "SLUG", set = names(x = headers))) {
+    purrr::pluck(headers, "SLUG", "coefficient") <- "SLUG"
+    }
+  }
+  
   # renaming headers if header_rename != NULL
   if (!is.null(x = header_rename)) {
     if (!all(is.element(el = names(x = header_rename), set = names(x = headers)))) {
-      errant_headers <- names(x = header_rename)[!is.element(el = names(x = header_rename),
-                                                             set = names(x = headers))]
-      error_var <- deparse(substitute(variables <- list(errant_headers = errant_headers, full_har_path = full_har_path, call = call)),
-        width.cutoff = 500L
-      )
-      var2env <- deparse(substitute(list2env(variables, envir = rlang::current_env())))
-      error_fun <- deparse(substitute(.cli_action(action = "abort", msg = "The header(s) specified for renaming,
-              {.val {errant_headers}} is(are) not found in the
-              {.val {full_har_path}} HAR file.", call = call)),
-        width.cutoff = 500L
-      )
-      error_inputs <- paste(c(error_var, var2env, error_fun), collapse = ";")
-      stop(error_inputs)
+      errant_headers <- names(x = header_rename)[!is.element(el = names(x = header_rename), set = names(x = headers))]
+      
+
+      error_fun <- substitute(.cli_action(
+        action = "abort",
+        msg = "The header(s) specified for renaming, {.val {errant_headers}}
+        is(are) not found in the {.val {full_har_path}} HAR file.",
+        call = call
+      ))
+
+      error_var <-  substitute(variables <- list(errant_headers = errant_headers,
+                                                 full_har_path = full_har_path))
+      
+      error_inputs <- .package_error(error_var = error_var,
+                                     error_fun = error_fun,
+                                     call = call)
+      stop(message = error_inputs)
     }
 
     r_idx <- match(x = names(x = header_rename), table = names(x = headers))
@@ -435,6 +451,26 @@
       h <- header_rename[[nme]]
       purrr::pluck(.x = headers, h, "header_name") <- h
     }
+  }
+  
+  # overwrite any data coefficient values with tablo coefficient value
+  # the coefficient extraction code above is either off for v11 or some 
+  # coefficient values (MAKB) are incorrect
+
+  r_idx <- match(x = names(x = headers), table = coeff_extract[["header"]])
+  
+  if (!identical(x = data_type, y = "set")) {
+    headers <- purrr::map2(
+      .x = headers,
+      .y = r_idx,
+      .f = function(h, id) {
+        if (!is.na(x = id)) {
+          coeff_name <- purrr::pluck(.x = coeff_extract, "name", id)
+          purrr::pluck(.x = h, "coefficient") <- coeff_name
+        }
+        return(h)
+      }
+    )
   }
 
   # renaming coefficients if coefficient_rename != NULL
@@ -448,11 +484,21 @@
         set = coefficient_names
       )]
       
-      .cli_action(action = "abort",
-                  msg = "The header(s) specified for renaming, 
-                  {.val {errant_coefficients}} is(are) not found in the 
+      error_fun <- substitute(.cli_action(
+        action = "abort",
+        msg = "The coefficients(s) specified for renaming,
+                  {.val {errant_coefficients}} is(are) not found in the
                   {.val {full_har_path}} HAR file.",
-                  call = call)
+        call = call
+      ))
+      
+      error_var <-  substitute(variables <- list(errant_coefficients = errant_coefficients,
+                                                 full_har_path = full_har_path))
+      
+      error_inputs <- .package_error(error_var = error_var,
+                                     error_fun = error_fun,
+                                     call = call)
+      stop(message = error_inputs)
     }
 
     for (nme in seq_along(coefficient_rename)) {
@@ -473,17 +519,21 @@
   if (!is.null(x = append)) {
     headers <- c(headers, append)
   }
-  
+
   # set type and aggregate
-  headers <- lapply(X = headers,
-                    FUN = function(h) {
-                      if (is.element(el = h[["type"]], set = c("1CFULL", "2IFULL"))) {
-                        h[["aggregate"]] <- FALSE
-                      } else if (!isFALSE(x = h[["aggregate"]])) {
-                        h[["aggregate"]] <- TRUE
-                      }
-                      return(h)
-                    })
+  headers <- lapply(
+    X = headers,
+    FUN = function(h) {
+      if (is.null(x = h[["aggregate"]])) {
+        if (is.element(el = h[["type"]], set = c("1CFULL", "2IFULL"))) {
+          h[["aggregate"]] <- FALSE
+        } else {
+          h[["aggregate"]] <- TRUE
+        }
+      }
+      return(h)
+    }
+  )
   
   # GDYN database uses natres instead of natlres for whatever reason (support email submitted)
   # temporarily disable GDYN runs

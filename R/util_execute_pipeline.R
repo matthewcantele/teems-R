@@ -6,6 +6,8 @@
                               model_name,
                               metadata,
                               base_call,
+                              par_call,
+                              set_call,
                               quiet,
                               tar_load_everything,
                               .testing) {
