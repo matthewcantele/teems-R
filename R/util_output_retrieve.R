@@ -1,9 +1,11 @@
 #' @importFrom targets tar_read
 #' @importFrom qs2 qs_read
+#' @importFrom purrr pluck
 #' 
 #' @keywords internal
 #' @noRd
 .retrieve_output <- function(type,
+                             name,
                              paths,
                              sets,
                              int,
@@ -54,6 +56,14 @@
     output <- .parse_set(paths = paths[["set"]],
                          sets = sets[["premodel"]],
                          call = call)
+  }
+  
+  if (!is.null(x = name)) {
+    if (length(x = name) > 1) {
+      output <- output[is.element(el = output[["name"]], set = name),]
+    } else {
+      output <- purrr::pluck(.x = output, "dat", name)
+    } 
   }
   return(output)
 }

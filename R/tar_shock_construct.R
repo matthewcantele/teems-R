@@ -10,7 +10,6 @@
                              param,
                              reference_year) {
   browser()
-  # initialize list (we could preallocate memory but performance gain is minimal)
   final_shocks <- list()
   counter <- 0
 
@@ -21,6 +20,7 @@
     final_shocks[[shock_ID]] <- with(
       data = ls_shock,
       expr = {
+        browser()
         fct_names <- names(x = ls_shock)
 
         if (is.element(el = type, set = c("scenario", "custom"))) {
@@ -36,6 +36,18 @@
               "shocks require a 'Value' column."
             ))
           }
+          browser()
+          # convert to ALLTIMEt if only Year given
+          if (is.element(el = "Year", set = colnames(x = value))) {
+            AYRS <- purrr::pluck(.x = param, "dt", "AYRS")
+            AYRS[["CYRS"]] <- reference_year + AYRS[["Value"]]
+            if (!all(is.element(el = value[["Year"]], set = AYRS[["CYRS"]]))) {
+              stop("One or more years provided within an intertemporal shock is not consistent with the implied years from time steps.")
+            }
+            r_idx <- match(x = value[["Year"]], AYRS[["CYRS"]])
+            value[["ALLTIMEt"]] <- AYRS[["ALLTIMEt"]][r_idx]
+            value <- value[, !"Year"]
+          }
 
           if (identical(x = type, y = "scenario")) {
             value <- .convert_scenario(
@@ -49,7 +61,8 @@
           }
         }
 
-        if (is.element(el = type, set = c("uniform", "custom"))) {
+        # break into shock type specifc control flows
+        if (identical(x = type, y = "uniform")) {
           # get implied sets and check user-provided
           user_sets <- fct_names[!is.element(
             el = fct_names,
@@ -62,21 +75,6 @@
             attr(x = var, which = "full_var") <- FALSE
           }
 
-          if (identical(x = type, y = "custom")) {
-            explicit_sets <- colnames(x = value)[!is.element(
-              el = colnames(x = value),
-              set = "Value"
-            )]
-            # check for element specific components
-            # label implicit set if given
-            if (!identical(x = user_sets, y = character(0))) {
-              user_sets <- c(user_sets, explicit_sets)
-              implicit_sets <- user_sets[!is.element(el = user_sets, set = explicit_sets)]
-            } else {
-              implicit_sets <- NA
-            }
-          }
-
           if (!all(is.element(el = user_sets, set = ls_mixed_idx))) {
             errant_sets <- user_sets[!is.element(el = user_sets, set = ls_mixed_idx)]
             stop(paste(
@@ -87,10 +85,7 @@
               paste(ls_mixed_idx, collapse = ", ")
             ))
           }
-        }
 
-        # break into shock type specifc control flows
-        if (identical(x = type, y = "uniform")) {
           # check that any elements belong to the associated sets
           user_set_ele <- mget(x = user_sets)
 
@@ -195,142 +190,74 @@
 
           return(shock)
         } else if (identical(x = type, y = "custom")) {
-          # modify if some sets are implicit
-          if (!identical(x = implicit_sets, y = NA)) {
-            ls_mixed_idx <- ls_mixed_idx[!is.element(el = ls_mixed_idx, set = implicit_sets)]
-            ls_upper_idx <- substring(text = ls_mixed_idx, first = 1, last = nchar(x = ls_mixed_idx) - 1)
-          }
-
-          # if a set is completely omitted, expand to include the uniform set
-          if (!all(is.element(el = ls_mixed_idx, set = colnames(x = value[, !"Value"])))) {
-            missing_sets <- ls_mixed_idx[!is.element(el = ls_mixed_idx, set = colnames(x = value[, !"Value"]))]
-            missing_sets <- substring(text = missing_sets, first = 1, last = nchar(x = missing_sets) - 1)
-            m_set_ele <- with(data = sets[["elements"]], expr = mget(x = missing_sets))
-
-            # expand on non-value columns
-            x_value <- do.call(what = CJ, c(m_set_ele, value[, !"Value"]))
-            colnames(x = x_value) <- ls_mixed_idx
-
-            # merge on the previous to bring over values
-            common_sets <- intersect(x = colnames(x = value[, !"Value"]), y = colnames(x = x_value))
-            value <- data.table::merge.data.table(
-              x = x_value,
-              y = value,
-              by = common_sets
-            )
-          }
-
-          # check set order and reorder if necessary
-          if (!identical(x = c(ls_mixed_idx, "Value"), y = colnames(x = value))) {
-            data.table::setcolorder(x = value, neworder = c(ls_mixed_idx, "Value"))
-          }
-
-          # check that all tuples are present
+          browser()
+          # check that all tuples with entries are valid
           # construct data.table from var sets
           set_ele <- with(
             data = sets[["elements"]],
             expr = mget(x = ls_upper_idx)
           )
-
+          
           constructed_dt <- do.call(
             what = data.table::CJ,
             args = c(set_ele, sorted = FALSE)
           )
-
-          colnames(x = constructed_dt) <- colnames(value[, !"Value"])
-
-          if (!isTRUE(x = (all.equal(
-            current = value[, !"Value"],
-            target = constructed_dt,
-            ignore.row.order = TRUE,
-            check.attributes = FALSE
-          )))) {
+          
+          colnames(x = constructed_dt) <- ls_mixed_idx
+          
+          # check set order and reorder if necessary
+          if (!identical(x = c(ls_mixed_idx, "Value"), y = colnames(x = value))) {
+            data.table::setcolorder(x = value, neworder = c(ls_mixed_idx, "Value"))
+          }
+          
+          custom_inputs <- apply(value[, !"Value"], 1, paste, collapse = ";")
+          valid_inputs <- apply(constructed_dt, 1, paste, collapse = ";")
+          
+          if (!all(is.element(el = custom_inputs, set = valid_inputs))) {
+            # reword and add output showing some that are incorrect
             stop("Custom shock to base data set elements mismatch detected.")
           }
-
-          # check variable status (must be full var)
-          if (attr(x = var, which = "full_var")) {
-            if (!is.element(el = var, set = closure[["full_var"]])) {
-              stop(paste(var, "does not have full exogenous status."))
-            }
-            shock <- list(
-              dt = value,
-              var_name = var,
-              idx = .get_index(dt = value),
-              type = type
-            )
+          
+          # check for full_var status
+          if (all(is.element(el = valid_inputs, set = custom_inputs))) {
+            attr(x = var, which = "full_var") <- TRUE
           } else {
-            # combine with implicit set for a check on the closure status
-            # construct full closure entries
-            implied_comp <- mget(x = implicit_sets)
-            # convert names to standard (write an aux script for this!)
-            names(x = implied_comp) <- substring(
-              text = names(x = implied_comp),
-              first = 1,
-              last = nchar(x = names(x = implied_comp)) - 1
-            )
-
-            full_comp <- c(implied_comp, set_ele)
-
-            # order check (refresh these as they have been modified)
-            ls_upper_idx <- purrr::pluck(.x = var_extract, "ls_upper_idx", var)
-            full_comp <- full_comp[match(x = ls_upper_idx, table = names(x = full_comp))]
-
-            struct <- list(do.call(
-              what = data.table::CJ,
-              args = c(full_comp, sorted = FALSE)
-            ))
-
-            names(x = struct) <- var
-
-            concat <- .convert_var(
-              structured_data = struct,
-              var_name = names(x = struct)
-            )
-
-            # var specific exo
-            var_specific_exo <- purrr::list_flatten(x = subset(
-              x = closure,
-              subset = {
-                is.element(el = var_name, set = var)
-              },
-              select = struct
-            )[[1]])
-
-            if (length(x = var_specific_exo) > 1) {
-              var_specific_exo <- data.table::rbindlist(
-                l = var_specific_exo,
-                use.names = FALSE
-              )
-            }
-
-            exo_list <- .convert_var(
-              structured_data = var_specific_exo,
-              var_name = var
-            )
-
-            if (!all(is.element(el = concat, set = exo_list))) {
-              stop(cat("The following tuples have been allocated a shock but are not identified as exogenous:",
-                concat[is.element(el = concat, set = exo_list)],
-                sep = "\n"
-              ))
-            }
-
-            var_comp <- names(x = full_comp)
-            r_idx <- match(x = names(x = implied_comp), table = var_comp)
-            var_comp[r_idx] <- paste0("\"", implied_comp, "\"")
-
-            # construct shock LHS
-            shock_LHS <- paste0(var, "(", paste0(var_comp, collapse = ","), ")")
-
-            shock <- list(
-              dt = value,
-              var_name = shock_LHS,
-              idx = .get_index(dt = value),
-              type = type
-            )
-            attr(x = shock[["var_name"]], which = "full_var") <- FALSE
+            attr(x = var, which = "full_var") <- FALSE
           }
+          
+          # check that var has a closure entry
+          if (!is.element(el = var, set = closure[["full_var"]])) {
+            stop(paste(var, "does not have full exogenous status."))
+          }
+          
+          # check closure status
+          var_specific <- purrr::list_flatten(x = subset(
+            x = closure,
+            subset = {
+              is.element(el = var_name, set = var)
+            },
+            select = struct
+          )[[1]])
+          
+          var_specific <- data.table::rbindlist(
+            l = var_specific,
+            use.names = FALSE
+          )
+
+          valid_inputs <- apply(var_specific, 1, paste, collapse = ";")
+          
+          if (!all(is.element(el = custom_inputs, set = valid_inputs))) {
+            # reword and add output showing some that are incorrect
+            stop("Custom shock entires not exogenous.")
+          }
+          
+          shock <- list(
+            dt = value,
+            var_name = var,
+            idx = .get_index(dt = value),
+            type = type
+          )
+          
           return(shock)
         }
       }

@@ -1,6 +1,7 @@
 #' @keywords internal
 #' @noRd
-.get_postmodel_paths <- function(cmf_path) {
+.get_postmodel_paths <- function(cmf_path,
+                                 call) {
   launchpad_dir <- dirname(path = path.expand(path = cmf_path))
   model_dir <- sub(pattern = "/launchpad",
                    replacement = "",
@@ -9,11 +10,9 @@
     .cli_action(action = "abort",
                 msg = "Implied model directory {.path {model_dir}} not found. This 
               would indicate that the {.arg cmf_path} provided, {.path 
-              {cmf_path}}, is not correct or a model run at this location has 
-              not taken place.",
+              {cmf_path}}, is not correct.",
                 call = call)
   }
-  
   metadata_path <- file.path(launchpad_dir, "metadata.qs2")
   var_paths <- list.files(
     path = file.path(
@@ -25,6 +24,13 @@
     pattern = "csvs",
     full.names = TRUE
   )
+  if (identical(x = character(0), y = var_paths)) {
+    .cli_action(action = "abort",
+                msg = "Model outputs not found. This would indicate that a 
+                model run at the {.arg cmf_path} provided, {.path {cmf_path}}, 
+                has not taken place.",
+                call = call)
+  }
   coeff_paths <- list.files(
     path = file.path(
       launchpad_dir,

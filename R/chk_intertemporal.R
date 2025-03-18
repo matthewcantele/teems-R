@@ -11,11 +11,12 @@
   metadata <- qs2::qs_read(file = metadata_path)
   if (any(sets[["intertemp"]])) {
     intertemporal <- TRUE
-    CYRS <- purrr::pluck(.x = targets::tar_read(
+    AYRS <- purrr::pluck(.x = targets::tar_read(
       name = final.par_tib,
       store = file.path(model_dir, "store")
     ), "dt", "AYRS")
-    CYRS[["Value"]] <- CYRS[["Value"]] + metadata[["reference_year"]]
+    AYRS[["Value"]] <- AYRS[["Value"]] + metadata[["reference_year"]]
+    CYRS <- AYRS
   } else {
     intertemporal <- FALSE
     CYRS <- NULL

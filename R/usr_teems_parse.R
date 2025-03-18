@@ -27,11 +27,13 @@
 #'   type.
 #' @export
 teems_parse <- function(cmf_path,
-                        type = c("variable", "coefficient", "set", "basedata"))
+                        type = c("variable", "coefficient", "set", "basedata"),
+                        name = NULL)
 {
 call <- match.call()
 type <- rlang::arg_match(arg = type)
-paths <- .get_postmodel_paths(cmf_path = cmf_path)
+paths <- .get_postmodel_paths(cmf_path = cmf_path,
+                              call = call)
 sets <- .check_sets(var_paths = paths[["var"]],
                     model_dir = paths[["model"]],
                     call = call)
@@ -40,6 +42,7 @@ int <- .check_intertemporal(launchpad_dir = paths[["launchpad"]],
                             metadata_path = paths[["metadata"]],
                             sets = sets[["postmodel"]])
 output <- .retrieve_output(type = type,
+                           name = name,
                            paths = paths,
                            sets = sets,
                            int = int,
