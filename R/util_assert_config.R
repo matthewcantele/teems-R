@@ -25,13 +25,13 @@
       if (!quiet) {
         cli::cli_inform(
           c(
-            "i" = "{.arg closure_config} is not supplied so the
-                      standard closure will be used with a null shock.",
-            "i" = "A null shock will return all model coefficients as
-                      they are provided and/or calculated in the Tablo file.",
-            "!" = "Any significantion deviation under these
-                      conditions would indicate an error in the loading of
-                      input files or parsing of model outputs."
+            "i" = "{.arg closure_config} is not supplied so the standard 
+            closure will be used with a null shock.",
+            "i" = "A null shock will return all model coefficients as they are 
+            provided and/or calculated in the Tablo file.",
+            "!" = "Any significant deviation under these conditions would
+            indicate an error in the loading of input files or parsing of model 
+            outputs."
           )
           # point to teems_parse options
         )
@@ -39,7 +39,8 @@
       }
     } else {
       if (!quiet) {
-        cli::cli_inform(c("i" = "No {.arg closure_file} has been provided so the standard model-specific closure will be used."))
+        cli::cli_inform(c("i" = "No {.arg closure_file} has been provided so 
+                          the standard model-specific closure will be used."))
         Sys.sleep(time = 1)
       }
     }

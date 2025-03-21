@@ -1,5 +1,6 @@
-#' @importFrom purrr pluck map2
+#' @importFrom purrr pluck map2 list_flatten
 #' @importFrom tibble tibble
+#' @importFrom data.table fread rbindlist setcolorder CJ
 #' 
 #' @keywords internal
 #' @noRd
@@ -9,7 +10,6 @@
                              sets,
                              param,
                              reference_year) {
-  browser()
   final_shocks <- list()
   counter <- 0
 
@@ -20,7 +20,6 @@
     final_shocks[[shock_ID]] <- with(
       data = ls_shock,
       expr = {
-        browser()
         fct_names <- names(x = ls_shock)
 
         if (is.element(el = type, set = c("scenario", "custom"))) {
@@ -36,7 +35,7 @@
               "shocks require a 'Value' column."
             ))
           }
-          browser()
+
           # convert to ALLTIMEt if only Year given
           if (is.element(el = "Year", set = colnames(x = value))) {
             AYRS <- purrr::pluck(.x = param, "dt", "AYRS")
@@ -190,46 +189,58 @@
 
           return(shock)
         } else if (identical(x = type, y = "custom")) {
-          browser()
+          # check whether provided set is the same or child set of extract set
+          non_value_col <- colnames(x = value[, !"Value"])
+
+          if (any(!is.element(el = non_value_col, set = ls_mixed_idx))) {
+            child_set <- non_value_col[!is.element(el = non_value_col, set = ls_mixed_idx)]
+            std_child_set <- substr(x = child_set, start = 1, stop = nchar(x = child_set) - 1)
+            if (!all(is.element(el = std_child_set, set = toupper(x = sets[["name"]])))) {
+              stop("The set provided does not appear to belong to the model")
+            }
+            ls_mixed_idx <- non_value_col
+            ls_upper_idx <- substr(x = non_value_col, start = 1, stop = nchar(x = non_value_col) - 1)
+          }
+
+          # check set order and reorder if necessary
+          if (!identical(x = c(ls_mixed_idx, "Value"), y = colnames(x = value))) {
+            data.table::setcolorder(x = value, neworder = c(ls_mixed_idx, "Value"))
+          }
+
           # check that all tuples with entries are valid
           # construct data.table from var sets
           set_ele <- with(
             data = sets[["elements"]],
             expr = mget(x = ls_upper_idx)
           )
-          
+
           constructed_dt <- do.call(
             what = data.table::CJ,
             args = c(set_ele, sorted = FALSE)
           )
-          
+
           colnames(x = constructed_dt) <- ls_mixed_idx
-          
-          # check set order and reorder if necessary
-          if (!identical(x = c(ls_mixed_idx, "Value"), y = colnames(x = value))) {
-            data.table::setcolorder(x = value, neworder = c(ls_mixed_idx, "Value"))
-          }
-          
+
           custom_inputs <- apply(value[, !"Value"], 1, paste, collapse = ";")
           valid_inputs <- apply(constructed_dt, 1, paste, collapse = ";")
-          
+
           if (!all(is.element(el = custom_inputs, set = valid_inputs))) {
             # reword and add output showing some that are incorrect
             stop("Custom shock to base data set elements mismatch detected.")
           }
-          
+
           # check for full_var status
           if (all(is.element(el = valid_inputs, set = custom_inputs))) {
             attr(x = var, which = "full_var") <- TRUE
           } else {
             attr(x = var, which = "full_var") <- FALSE
           }
-          
+
           # check that var has a closure entry
-          if (!is.element(el = var, set = closure[["full_var"]])) {
+          if (!is.element(el = var, set = closure[["var_name"]])) {
             stop(paste(var, "does not have full exogenous status."))
           }
-          
+
           # check closure status
           var_specific <- purrr::list_flatten(x = subset(
             x = closure,
@@ -238,26 +249,26 @@
             },
             select = struct
           )[[1]])
-          
+
           var_specific <- data.table::rbindlist(
             l = var_specific,
             use.names = FALSE
           )
 
           valid_inputs <- apply(var_specific, 1, paste, collapse = ";")
-          
+
           if (!all(is.element(el = custom_inputs, set = valid_inputs))) {
             # reword and add output showing some that are incorrect
             stop("Custom shock entires not exogenous.")
           }
-          
+
           shock <- list(
             dt = value,
             var_name = var,
             idx = .get_index(dt = value),
             type = type
           )
-          
+
           return(shock)
         }
       }
@@ -273,8 +284,10 @@
 
   shock_file <- paste0(paste(paste(shock_id, format(x = Sys.time(), "%H%M%S"), sep = "_"), collapse = "_"), ".shf")
 
-  return(list(
+  shock_list <- list(
     shocks = final_shocks,
     shock_file = shock_file
-  ))
+  )
+  
+  return(shock_list)
 }

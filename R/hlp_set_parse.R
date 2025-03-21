@@ -76,7 +76,6 @@
       set_tib[["name"]]
     ),
     .f = function(ele_out, ele_in, set_name) {
-      browser()
       ele_out <- unlist(x = ele_out, use.names = FALSE)
       if (!all.equal(ele_out, ele_in)) {
         .cli_action(

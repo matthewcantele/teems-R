@@ -24,7 +24,7 @@
   )
   exec_preamble <- paste(
     docker_preamble,
-    '"singularity exec --bind /home/launchpad /home/solver.sif /home/teems-solver/lib/mpi/bin/mpiexec',
+    '"singularity exec --bind /home/launchpad /home/teems_solver.sif /home/teems-solver/lib/mpi/bin/mpiexec',
     "-n", n_tasks,
     "/home/teems-solver/solver/hsl",
     "-cmdfile", paths[["docker_cmf"]]
@@ -59,7 +59,7 @@
 
   exec_cmd <- paste(exec_preamble, solver_param)
   sol_parse_cmd <- paste(sub(pattern = "--privileged ", replacement = "", x = docker_preamble),
-                         '"make -C /home/sol_parser && chown -R 1000:1000 /home/launchpad/out/variables/bin"')
+                         '"make -C /home/bin_parser && chown -R 1000:1000 /home/launchpad/out/variables/bin"')
   if (terminal_run) {
     cat(cmd, file = file.path(paths[["run"]], "model_exec.txt"))
     hsl <- "hsl"

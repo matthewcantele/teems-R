@@ -21,9 +21,8 @@
       errored_tar <- targets::tar_errored(store = teems_paths[["store"]])
       raw_error <- targets::tar_meta(names = errored_tar,
                                      store = teems_paths[["store"]])[["error"]]
-      error_inputs <- trimws(x = strsplit(x = raw_error,
-                                          split =  "(?<!:):(?!:)",
-                                          perl = TRUE)[[1]][2])
+      first_colon <- regexpr("(?<!:):(?!:)", raw_error, perl = TRUE)
+      error_inputs <- trimws(x = substring(raw_error, first_colon + 1))
       expr <- parse(text = error_inputs)
       eval(expr = expr)
     }

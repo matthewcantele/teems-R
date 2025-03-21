@@ -1,5 +1,6 @@
 #' @importFrom stats setNames
 #' @importFrom rlang caller_env fn_env
+#' @importFrom utils URLencode
 #' @importFrom cli cli_abort cli_inform cli_warn
 #' 
 #' @keywords internal
@@ -10,7 +11,7 @@
                         url = NULL,
                         hyperlink = NULL,
                         call = NULL) {
-  #browser()
+
   symbol <- switch(EXPR = action,
                    "abort" = "x",
                    "inform" = "i",

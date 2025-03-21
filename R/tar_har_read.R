@@ -426,16 +426,18 @@
   if (!is.null(x = header_rename)) {
     if (!all(is.element(el = names(x = header_rename), set = names(x = headers)))) {
       errant_headers <- names(x = header_rename)[!is.element(el = names(x = header_rename), set = names(x = headers))]
-      
+      n_errant_headers <- length(x = errant_headers)
 
       error_fun <- substitute(.cli_action(
         action = "abort",
-        msg = "The header(s) specified for renaming, {.val {errant_headers}}
-        is(are) not found in the {.val {full_har_path}} HAR file.",
+        msg = "The HAR file provided: {.val {full_har_path}} does not contain
+        {n_errant_headers} header{?s} specified for renaming, 
+        {.val {errant_headers}}.",
         call = call
       ))
 
       error_var <-  substitute(variables <- list(errant_headers = errant_headers,
+                                                 n_errant_headers = n_errant_headers,
                                                  full_har_path = full_har_path))
       
       error_inputs <- .package_error(error_var = error_var,

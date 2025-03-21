@@ -1,6 +1,6 @@
 #' @importFrom tibble tibble
-#' @importFrom purrr pluck pluck_depth pmap list_flatten map2 compact
-#' @importFrom data.table as.data.table setnames
+#' @importFrom purrr pluck pmap list_flatten map2 compact
+#' @importFrom data.table CJ
 #' 
 #' @keywords internal
 #' @noRd
@@ -8,14 +8,7 @@
                       swap_out,
                       sets,
                       var_extract) {
-browser()
   if (!is.null(x = swap_out)) {
-    list_depth <- purrr::pluck_depth(x = swap_out)
-
-    if (!is.null(x = purrr::pluck(.x = swap_out, list_depth))) {
-      swap_out <- list(swap_out)
-    }
-
     swap_out <- lapply(
       X = swap_out,
       FUN = .swap_reconstruct
@@ -93,10 +86,14 @@ browser()
             # check that all elements are present
             exo_to_endo <- var_swap_outs[[sep_swap]]
 
-            el <- .convert_var(structured_data = exo_to_endo,
-                               var_name = out_var)
-            set <- .convert_var(structured_data = remaining_exo_var,
-                                var_name = out_var)
+            el <- .convert_var(
+              structured_data = exo_to_endo,
+              var_name = out_var
+            )
+            set <- .convert_var(
+              structured_data = remaining_exo_var,
+              var_name = out_var
+            )
 
             if (!all(is.element(el = el, set = set))) {
               stop(paste(
@@ -113,19 +110,27 @@ browser()
             )
 
             # back to struct
-            ls_remaining <- lapply(X = remaining_exo_var,
-                   FUN = function(tuple) {
-                     .convert_var(concatenated_data = tuple,
-                                  drop_quotes = TRUE)
-                   })
+            ls_remaining <- lapply(
+              X = remaining_exo_var,
+              FUN = function(tuple) {
+                .convert_var(
+                  concatenated_data = tuple,
+                  drop_quotes = TRUE
+                )
+              }
+            )
 
             remaining_exo_var <- rbindlist(l = lapply(ls_remaining, function(x) as.list(x[[out_var]])))
           }
-          remaining_exo_var[] <- mapply(FUN = as,
-                                        remaining_exo_var,
-                                        sapply(X = purrr::list_flatten(x = current_var[["struct"]])[[1]],
-                                               FUN = class),
-                                        SIMPLIFY = FALSE)
+          remaining_exo_var[] <- mapply(
+            FUN = as,
+            remaining_exo_var,
+            sapply(
+              X = purrr::list_flatten(x = current_var[["struct"]])[[1]],
+              FUN = class
+            ),
+            SIMPLIFY = FALSE
+          )
 
           # create new set entry (for new set in tab)
           out_ele <- swap_out[is.element(
@@ -141,9 +146,11 @@ browser()
           )]
 
           # swap-wise diff (note previous remaining_exo_var is var-specific, this is swap-specific)
-          standard_var_sets <- .get_sets(var = out_var,
-                                         var_extract = var_extract,
-                                         type = "upper")
+          standard_var_sets <- .get_sets(
+            var = out_var,
+            var_extract = var_extract,
+            type = "upper"
+          )
 
           colnames(x = remaining_exo_var) <- standard_var_sets
 
@@ -182,10 +189,12 @@ browser()
               # if set is completely missing
               if (!all(is.element(el = names(x = full_ss), set = names(x = ss)))) {
                 null_sets <- full_ss[!is.element(el = names(x = full_ss), set = names(x = ss))]
-                null_sets <- lapply(X = null_sets,
-                                    FUN = function(s) {
-                                      return(NULL)
-                                    })
+                null_sets <- lapply(
+                  X = null_sets,
+                  FUN = function(s) {
+                    return(NULL)
+                  }
+                )
                 ss <- c(ss, null_sets)
                 ss <- ss[match(x = names(x = full_ss), table = names(x = ss))]
               }
@@ -213,24 +222,24 @@ browser()
 
             ss <- lapply(X = ss, FUN = function(subset) {
               if (!is.null(x = subset)) {
-              replacement <- paste0("\"", unlist(x = unique(x = subset[, ..set_name])), "\"")
-              colnames(x = subset) <- gsub(
-                pattern = set_name,
-                replacement = replacement,
-                x = colnames(x = subset)
-              )
+                replacement <- paste0("\"", unlist(x = unique(x = subset[, ..set_name])), "\"")
+                colnames(x = subset) <- gsub(
+                  pattern = set_name,
+                  replacement = replacement,
+                  x = colnames(x = subset)
+                )
               }
               return(subset)
             })
 
             full_ss <- lapply(X = full_ss, FUN = function(subset) {
               if (!is.null(x = subset)) {
-              replacement <- paste0("\"", unlist(x = unique(x = subset[, ..set_name])), "\"")
-              colnames(x = subset) <- gsub(
-                pattern = set_name,
-                replacement = replacement,
-                x = colnames(x = subset)
-              )
+                replacement <- paste0("\"", unlist(x = unique(x = subset[, ..set_name])), "\"")
+                colnames(x = subset) <- gsub(
+                  pattern = set_name,
+                  replacement = replacement,
+                  x = colnames(x = subset)
+                )
               }
               return(subset)
             })
@@ -250,12 +259,6 @@ browser()
             ss <- purrr::compact(.x = ss[incomplete])
             full_ss <- purrr::compact(.x = full_ss[incomplete])
           }
-
-          # concat <- sapply(X = struct_ss,
-          #                  FUN = function(s) {
-          #                    .convert_var(structured_data = s,
-          #                                 var_name = out_var)
-          #                    })
 
           new_entries <- sapply(
             X = out_ss,
