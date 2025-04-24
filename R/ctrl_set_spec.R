@@ -50,9 +50,6 @@
     command = expression(.read_har(
       con = set_file,
       data_type = !!data_type,
-      header_rename = NULL,
-      coefficient_rename = NULL,
-      full_exclude = !!full_exclude,
       call = set_call
     ))
   ))
@@ -61,9 +58,13 @@
     name = "mod.set_array",
     command = expression(.modify_array(
       ls_array = set_array,
+      data_type = !!data_type,
+      header_rename = NULL,
+      coefficient_rename = NULL,
       coeff_extract = coeff_extract,
+      full_exclude = !!full_exclude,
       metadata = !!metadata,
-      data_type = !!data_type
+      call = set_call
     ))
   ))
 

@@ -15,16 +15,17 @@
                            matsol,
                            steps,
                            enable_time) {
- 
+  #system("docker run --rm --mount type=bind,src=/home/mpc/teems_runs/null/GTAP-INTv1_v10/launchpad,dst=/home/launchpad teems:beta /bin/bash -c \"/home/teems-solver/lib/mpi/bin/mpiexec -n 1 /home/teems-solver/solver/hsl -cmdfile /home/launchpad/GTAP-INTv1_v10.cmf -matsol 0 -step1 2 -step2 4 -step3 8 -regset REG -enable_time -nsubints 1 -solmed Mmid -nesteddbbd 0  -presol 1 -laA 300 -laDi 500 -laD 200 -maxthreads 1 | tee /home/launchpad/out/solver_out_1736.txt\"")
+
   docker_preamble <- paste(
-    "docker run --rm --privileged --volume",
-    paste0(paths[["run"]], ":/home/launchpad"),
+    "docker run --rm --mount",
+    paste("type=bind", paste0("src=", paths[["run"]]), "dst=/home/launchpad", sep = ","),
     paste0("teems", ":", docker_tag),
     "/bin/bash -c"
   )
   exec_preamble <- paste(
     docker_preamble,
-    '"singularity exec --bind /home/launchpad /home/teems_solver.sif /home/teems-solver/lib/mpi/bin/mpiexec',
+    '"/home/teems-solver/lib/mpi/bin/mpiexec',
     "-n", n_tasks,
     "/home/teems-solver/solver/hsl",
     "-cmdfile", paths[["docker_cmf"]]
@@ -51,15 +52,12 @@
     "-laA", laA,
     "-laDi", laDi,
     "-laD", laD,
-    paste0("-x OMP_NUM_THREADS=", 1),
     paste("-maxthreads", 1),
     "| tee",
-    paste(docker_diagnostic_out, '&& chown -R 1000:1000', paste0(paths[["docker_run"]], '"'))
+    paste(docker_diagnostic_out, '"')
   )
-
   exec_cmd <- paste(exec_preamble, solver_param)
-  sol_parse_cmd <- paste(sub(pattern = "--privileged ", replacement = "", x = docker_preamble),
-                         '"make -C /home/bin_parser && chown -R 1000:1000 /home/launchpad/out/variables/bin"')
+  sol_parse_cmd <- paste(docker_preamble, '"make -C /home/bin_parser"')
   if (terminal_run) {
     cat(cmd, file = file.path(paths[["run"]], "model_exec.txt"))
     hsl <- "hsl"
@@ -86,7 +84,6 @@
     #clipr::write_clip(content = cmd)
     return()
   }
-  
   cmd <- list(exec = exec_cmd,
               sol_parse = sol_parse_cmd)
   

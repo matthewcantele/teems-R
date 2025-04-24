@@ -40,7 +40,7 @@
   }
 
   # data type (int for binary switches or real for the rest)
-  if (identical(x = purrr::pluck(.x = dat, "type", header_name), y = "2IFULL")) {
+  if (identical(x = purrr::pluck(.x = dat, "type", header_name), y = "integer")) {
     numeric_type <- "Integer"
   }
 

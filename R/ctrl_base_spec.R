@@ -22,7 +22,7 @@
     command = quote(expr = !!config[["base_har"]]),
     format = "file"
   ))
-
+  
   if (!is.na(x = config[["aux_base"]])) {
     t_aux_base_file <- rlang::expr(targets::tar_target_raw(
       name = "aux_base_file",
@@ -31,16 +31,13 @@
     ))
 
     file_type <- attr(x = config[["aux_base"]], "file_ext")
+
     if (identical(x = file_type, y = "har")) {
       t_aux_base_array <- rlang::expr(targets::tar_target_raw(
         name = "aux_base_array",
         command = expression(.read_har(
           con = aux_base_file,
           data_type = !!data_type,
-          coeff_extract = coeff_extract,
-          header_rename = !!config[["header_rename"]],
-          coefficient_rename = !!config[["coefficient_rename"]],
-          full_exclude = !!full_exclude,
           call = base_call
         ))
       ))
@@ -50,37 +47,23 @@
         command = expression(qs2::qd_read(file = aux_base_file))
       ))
     }
-
-    # convert binary har files to a list of arrays and append
-    t_base_array <- rlang::expr(targets::tar_target_raw(
-      name = "base_array",
-      command = expression(.read_har(
-        con = base_file,
-        data_type = !!data_type,
-        coeff_extract = coeff_extract,
-        header_rename = !!config[["header_rename"]],
-        coefficient_rename = !!config[["coefficient_rename"]],
-        append = aux_base_array,
-        full_exclude = !!full_exclude,
-        call = base_call
-      ))
-    ))
   } else {
-    # convert binary har files to a list of arrays
-    t_base_array <- rlang::expr(targets::tar_target_raw(
-      name = "base_array",
-      command = expression(.read_har(
-        con = base_file,
-        data_type = !!data_type,
-        coeff_extract = coeff_extract,
-        header_rename = !!config[["header_rename"]],
-        coefficient_rename = !!config[["coefficient_rename"]],
-        full_exclude = !!full_exclude,
-        call = base_call
-      ))
+    t_aux_base_array <- rlang::expr(targets::tar_target_raw(
+      name = "aux_base_array",
+      command = quote(expr = NULL)
     ))
   }
-
+  
+  # convert binary har files to a list of arrays
+  t_base_array <- rlang::expr(targets::tar_target_raw(
+    name = "base_array",
+    command = expression(.read_har(
+      con = base_file,
+      data_type = !!data_type,
+      call = base_call
+    ))
+  ))
+  
   t_base_mod <- rlang::expr(targets::tar_target_raw(
     name = "mod.base_array",
     command = expression(.modify_array(
@@ -88,10 +71,61 @@
       metadata = !!metadata,
       data_type = !!data_type,
       coeff_extract = coeff_extract,
+      header_rename = !!config[["header_rename"]],
+      coefficient_rename = !!config[["coefficient_rename"]],
+      full_exclude = !!full_exclude,
       sets = final.set_tib,
-      time_steps = time_steps
+      time_steps = time_steps,
+      append = aux_base_array,
+      call = base_call
     ))
   ))
+
+  # if (!is.na(x = config[["aux_base"]])) {
+  #   t_aux_base_file <- rlang::expr(targets::tar_target_raw(
+  #     name = "aux_base_file",
+  #     command = quote(expr = !!config[["aux_base"]]),
+  #     format = "file"
+  #   ))
+  # 
+  #   file_type <- attr(x = config[["aux_base"]], "file_ext")
+  #   if (identical(x = file_type, y = "har")) {
+  #     t_aux_base_array <- rlang::expr(targets::tar_target_raw(
+  #       name = "aux_base_array",
+  #       command = expression(.read_har(
+  #         con = aux_base_file,
+  #         data_type = !!data_type,
+  #         coeff_extract = coeff_extract,
+  #         header_rename = !!config[["header_rename"]],
+  #         coefficient_rename = !!config[["coefficient_rename"]],
+  #         full_exclude = !!full_exclude,
+  #         call = base_call
+  #       ))
+  #     ))
+  #   } else if (identical(x = file_type, y = "qs2")) {
+  #     t_aux_base_array <- rlang::expr(targets::tar_target_raw(
+  #       name = "aux_base_array",
+  #       command = expression(qs2::qd_read(file = aux_base_file))
+  #     ))
+  #   }
+  # 
+  #   # convert binary har files to a list of arrays and append
+  #   t_base_array <- rlang::expr(targets::tar_target_raw(
+  #     name = "base_array",
+  #     command = expression(.read_har(
+  #       con = base_file,
+  #       data_type = !!data_type,
+  #       coeff_extract = coeff_extract,
+  #       header_rename = !!config[["header_rename"]],
+  #       coefficient_rename = !!config[["coefficient_rename"]],
+  #       append = aux_base_array,
+  #       full_exclude = !!full_exclude,
+  #       call = base_call
+  #     ))
+  #   ))
+  # } else {
+  # 
+  # }
 
   t_base_setnames <- rlang::expr(targets::tar_target_raw(
     name = "final.base_array",

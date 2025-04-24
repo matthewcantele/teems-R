@@ -289,7 +289,7 @@
 
       CGDS <- list(CGDS_COMM = list(
         header_name = CGDS[["v6.2header"]],
-        type = "1CFULL",
+        type = "character",
         information = CGDS[["v6.2description"]],
         data = "CGDS",
         aggregate = FALSE

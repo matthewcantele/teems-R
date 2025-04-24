@@ -38,9 +38,9 @@
           header[["aggregate"]] <- TRUE
         }
         
-        # missing type info (REFULL if missing)
+        # missing type info (real if missing)
         if (!is.element(el = "type", set = names(x = header))) {
-          header[["type"]] <- "REFULL"
+          header[["type"]] <- "real"
         }
 
         return(header)

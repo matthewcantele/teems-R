@@ -11,7 +11,6 @@
                         url = NULL,
                         hyperlink = NULL,
                         call = NULL) {
-
   symbol <- switch(EXPR = action,
                    "abort" = "x",
                    "inform" = "i",

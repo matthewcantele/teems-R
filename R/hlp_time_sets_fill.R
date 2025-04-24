@@ -21,7 +21,7 @@
 
   int_sets <- tibble::tibble(header = time_sets[["name"]],
                              information = time_sets[["information"]],
-                             type = "2IFULL",
+                             type = "integer",
                              aggregate = FALSE,
                              input_file = time_sets[["file"]],
                              dt = time_sets[["dt"]],
