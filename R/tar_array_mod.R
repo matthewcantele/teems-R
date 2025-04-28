@@ -29,7 +29,7 @@
     if (!all(is.element(el = names(x = header_rename), set = names(x = ls_array)))) {
       errant_headers <- names(x = header_rename)[!is.element(el = names(x = header_rename), set = names(x = ls_array))]
       n_errant_headers <- length(x = errant_headers)
-
+browser()
       error_fun <- substitute(.cli_action(
         action = "abort",
         msg = "The HAR file provided: {.val {full_har_path}} does not contain

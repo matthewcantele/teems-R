@@ -17,14 +17,14 @@
   solution_method <- rlang::arg_match(arg = solution_method,
                                      values = c("Johansen", "mod_midpoint"))
   if (!(all(steps %% 2 == 0) || all(steps %% 2 == 1))) {
-    .cli_action(action = "abort",
-                msg = "{.arg n_subintervals} must contain either all even 
+    .cli_action(msg = "{.arg n_subintervals} must contain either all even 
                 numbers or all odd numbers.",
+                action = "abort",
                 call = call)
   }
   if (!all(is.numeric(steps), length(steps) == 3)) {
-    .cli_action(action = "abort",
-                msg = "{.arg steps} must be a numeric vector of length 3.",
+    .cli_action(msg = "{.arg steps} must be a numeric vector of length 3.",
+                action = "abort",
                 call = call)
   }
   
@@ -47,9 +47,9 @@
   }
 
   if (is.element(el = matrix_method, set = c("SBBD", "NDBBD")) && !enable_time) {
-    .cli_action(action = "abort",
-                msg = "{.arg matrix_method} {.val {matrix_method}} only 
+    .cli_action(msg = "{.arg matrix_method} {.val {matrix_method}} only 
                 applicable to intertemporal model runs.",
+                action = "abort",
                 call = call)
   }
 

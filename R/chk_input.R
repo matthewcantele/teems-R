@@ -33,13 +33,13 @@
                             arg = arg,
                             call) {
   if (!file.exists(file)) {
-    .cli_action(action = "abort",
-                msg = "Cannot open file {.file {file}}: No such file.",
+    .cli_action(msg = "Cannot open file {.file {file}}: No such file.",
+                action = "abort",
                 call = call)
   } else if (!is.element(el = file_ext, set = valid_ext)) {
-    .cli_action(action = "abort",
-                msg = "{.arg {arg}} must be a {.or {.val {valid_ext}}} file, 
+    .cli_action(msg = "{.arg {arg}} must be a {.or {.val {valid_ext}}} file, 
                 not {?a/an} {.val {file_ext}} file.",
+                action = "abort",
                 call = call)
   }
   file <- path.expand(path = file)
@@ -59,11 +59,16 @@
       "tab" = "Tablo",
       "cls" = "closure"
     )
-    .cli_action("Currently supported {file_type} files include: {.val {file_names}}.",
-                "Alternatively, path to a user-provided {file_type} file is supported.",
-                "Note that user-provided {file_type} files may need to be modified for compatibility with various {.pkg teems} functions.",
-                action = "abort",
-                msg = "The specified internal {file_type} file: {.val {file}} is not supported.",
+    .cli_action(msg = c("The specified internal {file_type} file: {.val {file}} 
+                        is not supported.",
+                        "Currently supported {file_type} files include: 
+                        {.val {file_names}}.",
+                        "Alternatively, path to a user-provided {file_type} 
+                        file is supported.",
+                        "Note that user-provided {file_type} files may need to 
+                        be modified for compatibility with various {.pkg teems} 
+                        functions."),
+                action = c("abort", rep(x = "inform", 3)),
                 call = call)
   } else {
     input <- valid_internal_files[[file]]

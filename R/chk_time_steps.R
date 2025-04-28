@@ -10,10 +10,10 @@
     implied_t0 <- time_steps[1]
     if (!identical(x = t0, y = implied_t0)) {
       .cli_action(
-        action = "abort",
         msg = "The first time step provided {.val {implied_t0}}
                        is not consistent with the reference year from the
                        loaded {.arg set_har}: {.val {t0}}.",
+        action = "abort",
         # url = "https://r-project.org",
         # hyperlink = "test",
         call = call
@@ -24,9 +24,9 @@
     implied_chron <- c(t0, t0 + cumsum(time_steps))
     if (!quiet) {
       .cli_action(
-        action = "inform",
         msg = "The chronological time steps inferred from the
-      supplied intervals are {.val {implied_chron}}."
+      supplied intervals are {.val {implied_chron}}.",
+        action = "inform",
         )
     }
   }

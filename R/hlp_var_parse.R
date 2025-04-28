@@ -12,11 +12,9 @@
                        call) {
 
   if (!all(sapply(X = paths, FUN = file.exists))) {
-    .cli_action(
-      action = "abort",
-      msg = "One or more variable file paths does not exist.",
-      call = call
-    )
+    .cli_action(msg = "One or more variable file paths does not exist.",
+                action = "abort",
+                call = call)
   }
   # split up the set ids for matching
   vars[["setid"]] <- strsplit(x = vars[["setid"]], split = ",")
@@ -111,9 +109,9 @@
     }
   )))
   if (!lax_check) {
-    .cli_action(action = "abort",
-                msg = "Lax check failed: One or more column names in parsed 
+    .cli_action(msg = "Lax check failed: One or more column names in parsed 
                 variable data.tables is not present in the tab extract.",
+                action = "abort",
                 call = call)
   }
 
@@ -126,18 +124,18 @@
     }
   )))
   if (!strict_check) {
-    .cli_action(action = "abort",
-                msg = "Strict check failed: One or more column names is either 
+    .cli_action(msg = "Strict check failed: One or more column names is either 
                 not present or in a different order than that of the tab 
                 extract.",
+                action = "abort",
                 call = call)
   }
 
   # name check
   if (!all(names(var_out) == tolower(x = var_extract[["name"]]))) {
-    .cli_action(action = "abort",
-                msg = "Name mismatch in parsed variables with respect to 
+    .cli_action(msg = "Name mismatch in parsed variables with respect to 
                 variable extract names.",
+                action = "abort",
                 call = call)
   }
 

@@ -15,19 +15,19 @@
   } else if (any(grepl(pattern = "7.0|7", x = lines))) {
     model_version <- "v7.0"
   } else {
-    .cli_action("i" = "Try inputing {.arg model_version} explicitly or 
-                     modifying the Tablo file.",
-                "i" = "If not explicitly provided, {.pkg teems} currently 
-                     calls {.fn grepl} on the first {n_char} lines using patterns {.val 6.2} and {.val 7.0|7}.",
-                action = "abort",
-                msg = "Model version was not successfully extracted from 
+    .cli_action(msg = c("Model version was not successfully extracted from 
                      {.path {tab_file}}.",
+                        "Try inputing {.arg model_version} explicitly or 
+                     modifying the Tablo file.",
+                     "If not explicitly provided, {.pkg teems} currently 
+                     calls {.fn grepl} on the first {n_char} lines using patterns {.val 6.2} and {.val 7.0|7}."),
+                action = c("abort", "inform", "inform"),
                 call = call)
   }
   if (!quiet) {
-    .cli_action(action = "inform",
-                msg = "Model version for {tab_name} has been determined as 
-                    {.val {model_version}}.")
+    .cli_action(msg = "Model version for {tab_name} has been determined as 
+                    {.val {model_version}}.",
+                action = "inform")
   }
   return(model_version)
 }

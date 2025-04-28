@@ -17,9 +17,9 @@
   available_mappings <- colnames(x = set_mappings)[-1]
 
   if (!is.element(el = mapping, set = available_mappings)) {
-    .cli_action("Available mappings for {set} include {.val {available_mappings}}",
-                action = "abort",
-                msg = "The internal mapping selected: {.val {mapping}}, for set: {set} does not exist.",
+    .cli_action(msg = c("Available mappings for {set} include {.val {available_mappings}}",
+                        "The internal mapping selected: {.val {mapping}}, for set: {set} does not exist."),
+                action = c("abort", "inform"),
                 call = call)
       # add information for what the mappings are ??mappings
   } else {

@@ -5,26 +5,27 @@
 #' 
 #' @keywords internal
 #' @noRd
-.cli_action <- function(...,
+.cli_action <- function(msg,
+                        ...,
                         action,
-                        msg,
                         url = NULL,
                         hyperlink = NULL,
                         call = NULL) {
-  symbol <- switch(EXPR = action,
-                   "abort" = "x",
-                   "inform" = "i",
-                   "warn" = "!")
-  
-  formatted_msg <- c(stats::setNames(object = msg, nm = symbol))
+
   caller_env <- rlang::caller_env()
 
-  if (!missing(...)) {
-    append_text <- unlist(...)
-    append_msg <- c("i" = append_text)
-    formatted_msg <- c(formatted_msg, append_msg)
-  }
+  formatted_msg <- purrr::map2(.x = msg,
+              .y = action,
+              .f = function(m, a) {
+                cli_sym <- switch(EXPR = a,
+                                  "abort" = "x",
+                                  "inform" = "i",
+                                  "warn" = "!")
+                cli_msg <- c(stats::setNames(object = m, nm = cli_sym))
+              })
   
+  formatted_msg <- unlist(x = formatted_msg)
+
   if (!is.null(x = url)) {
     url <- utils::URLencode(URL = url)
     url_msg <- c("i" = "For additional information see: {.href [{hyperlink}]({url})}")
@@ -41,11 +42,13 @@
     call <- caller_env
   }
 
-  if (action == "abort") {
-    cli::cli_abort(message = formatted_msg, call = call, .envir = cli_env)
-  } else if (action == "inform") {
-    cli::cli_inform(message = formatted_msg, call = call, .envir = cli_env)
-  } else if (action == "warn") {
-    cli::cli_warn(message = formatted_msg, call = call, .envir = cli_env)
+  if (any(is.element(el = action, set = "abort"))) {
+    cli::cli_abort(message = formatted_msg, ..., call = call, .envir = cli_env)
+  } else if (any(is.element(el = action, set = "warn"))) {
+    cli::cli_warn(message = formatted_msg, ..., call = call, .envir = cli_env)
+  } else if (any(is.element(el = action, set = "inform"))) {
+    cli::cli_inform(message = formatted_msg, ..., call = call, .envir = cli_env)
+  } else {
+    stop("invalid .cli_action action")
   }
 }
