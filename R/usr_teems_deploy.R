@@ -256,8 +256,8 @@ teems_deploy <- function(model_config,
 {
 call <- match.call()
 args_list <- mget(x = names(x = formals()))
-.check_missing_args(call = call,
-                    args_list = args_list)
+browser()
+# check for missing arguments here (across inputs)
 teems_paths <- .path_ledger(base_dir = base_dir,
                             model_name = model_name,
                             call)

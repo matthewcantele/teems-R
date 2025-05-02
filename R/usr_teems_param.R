@@ -105,8 +105,6 @@ if (!missing(...)) {
   args_list[["aux_par"]] <- NA
 }
 args_list["..."] <- NULL
-.check_missing_args(call = call,
-                    args_list = args_list)
 args_list[["par_har"]] <- .check_input(file = par_har,
                                        valid_ext = "har",
                                        call = call,

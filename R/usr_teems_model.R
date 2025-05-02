@@ -97,28 +97,19 @@
 #'
 #' @export
 teems_model <- function(tab_file,
+                        var_omit = NULL,
                         model_version = NULL,
                         ndigits = 6L,
                         full_exclude = c("DREL", "DVER", "XXCR", "XXCD", "XXCP", "SLUG", "EFLG"),
                         notes = NULL,
                         quiet = FALSE)
 {
+# implement omit var
 call <- match.call()
 args_list <- mget(x = names(x = formals()))
-.check_missing_args(call = call,
-                    args_list = args_list)
-# implement omit var
-stopifnot(is.numeric(x = ndigits))
-args_list[["ndigits"]] <- floor(x = ndigits)
-args_list[["tab_file"]] <- .check_input(file = tab_file,
-                                        valid_ext = "tab",
-                                        call = call)
-args_list[["model_version"]] <- .check_model_version(tab_file = args_list[["tab_file"]],
-                                                     model_version = model_version,
-                                                     call = call,
-                                                     quiet = quiet)
-args_list[["intertemporal"]] <- .inform_temp_dyn(tab_file = args_list[["tab_file"]],
-                                                 quiet = quiet)
+args_list <- .validate_model_args(args_list = args_list,
+                                  call = call,
+                                  quiet = quiet)
 config <- c(args_list, call = call)
 config
 }

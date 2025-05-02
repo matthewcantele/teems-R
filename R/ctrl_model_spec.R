@@ -12,7 +12,7 @@
     command = rlang::expr(quote(expr = !!config[["call"]]))
   ))
   
-  # Tablo file identification and tracking -------------------------------------
+  # Tablo file identification and tracking
   t_tab_path <- rlang::expr(targets::tar_target_raw(
     name = "tab_path",
     command = quote(expr = !!config[["tab_file"]])
@@ -29,6 +29,7 @@
   t_tablo <- rlang::expr(targets::tar_target_raw(
     name = "parsed.tablo",
     command = expression(.parse_tablo(tab_file = tracked_tab_file,
+                                      var_omit = !!config[["var_omit"]],
                                       model_version = !!config[["model_version"]]))
   ))
 

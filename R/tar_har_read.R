@@ -7,7 +7,6 @@
 .read_har <- function(con,
                       data_type,
                       call) {
-
   # Open the file
   if (is.character(x = con)) {
     con <- file(con, "rb")
@@ -15,7 +14,7 @@
 
   # map connection to data type (GTAP database file naming is inconsistent across releases)
   full_har_path <- summary(object = con)[["description"]]
-  
+
   # Read all bytes into a vector
   cf <- raw()
   while (length(x = a <- readBin(con, raw(), n = 1e9)) > 0) {
@@ -26,7 +25,7 @@
   while (length(x = charRead <- readBin(con, raw())) > 0) {
     cf <- c(cf, charRead)
   }
-  
+
   # Close the file
   close(con)
 
@@ -41,17 +40,21 @@
                 {implied_data_type}} file.",
       call = call
     ))
-    
-    error_var <-  substitute(variables <- list(full_har_path = full_har_path,
-                                               data_type = data_type,
-                                               implied_data_type = implied_data_type))
-    
-    error_inputs <- .package_error(error_var = error_var,
-                                   error_fun = error_fun,
-                                   call = call)
+
+    error_var <- substitute(variables <- list(
+      full_har_path = full_har_path,
+      data_type = data_type,
+      implied_data_type = implied_data_type
+    ))
+
+    error_inputs <- .package_error(
+      error_var = error_var,
+      error_fun = error_fun,
+      call = call
+    )
     stop(message = error_inputs)
   }
-  
+
   if (cf[1] == 0xfd) {
     currentHeader <- ""
     headers <- list()
@@ -395,7 +398,18 @@
       headers[[h]]$data <- m
     }
   }
-  
+
+  # drop records and unnecessary data
+  headers <- lapply(
+    X = headers,
+    FUN = function(h) {
+      h <- h[is.element(el = names(x = h),
+                        set = c("header_name", "type", "information", "coefficient", "data")
+      )]
+      return(h)
+    }
+  )
+
   # GDYN database uses natres instead of natlres for whatever reason (support email submitted)
   # temporarily disable GDYN runs
   if (identical(x = har_file, y = "gdset.har")) {

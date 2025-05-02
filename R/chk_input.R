@@ -9,6 +9,11 @@
   arg <- as.character(x = substitute(expr = file))
   file_ext <- tolower(x = tools::file_ext(x = basename(path = file)))
   numeric_ext <- !is.na(suppressWarnings(as.numeric(file_ext)))
+  if (dir.exists(paths = file)) {
+    .cli_action(msg = "A filepath is expected, not the directory {.file {file}}.",
+                action = "abort",
+                call = call)
+  }
   if (!identical(x = file_ext, y = "") && !numeric_ext) {
     file <- .check_usr_file(
       file = file,
@@ -64,10 +69,10 @@
                         "Currently supported {file_type} files include: 
                         {.val {file_names}}.",
                         "Alternatively, path to a user-provided {file_type} 
-                        file is supported.",
+                        file is supported (e.g., \"/my/{file_type}/path.{ext}\")",
                         "Note that user-provided {file_type} files may need to 
                         be modified for compatibility with various {.pkg teems} 
-                        functions."),
+                        functions (link here)."),
                 action = c("abort", rep(x = "inform", 3)),
                 call = call)
   } else {

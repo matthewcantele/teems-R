@@ -2,10 +2,6 @@ archive/
 /.Rproj.user
 *.Rhistory
 *.Rproj
-teems.sublime-project
-teems.sublime-workspace
-/sol_parser/
-/sol_parser/
 /.Rproj.user
 deprecated/
 beta/
@@ -20,6 +16,5 @@ inst/doc
 /Meta/
 _targets/
 _targets.yaml
-/control_files/
 /local/
 /demos/

@@ -31,7 +31,7 @@
                                write_dir = teems_paths[["launchpad"]])
   
   closure_targets <- .closure_config(config = closure_config,
-                                     tab_file = model_config[["tab_file"]],
+                                     var_omit = model_config[["var_omit"]],
                                      write_dir = teems_paths[["launchpad"]],
                                      model_name = model_name)
   

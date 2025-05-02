@@ -77,8 +77,6 @@ teems_sets <- function(set_har,
 call <- match.call()
 trace <- rlang::trace_back(bottom = rlang::current_env())
 args_list <- mget(x = names(x = formals()))
-.check_missing_args(call = call,
-                    args_list = args_list)
 args_list[["set_har"]] <- .check_input(file = set_har,
                                        valid_ext = "har",
                                        call = call,

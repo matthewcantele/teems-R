@@ -5,7 +5,7 @@
 #' @keywords internal
 #' @noRd
 .closure_config <- function(config,
-                            tab_file,
+                            var_omit,
                             write_dir,
                             model_name) {
 
@@ -62,6 +62,7 @@
     command = expression(.swap_out(
       closure = swapped.in.cls,
       swap_out = !!config[["swap_out"]],
+      var_omit = !!var_omit,
       sets = final.set_tib,
       var_extract = tablo_var
     )),

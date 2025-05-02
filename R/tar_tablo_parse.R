@@ -16,6 +16,7 @@
 #' @keywords internal
 #' @noRd
 .parse_tablo <- function(tab_file,
+                         var_omit,
                          model_version = NULL) {
   # to do:
   # extract all extract components from tablo file (currently compatible with
@@ -26,14 +27,19 @@
   # able to write either Tablo or LaTeX code for the actual model file, and
   # output LaTeX models seamlessly
   # ############################################################################
-
   # check whether user-provided Tablo, and if exists else retrieve internal
   tab <- readChar(
     con = tab_file,
     nchars = file.info(tab_file)[["size"]]
   )
-  tab_file <- basename(path = tab_file)
-
+browser()
+  # var omission
+  if (!is.null(x = var_omit)) {
+    for (var in unique(x = var_omit)) {
+      tab <- .omit_var(o = var,
+                       tab = tab)
+    }
+  }
   # remove comments
   n_comments <- paste(unlist(x = strsplit(x = tab, "![^!]*!", perl = TRUE)), collapse = "")
 
@@ -73,7 +79,8 @@
       extract[r, "type"] <- extract[r - 1, "type"]
     }
   }
-
+browser()
+  tab_file <- basename(path = tab_file)
   tablo <- list(tab_file = tab_file,
                 extract = extract,
                 tab = tab,

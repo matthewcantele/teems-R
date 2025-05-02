@@ -1,41 +1,54 @@
-test_that("teems_model validates input files correctly", {
+testhat::test_that("teems_model validates input files correctly", {
   # Test with non-existent file
-  expect_snapshot(x = teems_model(tab_file = "nonexistent.tab"),
-                  error = TRUE)
-  
-  # Test existing file with wrong file extension
-  mock_tab <- tempfile(pattern = "wrong_ext", fileext = ".txt")
-  expect_snapshot(teems_model(tab_file = mock_tab),
-                  error = TRUE)
+  testhat::expect_snapshot(
+    x = teems_model(tab_file = "nonexistent.tab"),
+    error = TRUE
+  )
 
-  # # Test with directory instead of file
-  # temp_dir <- tempdir()
-  # expect_error(teems_model(temp_dir), "must be a file")
+  # Test user query of an ostensible internal tab file which does not exist
+  testhat::expect_snapshot(
+    x = teems_model(tab_file = "internal_tab"),
+    error = TRUE
+  )
+
+  # Test existing file with wrong file extension
+  mock_tab <- file.path(tempdir(), "not_a_tab.txt")
+  file.create(mock_tab)
+
+  testhat::expect_snapshot(teems_model(tab_file = mock_tab),
+    error = TRUE
+  )
+
+  # Test with directory instead of file
+  mock_tab <- dirname(tempdir())
+  testhat::expect_snapshot(teems_model(tab_file = mock_tab),
+    error = TRUE
+  )
 })
 
-# test_that("teems_model validates numeric arguments", {
-#   # Create mock tab file for testing
-#   mock_tab <- tempfile(fileext = ".tab")
-#   writeLines("dummy content", mock_tab)
-#   
-#   # Mock .check_model_version and .inform_temp_dyn
-#   with_mock(
-#     `.check_model_version` = function(...) "1.0.0",
-#     `.inform_temp_dyn` = function(...) TRUE,
-#     `.check_input` = function(...) mock_tab,
-#     {
-#       # Test with non-numeric ndigits
-#       expect_error(teems_model(mock_tab, ndigits = "six"), "is.numeric")
-#       
-#       # Test with decimal ndigits (should be floored)
-#       result <- teems_model(mock_tab, ndigits = 6.7, quiet = TRUE)
-#       expect_equal(result$ndigits, 6L)
-#     }
-#   )
-#   
-#   # Clean up
-#   unlink(mock_tab)
-# })
+test_that("teems_model validates numeric arguments", {
+  # Create mock tab file for testing
+  mock_tab <- file.path(dirname(tempdir()), "mock.tab")
+  writeLines("dummy content", mock_tab)
+
+  # Mock .check_model_version and .inform_temp_dyn
+  with_mock(
+    `.check_model_version` = function(...) "1.0.0",
+    `.inform_temp_dyn` = function(...) TRUE,
+    `.check_input` = function(...) mock_tab,
+    {
+      # Test with non-numeric ndigits
+      expect_error(teems_model(mock_tab, ndigits = "six"), "is.numeric")
+
+      # Test with decimal ndigits (should be floored)
+      result <- teems_model(mock_tab, ndigits = 6.7, quiet = TRUE)
+      expect_equal(result$ndigits, 6L)
+    }
+  )
+
+  # Clean up
+  unlink(mock_tab)
+})
 # 
 # test_that("teems_model handles model_version correctly", {
 #   # Create mock tab file
