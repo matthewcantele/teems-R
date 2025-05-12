@@ -34,13 +34,12 @@
     names(x = io_files) <- io_names
     # tab, closure, and shock
     cmf_components <- c(
-      targets::tar_read(write.tablo, store = store_dir),
+      targets::tar_read(write.tablo_mod, store = store_dir),
       targets::tar_read(write.closure, store = store_dir),
       targets::tar_read(write.shocks, store = store_dir)
     )
 
     cmf_components <- paste(names(cmf_components), paste0("\"", cmf_components, "\"", ";"))
-    coefficient_names <- targets::tar_read(name = coeff_extract, store = store_dir)[["name"]]
     set_names <- toupper(x = targets::tar_read(name = final.set_tib, store = store_dir)[["name"]])
   }
 

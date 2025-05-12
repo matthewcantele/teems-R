@@ -4,7 +4,11 @@
 \alias{teems_parse}
 \title{Parse model results}
 \usage{
-teems_parse(cmf_path, type = c("variable", "coefficient", "basedata"))
+teems_parse(
+  cmf_path,
+  type = c("variable", "coefficient", "set", "basedata"),
+  name = NULL
+)
 }
 \arguments{
 \item{cmf_path}{Character length 1 (default is \code{NULL}), path to the
@@ -16,7 +20,8 @@ Choices:
 \itemize{
 \item \code{"variable"}: Percentage change values for model variables
 \item \code{"coefficient"}: Absolute values for model coefficients
-\item \code{"basedata"}: Merged pre- and post-model base data values
+\item \code{"set"}: Model sets
+\item \code{"basedata"}: Merged pre- and post-model basedata values
 }}
 }
 \value{

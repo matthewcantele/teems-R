@@ -3,18 +3,18 @@
 #' 
 #' @keywords internal
 #' @noRd
-.tablo_variables <- function(parsed_tablo,
+.tablo_variables <- function(tab_extract,
                              call) {
-  var <- subset(x = parsed_tablo, subset = {
+  var <- subset(x = tab_extract, subset = {
     is.element(el = tolower(x = type), set = "variable")
   })
 
   # check that information is available for each variable and coefficient
   if (any(!grepl("#", var[["remainder"]]))) {
-    .cli_action(action = "abort",
-                msg = "One or more variables or coefficients is missing an 
-                information - add # NA # if not descriptive information is 
+    .cli_action(msg = "One or more variables or coefficients is missing a 
+                label - add # NA # if not descriptive information is 
                 available.",
+                action = "abort",
                 call = call)
   }
 
@@ -141,7 +141,6 @@
 
   # list shock indices
   var[["ls_mixed_idx"]] <- strsplit(x = var[["mixed_idx"]], split = ",")
-
   var[["mixed_idx"]] <- paste0("(", var[["mixed_idx"]], ")")
 
   # full standard writeout
@@ -151,42 +150,9 @@
     new = "full_set"
   )
 
-  # Read statements ############################################################
-  r <- subset(parsed_tablo, subset = {
-    tolower(x = type) == "read"
-  })
-  r[["name"]] <- trimws(x = purrr::map(.x = sapply(
-    X = toupper(x = r[["remainder"]]),
-    FUN = strsplit,
-    split = "FROM FILE"
-  ), 1))
-
-  r[["remainder"]] <- .advance_remainder(
-    remainder = r[["remainder"]],
-    pattern = paste(r[["name"]], "from file")
-  )
-
-  r[["file"]] <- .get_element(input = r[["remainder"]], split = " ", index = 1)
-  r[["header"]] <- gsub(
-    pattern = "\"",
-    replacement = "",
-    x = .get_element(input = r[["remainder"]], split = " ", index = 3)
-  )
-
-  # field to mark coefficients read in to a different name (VTWR to VTMFSD)
-  r[["diff"]] <- r[["name"]] == r[["header"]]
-  r <- subset(x = r, select = -remainder)
-
-  # match read statements to associated coefficients
-  r_idx <- match(x = var[["name"]], table = r[["name"]])
-  var[["header"]] <- r[["header"]][r_idx]
-  var[["file"]] <- r[["file"]][r_idx]
-
   data.table::setcolorder(x = var, neworder = c(
     "name",
-    "header",
     "information",
-    "file",
     "qualifier_list",
     "full_set",
     "mixed_idx",
@@ -196,7 +162,6 @@
     "ls_upper_idx",
     "ls_lower_idx"
   ))
-
 
   return(var)
 }

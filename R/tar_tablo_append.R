@@ -3,17 +3,16 @@
 .append_tablo <- function(tab,
                           coeff_extract,
                           sets) {
-
   # File
   # DATA # file containing all Base Data #;
   # (new) OutFile # output file #;
   sets[["name"]] <- toupper(x = sets[["name"]])
-  set_writeout <- paste("File\n",
+  set_writeout <- paste("File",
                         "(new)",
                         sets[["name"]],
                         "#",
                         sets[["name"]],
-                        "output file #;\nWrite\n",
+                        "output file #;\nWrite",
                         "(set)",
                         sets[["name"]],
                         "to file",
@@ -25,12 +24,12 @@
 
   # coefficient writeout
   coeff_writeout <- paste(
-    "File\n",
+    "File",
     "(new)",
     coeff_extract[["name"]],
     "#",
     coeff_extract[["name"]],
-    "output file #;\nWrite\n",
+    "output file #;\nWrite",
     coeff_extract[["name"]],
     "to file",
     coeff_extract[["name"]],

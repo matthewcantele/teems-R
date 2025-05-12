@@ -5,7 +5,7 @@
 .prep_data <- function(data_type,
                        tib_data,
                        sets,
-                       coeff_list,
+                       coeff_extract,
                        data_format) {
 
   # all set mappings consolidated
@@ -20,7 +20,7 @@
 
   type <- data_type
   req_headers <- unlist(x = subset(
-    x = coeff_list,
+    x = coeff_extract,
     subset = {
       is.element(el = data_type, set = type) &
         !is.na(x = file)

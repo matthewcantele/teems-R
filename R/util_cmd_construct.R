@@ -53,8 +53,9 @@
     "-laDi", laDi,
     "-laD", laD,
     paste("-maxthreads", 1),
+    "-nox",
     "| tee",
-    paste(docker_diagnostic_out, '"')
+    paste0(docker_diagnostic_out, '"')
   )
   exec_cmd <- paste(exec_preamble, solver_param)
   sol_parse_cmd <- paste(docker_preamble, '"make -C /home/bin_parser"')

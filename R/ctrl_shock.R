@@ -3,11 +3,12 @@
 #' 
 #' @keywords internal
 #' @noRd
-.shock_config <- function(shock,
-                          shock_file,
-                          metadata,
-                          ndigits,
-                          write_dir) {
+.shock_control <- function(shock,
+                           shock_file,
+                           var_extract,
+                           metadata,
+                           ndigits,
+                           write_dir) {
   if (!is.null(x = shock_file)) {
     t_shock_file <- rlang::expr(targets::tar_target_raw(
       name = "shock_file",
@@ -30,7 +31,7 @@
       name = "prepped.shocks",
       command = expression(.shock_prep(
         shocks = shocks,
-        var_extract = tablo_var
+        var_extract = !!var_extract,
       )),
       cue = targets::tar_cue(mode = "always")
     ))
@@ -40,7 +41,7 @@
       command = expression(.shock_construct(
         shock_list = prepped.shocks,
         closure = swapped.out.cls,
-        var_extract = tablo_var,
+        var_extract = !!var_extract,
         sets = final.set_tib,
         param = final.par_tib,
         reference_year = !!metadata[["reference_year"]]

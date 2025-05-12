@@ -6,10 +6,9 @@
 #' @noRd
 .swap_out <- function(closure,
                       swap_out,
-                      var_omit,
                       sets,
                       var_extract) {
-  browser()
+
   if (!is.null(x = swap_out)) {
     swap_out <- lapply(
       X = swap_out,

@@ -6,6 +6,9 @@
   model_dir <- sub(pattern = "/launchpad",
                    replacement = "",
                    x = launchpad_dir)
+  tab_path <- grep(pattern = "modified_",
+                   x = list.files(path = launchpad_dir, full.names = TRUE),
+                   value = TRUE)
   if (!dir.exists(paths = model_dir)) {
     .cli_action(action = "abort",
                 msg = "Implied model directory {.path {model_dir}} not found. This 
@@ -49,8 +52,8 @@
     pattern = "csv",
     full.names = TRUE
   )
-
-  paths <- list(launchpad = launchpad_dir,
+  paths <- list(tab = tab_path,
+                launchpad = launchpad_dir,
                 model = model_dir,
                 metadata = metadata_path,
                 var = var_paths,

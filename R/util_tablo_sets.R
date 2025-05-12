@@ -1,19 +1,12 @@
-#' .parse_tablo function
-#'
-#' This function extracts key set and subset components from the model Tablo
-#' file.
-#'
-#' @param parsed_tablo Parsed Tablo file produced by \code{.parse_tablo()}.
-#'
 #' @importFrom purrr map
-#' @return A list containing the set and subset information for a given Tablo
-#'   file.
+#' 
 #' @keywords internal
 #' @noRd
-.tablo_sets <- function(parsed_tablo) {
+.tablo_sets <- function(tab_extract,
+                        call) {
   # Set statements
   sets <- subset(
-    x = parsed_tablo,
+    x = tab_extract,
     subset = {
       is.element(
         el = tolower(x = type),
@@ -35,11 +28,12 @@
   )
 
   # check validity of qualifier (must be intertemporal or non_intertemporal)
-  if (!any(is.element(
-    el = tolower(x = sets[["qualifier"]]),
-    set = c("(intertemporal)", "(non_intertemporal)")
-  ))) {
-    stop("Invalid Set qualifier detected.")
+  valid_qual <- c("(intertemporal)", "(non_intertemporal)")
+  if (!any(is.element(el = tolower(x = sets[["qualifier"]]), set = valid_qual))) {
+    invalid_qual <- sets[["qualifier"]][!is.element(el = tolower(x = sets[["qualifier"]]), set = valid_qual)]
+    .cli_action(msg = "Invalid set qualifier detected: {.val {invalid_qual}}.",
+                action = "abort",
+                call = call)
   }
 
   # clear qualifier from remainder
@@ -151,7 +145,9 @@
   )
 
   if (any(!is.element(el = "", set = sets[["remainder"]]))) {
-    stop("Remnant Set information detected from Tablo parse.")
+    .cli_action(msg = "Remnant set information detected during Tablo parsing.",
+                action = "abort",
+                call = call)
   } else {
     sets <- subset(x = sets, select = -remainder)
   }
@@ -162,13 +158,12 @@
                    sum(grepl(pattern = "\\+",
                              x = unlist(x = strsplit(x = entry, "")))) >= 2
                  }))) {
-    stop(paste("Multiple",
-               dQuote(x = "+"),
-               "and/or",
-               dQuote(x = "-"),
-               "were detected within a single Tablo Set statement.",
-               "For compatibility, split into multiple statements:",
-               "Instead of A123=A1+A2+A3, A12=A1+A2 then A123=A12+A3"))
+    .cli_action(msg = c("Multiple {.val +} and/or {.val -} were detected within 
+                a single Tablo Set statement.", "For compatibility, split into 
+                multiple statements:\nInstead of A123=A1+A2+A3, A12=A1+A2 then 
+                A123=A12+A3"),
+                action = c("abort", "inform"),
+                call = call)
   }
 
   lapply(sets[["definition"]], function(entry) {
@@ -179,9 +174,17 @@
         ignore.case = TRUE
       ))) {
         if (grepl(pattern = "=", x = entry)) {
-          stop(
-            "It appears that one set has been defined as identical to a second set. If duplicate sets are desired, multiple Read statements should be implemented."
-          )
+          .cli_action(msg = c("It appears that one set has been defined as 
+                              identical to a second set (e.g., Set SET_B 
+                              # example set B # = SET_A;).", "If duplicate sets 
+                              are desired, multiple Read statements should be 
+                              implemented (e.g., Set SET_A # example set A # 
+                              maximum size 5 read elements from file GTAPSETS 
+                              header \"H2\";Set SET_B # example set B # 
+                              maximum size 5 read elements from file GTAPSETS 
+                              header \"H2\";)"),
+                      action = c("abort", "inform"),
+                      call = call)
         }
       }
     }
@@ -195,7 +198,7 @@
 
   # Subset statements ##########################################################
   subsets <- subset(
-    x = parsed_tablo,
+    x = tab_extract,
     subset = {
       is.element(
         el = tolower(x = type),
@@ -205,7 +208,9 @@
   )
 
   if (any(grepl(pattern = "\\(by numbers\\)", subsets[["remainder"]]))) {
-    stop("Subset '(by numbers)' argument not supported.")
+    .cli_action(msg = "Subset '(by numbers)' argument not supported.",
+                action = "abort",
+                call = call)
   }
 
   subsets[["subset"]] <- trimws(x = purrr::map(sapply(

@@ -3,9 +3,9 @@
 #'
 #' @keywords internal
 #' @noRd
-.tablo_files <- function(parsed_tablo) {
+.tablo_files <- function(tab_extract) {
   # File statements ############################################################
-  files <- subset(x = parsed_tablo, subset = {
+  files <- subset(x = tab_extract, subset = {
     is.element(
       el = tolower(x = type),
       set = "file"

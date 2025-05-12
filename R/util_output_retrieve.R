@@ -5,6 +5,7 @@
 #' @keywords internal
 #' @noRd
 .retrieve_output <- function(type,
+                             comp_extract,
                              name,
                              paths,
                              sets,
@@ -15,24 +16,18 @@
     var_union <- .unite_csvs(target = "var_csvs",
                              paths = paths[["var"]],
                              call = call)
-    tablo_var <- targets::tar_read(name = tablo_var,
-                                   store = file.path(paths[["model"]],
-                                                     "store"))
     output <- .parse_var(
       paths = paths[["var"]],
-      var_extract = tablo_var,
+      var_extract = comp_extract,
       vars = var_union,
       sets = sets[["postmodel"]],
       chron_yrs = int[["CYRS"]],
       call = call
     )
   } else if (is.element(el = type, set = c("coefficient", "basedata"))) {
-    coeff_extract <- targets::tar_read(name = coeff_extract,
-                                       store = file.path(paths[["model"]],
-                                                         "store"))
     output <- .parse_coeff(
       paths = paths[["coeff"]],
-      coeff_extract = coeff_extract,
+      coeff_extract = comp_extract,
       sets = sets[["postmodel"]],
       chron_yrs = int[["CYRS"]],
       call = call
@@ -47,7 +42,7 @@
         pre_coeff = pre_coeff[["dt"]],
         post_coeff = output,
         sets = sets[["premodel"]],
-        coeff_extract = coeff_extract,
+        coeff_extract = comp_extract,
         reference_year = reference_year,
         intertemporal = int[["intertemporal"]]
       )

@@ -4,8 +4,8 @@
 #' 
 #' @keywords internal
 #' @noRd
-.model_config <- function(config,
-                          launchpad_dir) {
+.model_control <- function(config,
+                           launchpad_dir) {
 
   t_model_call <- rlang::expr(targets::tar_target_raw(
     name = "model_call",
@@ -25,49 +25,36 @@
     format = "file"
   ))
 
-  # produce Tablo file extract
-  t_tablo <- rlang::expr(targets::tar_target_raw(
-    name = "parsed.tablo",
-    command = expression(.parse_tablo(tab_file = tracked_tab_file,
-                                      var_omit = !!config[["var_omit"]],
-                                      model_version = !!config[["model_version"]]))
-  ))
-
-  # extract var information from tab file
-  t_tablo_var <- rlang::expr(targets::tar_target_raw(
-    name = "tablo_var",
-    command = expression(.tablo_variables(
-      parsed_tablo = parsed.tablo[["extract"]],
-      call = model_call
-    ))
-  ))
-  
-  # extract coefficient information from tab file
-  t_coeff_extract <- rlang::expr(targets::tar_target_raw(
-    name = "coeff_extract",
-    command = expression(.tablo_coeff(
-      parsed_tablo = parsed.tablo[["extract"]],
-      call = model_call
-    ))
-  ))
-  
   # Append "Write" statements
   t_final.tablo <- rlang::expr(targets::tar_target_raw(
     name = "final.tablo",
     command = expression(.append_tablo(
-      tab = parsed.tablo[["tab"]],
-      coeff_extract = coeff_extract,
+      tab = !!config[["conden_tab"]],
+      coeff_extract = !!config[["coeff_extract"]],
       sets = final.set_tib
     )),
     cue = targets::tar_cue(mode = "always")
   ))
 
   # Write tab file
-  t_write.tablo <- rlang::expr(targets::tar_target_raw(
-    name = "write.tablo",
+  t_write.tablo_mod <- rlang::expr(targets::tar_target_raw(
+    name = "write.tablo_mod",
     command = expression(.TEEMS_write(
       input = final.tablo,
-      file = parsed.tablo[["tab_file"]],
+      file = !!config[["tab_file"]],
+      prepend_file = "modified",
+      write_object = "tabfile",
+      write_dir = !!launchpad_dir
+    )),
+    cue = targets::tar_cue(mode = "always")
+  ))
+  
+  t_write.tablo_orig <- rlang::expr(targets::tar_target_raw(
+    name = "write.tablo_orig",
+    command = expression(.TEEMS_write(
+      input = !!config[["orig_tab"]],
+      file = !!config[["tab_file"]],
+      prepend_file = "original",
       write_object = "tabfile",
       write_dir = !!launchpad_dir
     )),

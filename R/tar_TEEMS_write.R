@@ -12,11 +12,17 @@
 #' @keywords internal
 #' @noRd
 .TEEMS_write <- function(input,
-                         ndigits,
                          file,
+                         prepend_file = NULL,
+                         ndigits,
                          write_object,
                          write_dir) {
 
+  if (!is.null(x = prepend_file)) {
+    file <- basename(path = file)
+    file <- paste(prepend_file, file, sep = "_")
+  }
+  
   # full write path
   write_path <- file.path(write_dir, file)
   if (is.element(el = write_object, set = c("cmf"))) {

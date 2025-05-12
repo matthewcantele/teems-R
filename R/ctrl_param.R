@@ -4,12 +4,14 @@
 #' 
 #' @keywords internal
 #' @noRd
-.param_config <- function(config,
-                          data_type,
-                          metadata,
-                          ndigits,
-                          full_exclude,
-                          write_dir) {
+.param_control <- function(config,
+                           coeff_extract,
+                           set_extract,
+                           data_type,
+                           metadata,
+                           ndigits,
+                           full_exclude,
+                           write_dir) {
   t_par_call <- rlang::expr(targets::tar_target_raw(
     name = "par_call",
     command = rlang::expr(quote(expr = !!config[["call"]]))
@@ -69,7 +71,7 @@
       ls_array = par_array,
       metadata = !!metadata,
       data_type = !!data_type,
-      coeff_extract = coeff_extract,
+      coeff_extract = !!coeff_extract,
       header_rename = !!config[["header_rename"]],
       coefficient_rename = !!config[["coefficient_rename"]],
       full_exclude = !!full_exclude,
@@ -80,86 +82,12 @@
       call = par_call
     ))
   ))
-  
-  # # add int here
-  # t_par_mod <- rlang::expr(targets::tar_target_raw(
-  #   name = "mod.par_array",
-  #   command = expression(.modify_array(
-  #     ls_array = par_array,
-  #     metadata = !!metadata,
-  #     data_type = !!data_type,
-  #     set_array = set_array,
-  #     coeff_extract = coeff_extract,
-  #     sets = final.set_tib,
-  #     time_steps = time_steps
-  #   ))
-  # ))
-
-  # if (!is.na(x = config[["aux_par"]])) {
-  #   t_aux_par_file <- rlang::expr(targets::tar_target_raw(
-  #     name = "aux_par_file",
-  #     command = quote(expr = !!config[["aux_par"]]),
-  #     format = "file"
-  #   ))
-  # 
-  #   file_type <- attr(x = config[["aux_par"]], "file_ext")
-  #   if (identical(x = file_type, y = "har")) {
-  #     t_aux_par_array <- rlang::expr(targets::tar_target_raw(
-  #       name = "aux_par_array",
-  #       command = expression(.read_har(
-  #         con = aux_par_file,
-  #         data_type = !!data_type,
-  #         coeff_extract = coeff_extract,
-  #         header_rename = !!config[["header_rename"]],
-  #         coefficient_rename = !!config[["coefficient_rename"]],
-  #         full_exclude = !!full_exclude,
-  #         call = par_call
-  #       ))
-  #     ))
-  #   } else if (identical(x = file_type, y = "qs2")) {
-  #     t_aux_par_array <- rlang::expr(targets::tar_target_raw(
-  #       name = "aux_par_array",
-  #       command = expression(qs2::qd_read(file = aux_par_file))
-  #     ))
-  #   }
-  # 
-  #   # convert binary har files to a list of arrays and append
-  #   t_par_array <- rlang::expr(targets::tar_target_raw(
-  #     name = "par_array",
-  #     command = expression(.read_har(
-  #       con = par_file,
-  #       data_type = !!data_type,
-  #       coeff_extract = coeff_extract,
-  #       header_rename = !!config[["header_rename"]],
-  #       coefficient_rename = !!config[["coefficient_rename"]],
-  #       append = aux_par_array,
-  #       full_exclude = !!full_exclude,
-  #       call = par_call
-  #     ))
-  #   ))
-  # } else {
-  #   # convert binary har files to a list of arrays
-  #   t_par_array <- rlang::expr(targets::tar_target_raw(
-  #     name = "par_array",
-  #     command = expression(.read_har(
-  #       con = par_file,
-  #       data_type = !!data_type,
-  #       coeff_extract = coeff_extract,
-  #       header_rename = !!config[["header_rename"]],
-  #       coefficient_rename = !!config[["coefficient_rename"]],
-  #       full_exclude = !!full_exclude,
-  #       call = par_call
-  #     ))
-  #   ))
-  # }
-
-
 
   t_par_setnames <- rlang::expr(targets::tar_target_raw(
     name = "final.par_array",
     command = expression(.update_set_names(
       ls_array = mod.par_array,
-      coeff_extract = coeff_extract,
+      coeff_extract = !!coeff_extract,
       metadata = !!metadata,
       data_type = !!data_type
     ))
@@ -172,8 +100,7 @@
       ls_array = final.par_array,
       metadata = !!metadata,
       data_type = !!data_type,
-      coeff_extract = coeff_extract,
-      sets = tablo_sets[["sets"]]
+      set_extract = !!set_extract[["sets"]]
     ))
   ))
 
@@ -183,7 +110,7 @@
       command = expression(.build_tibble(
         ls_data = ls_par,
         preagg_header_replace = !!config[["preagg_data"]],
-        coeff_extract = coeff_extract
+        comp_extract = !!coeff_extract
       ))
     ))
 
@@ -207,7 +134,7 @@
       data_type = "par",
       tib_data = weighted.par_tib,
       sets = final.set_tib,
-      coeff_list = coeff_extract,
+      coeff_extract = !!coeff_extract,
       data_format = !!metadata[["model_version"]]
     ))
   ))

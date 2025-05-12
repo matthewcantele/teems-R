@@ -4,7 +4,8 @@
 #' 
 #' @keywords internal
 #' @noRd
-.pipeline_diagnostics <- function(model_dir,
+.pipeline_diagnostics <- function(tab_path,
+                                  model_dir,
                                   launchpad_dir,
                                   model_name,
                                   store_dir,
@@ -12,10 +13,8 @@
                                   io_files,
                                   metadata,
                                   quiet) {
-  tab_path <- file.path(
-    launchpad_dir,
-    targets::tar_read(name = parsed.tablo, store = store_dir)[["tab_file"]]
-  )
+  mod_tab_path <- tar_read(write.tablo_mod, store = store_dir)
+  orig_tab_path <- tar_read(write.tablo_orig, store = store_dir)
   sets <- targets::tar_read(name = final.set_tib, store = store_dir)
   dat <- targets::tar_read(name = final.base_tib, store = store_dir)
   param <- targets::tar_read(name = final.par_tib, store = store_dir)
@@ -43,34 +42,35 @@
 
   diag_output <- cli::cli_fmt({
     # Start output generation
-    cli::cli_h1("Diagnostic outputs follow")
-    cli::cli_h2("General model specifications")
-    cli::cli_dl(c(
-      "Tablo file" = tab_path,
+    cli::cli_h1(text = "Diagnostic outputs follow")
+    cli::cli_h2(text = "General model specifications")
+    cli::cli_dl(items = c(
+      "Modeled Tablo file" = mod_tab_path,
+      "Original Tablo file" = orig_tab_path,
       "Temporal dynamics" = temporal_dynamics,
       "GTAP database version" = metadata[["orig_database_version"]],
       "Reference year" = metadata[["reference_year"]],
       "Data format" = metadata[["data_format"]]
     ))
-    cli::cli_h2("Set specifications")
+    cli::cli_h2(text = "Set specifications")
     purrr::pmap(
       .l = list(sets[["name"]], sets[["elements"]], sets[["information"]]),
       .f = function(nme, ele, info) {
         nme <- toupper(x = nme)
         info <- trimws(x = gsub(pattern = "#", replacement = "", x = info))
-        cli::cli_h3("Set {nme}")
+        cli::cli_h3(text = "Set {nme}")
         cli::cli_text("Description: {info}")
         cli::cli_text("Elements: {.val {paste(ele, collapse = ', ')}}")
       }
     )
     cli::cli_h2("Closure and shock specifications")
-    cli::cli_dl(c(
+    cli::cli_dl(items = c(
       "Exogenous variables" = toString(closure),
       "Number of shocks" = length(shocks),
       "Variables shocked" = shock_var
     ))
-    cli::cli_h2("File and directory related")
-    cli::cli_dl(c(
+    cli::cli_h2(text = "File and directory related")
+    cli::cli_dl(items = c(
       "Model pipeline" = file.path(model_dir, model_name),
       "Model {{targets}} store written to" = store_dir
     ))

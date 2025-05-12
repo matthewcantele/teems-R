@@ -19,6 +19,8 @@ teems_solve(
   tab_file = NULL,
   closure_file = NULL,
   shock_file = NULL,
+  in_situ_writeout = TRUE,
+  quiet = FALSE,
   ...
 )
 }
@@ -102,6 +104,9 @@ directory or path to a closure file.}
 \item{shock_file}{Character of length 1, file name in working
 directory or path to a csv representing the final shock file. No
 checks or modifications will be conducted on this file.}
+
+\item{quiet}{Logical of length 1 (default is \code{FALSE}). If \code{TRUE},
+function-specific diagnostics are silenced.}
 
 \item{...}{A named list of input files necessary for an "in-situ"
 model run. Names must correspond to "File" statements within the

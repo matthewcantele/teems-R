@@ -5,12 +5,11 @@
 .construct_dt <- function(ls_array,
                           metadata,
                           data_type,
-                          coeff_extract,
-                          sets = NULL) {
+                          set_extract = NULL) {
 
   # create list of data.tables from arrays
-  if (!is.null(x = sets)) {
-  int_sets <- subset(x = sets,
+  if (!is.null(x = set_extract)) {
+  int_sets <- subset(x = set_extract,
                      subset = intertemporal,
                      select = name)[[1]]
   }

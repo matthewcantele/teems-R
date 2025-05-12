@@ -6,9 +6,10 @@
 \usage{
 teems_model(
   tab_file,
+  var_omit = NULL,
   model_version = NULL,
   ndigits = 6L,
-  full_exclude = c("DREL", "DVER", "XXCR", "XXCD", "XXCP", "SLUG"),
+  full_exclude = c("DREL", "DVER", "XXCR", "XXCD", "XXCP", "SLUG", "EFLG"),
   notes = NULL,
   quiet = FALSE
 )

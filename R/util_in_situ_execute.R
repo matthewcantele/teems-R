@@ -42,7 +42,7 @@
 
     parsed_tablo <- .parse_tablo(tab_file = tab_file)
     tablo_files <- purrr::pluck(
-      .x = .tablo_files(parsed_tablo = parsed_tablo[["extract"]]),
+      .x = .tablo_files(tab_extract = parsed_tablo[["extract"]]),
       "names"
     )
     req_files <- tablo_files[!is.element(el = tablo_files, set = "(new)")]
@@ -87,9 +87,9 @@
                recursive = TRUE)
 
     if (in_situ_writeout) {
-      coeff_extract <- .tablo_coeff(parsed_tablo = parsed_tablo[["extract"]])
+      coeff_extract <- .tablo_coeff(tab_extract = parsed_tablo[["extract"]])
       coefficient_names <- coeff_extract[["name"]]
-      tablo_sets <- .tablo_sets(parsed_tablo = parsed_tablo[["extract"]])[["sets"]]
+      tablo_sets <- .tablo_sets(tab_extract = parsed_tablo[["extract"]])[["sets"]]
       set_names <- toupper(x = tablo_sets[["name"]])
       parsed_tablo[["tab"]] <- .append_tablo(
         tab = parsed_tablo[["tab"]],

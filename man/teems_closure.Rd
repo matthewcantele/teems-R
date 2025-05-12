@@ -9,7 +9,8 @@ teems_closure(
   swap_out = NULL,
   shock = NULL,
   closure_file = NULL,
-  shock_file = NULL
+  shock_file = NULL,
+  quiet = FALSE
 )
 }
 \arguments{

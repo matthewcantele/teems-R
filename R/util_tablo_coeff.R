@@ -1,19 +1,12 @@
-#' .parse_tablo function
-#'
-#' This function extracts key set and subset components from the model Tablo file.
-#'
-#' @param parsed_tablo Parsed Tablo file produced by \code{.parse_tablo()}.
-#'
 #' @importFrom purrr map
-#' @return A list containing the original Tablo data, the extracted components,
-#'   and the file name.
+#' 
 #' @keywords internal
 #' @noRd
-.tablo_coeff <- function(parsed_tablo,
+.tablo_coeff <- function(tab_extract,
                          call) {
-  # here
+
   coeff <- subset(
-    x = parsed_tablo,
+    x = tab_extract,
     subset = {
       is.element(
         el = tolower(x = type),
@@ -25,10 +18,10 @@
 
   # check that information is available for each coefficient
   if (any(!grepl("#", coeff[["remainder"]]))) {
-    .cli_action(action = "abort",
-                msg = "One or more variables or coefficients within the provided
+    .cli_action(msg = "One or more variables or coefficients within the provided
                 Tablo file is missing information - add # NA # if descriptive 
                 information is not available.",
+                action = "abort",
                 call = call)
   }
 
@@ -162,7 +155,7 @@
                        new = "full_set")
 
   # Read statements ############################################################
-  r <- subset(x = parsed_tablo, subset = {
+  r <- subset(x = tab_extract, subset = {
     tolower(x = type) == "read"
   })
 
@@ -204,6 +197,6 @@
                                                   "ls_mixed_idx",
                                                   "ls_upper_idx",
                                                   "ls_lower_idx"))
-
+  
   return(coeff)
 }

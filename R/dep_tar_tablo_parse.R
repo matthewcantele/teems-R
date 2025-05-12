@@ -32,58 +32,22 @@
     con = tab_file,
     nchars = file.info(tab_file)[["size"]]
   )
-browser()
-  # var omission
-  if (!is.null(x = var_omit)) {
-    for (var in unique(x = var_omit)) {
-      tab <- .omit_var(o = var,
-                       tab = tab)
-    }
-  }
-  # remove comments
-  n_comments <- paste(unlist(x = strsplit(x = tab, "![^!]*!", perl = TRUE)), collapse = "")
 
-  # key functions (all lines with these are retained)
-  kStatements <- c(
-    "File", "Coefficient", "Read", "Update", "Set", "Subset", "Formula",
-    "Assertion", "Variable", "Equation", "Write", "Zerodivide"
-  )
 
-  # break into commands
-  statements <- unlist(x = strsplit(x = n_comments, split = ";", perl = TRUE))
-
-  # remove new lines and carriage returns
-  statements <- gsub(pattern = "\r|\n", "", statements, perl = TRUE)
-  statements <- statements[statements != ""]
-  statements <- trimws(statements)
-  statements <- statements[statements != ""]
   
-  extract <- tibble::tibble(
-    type = sapply(X = strsplit(x = statements, split = " ", perl = TRUE), "[[", 1),
-    remainder = trimws(
-      sapply(
-        X =
-          strsplit(x = statements, split = " ", perl = TRUE),
-        function(lineElem) {
-          paste(lineElem[-1], collapse = " ")
-        }
-      )
-    )
-  )
 
-  # use grepl w/ ignore case below
-  # type for implicit
-  for (r in 1:nrow(x = extract)) {
-    if (!grepl(pattern = paste(kStatements, collapse = "|"), extract[r, "type"], ignore.case = TRUE)) {
-      extract[r, "remainder"] <- paste(extract[r, "type"], extract[r, "remainder"])
-      extract[r, "type"] <- extract[r - 1, "type"]
-    }
-  }
-browser()
+  
+
+  
+  browser()
+  # cut function here (check_tablo)
+
+  conden_tab <- paste0(statements, ";")
   tab_file <- basename(path = tab_file)
   tablo <- list(tab_file = tab_file,
                 extract = extract,
-                tab = tab,
+                tab_original = tab,
+                tab_mod = conden_tab,
                 model_version = model_version)
   return(tablo)
 

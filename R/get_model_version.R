@@ -1,11 +1,9 @@
 #' @keywords internal
 #' @noRd
-.get_model_version <- function(tab_file,
+.get_model_version <- function(tab,
+                               tab_file,
                                quiet,
                                call) {
-  tab <- readChar(con = tab_file,
-                  nchars = file.info(tab_file)[["size"]])
-  tab_name <- sub(pattern = "\\.tab", replacement = "", basename(path = tab_file))
   # get tab data format (first 300 char)
   n_char <- 300
   tab_preface <- substring(text = tab, first = 1, last = n_char)
@@ -25,7 +23,7 @@
                 call = call)
   }
   if (!quiet) {
-    .cli_action(msg = "Model version for {tab_name} has been determined as 
+    .cli_action(msg = "Model version for {tab_file} has been determined as 
                     {.val {model_version}}.",
                 action = "inform")
   }

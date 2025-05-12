@@ -10,6 +10,7 @@
 #'   \code{.build_tibble()}.
 #'
 #' @importFrom purrr pluck
+#' @importFrom rlang is_integerish
 #' @importFrom data.table setnames let rbindlist CJ setcolorder
 #' @return A data frame containing the aggregated data.
 #' @keywords internal
@@ -83,45 +84,51 @@
 
   # check and swap in any user-provided headers
   if (!is.null(x = postagg_header_replace)) {
-
-    if (any(!sapply(X = postagg_header_replace, file.exists))) {
-      stop("One or more files for user-provided headers does not exist.")
-    }
-
     for (header in names(x = postagg_header_replace)) {
-      # Read the CSV file into a dt
-      custom_header <- data.table::fread(input = postagg_header_replace[[header]])
-      header_name <- names(x = custom_header)
+      if (!rlang::is_integerish(x = postagg_header_replace)) {
+        if (any(!sapply(X = postagg_header_replace, file.exists))) {
+          stop("One or more files for user-provided headers does not exist.")
+        }
+        # Read the CSV file into a dt
+        custom_header <- data.table::fread(input = postagg_header_replace[[header]])
+        header_name <- names(x = custom_header)
 
-      if (!is.element(el = "Value", set = colnames(x = custom_header))) {
-        stop(paste(dQuote(x = "Value"),
-                   "column missing from the post-agg header:",
-                   header_name))
+        if (!is.element(el = "Value", set = colnames(x = custom_header))) {
+          stop(paste(
+            dQuote(x = "Value"),
+            "column missing from the post-agg header:",
+            header_name
+          ))
+        }
+
+        # default values
+        header_template <- purrr::pluck(.x = tib_data, "dt", header)
+        template_col <- colnames(x = header_template)
+
+        # check that datasets are equal
+        if (!isTRUE(x = all.equal(
+          current = custom_header[, !"Value"],
+          target = header_template[, !"Value"],
+          ignore.row.order = TRUE,
+          ignore.col.order = TRUE
+        ))) {
+          stop(paste(
+            "One or more columns and/or rows in the new post-agg header data for:",
+            header_name,
+            "is inconsistent or missing."
+          ))
+        }
+
+        # rearrange if necessary
+        if (!identical(x = template_col, y = colnames(x = custom_header))) {
+          data.table::setcolorder(x = custom_header, neworder = template_col)
+        }
+
+        # swap in
+        tib_data[["dt"]][[header]] <- custom_header
+      } else {
+        purrr::pluck(.x = tib_data, "dt", header, "Value") <- postagg_header_replace
       }
-
-      # default values
-      header_template <- purrr::pluck(.x = tib_data, "dt", header)
-      template_col <- colnames(x = header_template)
-
-      # check that datasets are equal
-      if (!isTRUE(x = all.equal(
-        current = custom_header[, !"Value"],
-        target = header_template[, !"Value"],
-        ignore.row.order = TRUE,
-        ignore.col.order = TRUE
-      ))) {
-        stop(paste("One or more columns and/or rows in the new post-agg header data for:",
-                   header_name,
-                   "is inconsistent or missing."))
-      }
-
-      # rearrange if necessary
-      if (!identical(x = template_col, y = colnames(x = custom_header))) {
-        data.table::setcolorder(x = custom_header, neworder = template_col)
-      }
-
-      # swap in
-      tib_data[["dt"]][[header]] <- custom_header
     }
   }
 

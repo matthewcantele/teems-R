@@ -22,15 +22,11 @@
     valid_ext = "tab",
     call = call
   )
-  args_list[["model_version"]] <- .check_model_version(
-    tab_file = args_list[["tab_file"]],
-    model_version = args_list[["model_version"]],
-    call = call,
-    quiet = quiet
-  )
   args_list[["intertemporal"]] <- .inform_temp_dyn(
     tab_file = args_list[["tab_file"]],
     quiet = quiet
   )
+  # drop model_version (picked up in tab_comp)
+  args_list <- args_list[!is.element(el = names(x = args_list), set = "model_version")]
   return(args_list)
 }

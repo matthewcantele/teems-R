@@ -4,7 +4,6 @@
                      swap_in,
                      sets,
                      var_extract) {
-
   if (!is.null(x = swap_in)) {
     swap_in <- lapply(X = swap_in, FUN = .swap_reconstruct)
 

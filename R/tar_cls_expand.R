@@ -3,8 +3,16 @@
 #' @keywords internal
 #' @noRd
 .expand_closure <- function(closure,
+                            var_omit,
                             var_extract,
                             sets) {
+  if (!is.null(x = var_omit)) {
+    closure <- subset(x = closure,
+                      subset = {
+                        !is.element(el = full_var, set = var_omit)
+                      })
+  }
+  
   # check that all variable names from closure are present within the var extract
   if (!all(is.element(el = tolower(x = closure[["var_name"]]), set = tolower(x = var_extract[["name"]])))) {
     var_discrepany <- tolower(x = closure[["var_name"]])[!is.element(

@@ -7,7 +7,6 @@
 teems_param(
   ...,
   par_har,
-  RORDELTA = TRUE,
   header_rename = NULL,
   coefficient_rename = NULL,
   preagg_data = NULL,
@@ -17,14 +16,6 @@ teems_param(
 \arguments{
 \item{par_har}{Character of length 1, file name in working
 directory or path to a GTAP parameter HAR file.}
-
-\item{RORDELTA}{Logical of length 1 (default is \code{TRUE}). RORDELTA
-determines the mechanism of allocating investment funds across
-regions within static model runs.  When TRUE, investment funds
-are allocated across regions to equate the change in the expected
-rates of return (i.e., rore(r)).  When FALSE, investment funds
-are allocated across regions to maintain the existing composition
-of capital stocks.}
 
 \item{header_rename}{A named vector (default is \code{NULL}). Supplies
 custom origin and destination matches for database headers that
@@ -56,6 +47,14 @@ corresponding sets and associated elements as in the aggregated
 data to be replaced as well as a "Value" column with new values.
 This replacement will be subject to structure checks according to
 selected set aggregations.}
+
+\item{RORDELTA}{Logical of length 1 (default is \code{TRUE}). RORDELTA
+determines the mechanism of allocating investment funds across
+regions within static model runs.  When TRUE, investment funds
+are allocated across regions to equate the change in the expected
+rates of return (i.e., rore(r)).  When FALSE, investment funds
+are allocated across regions to maintain the existing composition
+of capital stocks.}
 }
 \value{
 A list of parameter configuration options.

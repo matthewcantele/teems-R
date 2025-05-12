@@ -14,6 +14,8 @@ teems_deploy(
   model_name = "teems",
   base_dir = tempdir(),
   quiet = FALSE,
+  tar_load_everything = FALSE,
+  tar_visnetwork = FALSE,
   .testing = FALSE
 )
 }
@@ -99,7 +101,7 @@ v6.2_model_config <- teems_model(tab_file = "GTAPv6.2",
                                 ndigits = 8,
                                 verbose = TRUE)
 
-v6.2_base_config <- teems_base(dat_har = "~/dat/GTAP/v9/2011/gddat.har")
+v6.2_base_config <- teems_base(base_har = "~/dat/GTAP/v9/2011/gddat.har")
 
 v6.2_param_config <- teems_param(par_har = "~/dat/GTAP/v9/2011/gdpar.har")
 
@@ -128,7 +130,7 @@ INTv1_model_config <- teems_model(tab_file = "GTAP-INTv1",
                                   ndigits = 8,
                                   verbose = TRUE)
 
-INTv1_base_config <- teems_base(dat_har = "~/dat/GTAP/v9/2011/gddat.har")
+INTv1_base_config <- teems_base(base_har = "~/dat/GTAP/v9/2011/gddat.har")
 
 INTv1_param_config <- teems_param(par_har = "~/dat/GTAP/v9/2011/gdpar.har")
 

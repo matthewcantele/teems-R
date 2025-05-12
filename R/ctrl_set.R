@@ -3,11 +3,13 @@
 #'
 #' @keywords internal
 #' @noRd
-.set_config <- function(config,
-                        data_type,
-                        metadata,
-                        full_exclude,
-                        write_dir) {
+.set_control <- function(config,
+                         set_extract,
+                         coeff_extract,
+                         data_type,
+                         metadata,
+                         full_exclude,
+                         write_dir) {
   
   t_set_call <- rlang::expr(targets::tar_target_raw(
     name = "set_call",
@@ -61,7 +63,7 @@
       data_type = !!data_type,
       header_rename = NULL,
       coefficient_rename = NULL,
-      coeff_extract = coeff_extract,
+      coeff_extract = !!coeff_extract,
       full_exclude = !!full_exclude,
       metadata = !!metadata,
       call = set_call
@@ -74,18 +76,17 @@
     command = expression(.construct_dt(
       ls_array = mod.set_array,
       metadata = !!metadata,
-      data_type = !!data_type,
-      coeff_extract = tablo_sets[["sets"]]
+      data_type = !!data_type
     ))
   ))
-  
+
   # construct tibbles from metadata and dts for each data type
   t_init.set_tib <- rlang::expr(targets::tar_target_raw(
     name = "init.set_tib",
     command = expression(.build_tibble(
       ls_data = ls_set,
       preagg_header_replace = NULL,
-      coeff_extract = tablo_sets[["sets"]]
+      comp_extract = !!set_extract[["sets"]]
     ))
   ))
 
@@ -100,19 +101,19 @@
     cue = targets::tar_cue(mode = "always")
   ))
 
-  t_tablo_sets <- rlang::expr(targets::tar_target_raw(
-    name = "tablo_sets",
-    command = expression(.tablo_sets(
-      parsed_tablo = parsed.tablo[["extract"]]
-    ))
-  ))
+  # t_tablo_sets <- rlang::expr(targets::tar_target_raw(
+  #   name = "tablo_sets",
+  #   command = expression(.tablo_sets(
+  #     tab_extract = parsed.tablo[["extract"]]
+  #   ))
+  # ))
 
   t_precheck.set_mappings <- rlang::expr(targets::tar_target_raw(
     name = "precheck.set_mappings",
     command = expression(.retrieve_sets(
       set_mappings = set_mappings,
       nonint_sets = init.set_tib,
-      model_sets = tablo_sets[["sets"]],
+      model_sets = !!set_extract[["sets"]],
       database_version = !!metadata[["database_version"]],
       data_format = !!metadata[["model_version"]]
     ))
@@ -134,7 +135,7 @@
     command = expression(.expand_sets(
       sets = checked.set_mappings,
       time_steps = time_steps,
-      set_extract = tablo_sets[["sets"]]
+      set_extract = !!set_extract[["sets"]]
     ))
   ))
 

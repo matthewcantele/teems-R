@@ -50,8 +50,7 @@
 #'   halted for debugging and/or development purposes through
 #'   placement of `browser()`.
 #'
-#' @importFrom targets tar_helper tar_option_set tar_make tar_config_set
-#' @importFrom qs2 qs_save qs_read
+#' @importFrom targets tar_load_everything
 #'
 #' @return File path to a CMF file necessary to execute
 #'   [`teems_solve()`].
@@ -159,82 +158,6 @@
 #'
 #' # Example: Pre-model run directory layout assuming path.expand("~")
 #' # evaluates to /home/user
-#'
-#' #/home/user/custom_INT/
-#' #├── custom_INT.R
-#' #├── launchpad/
-#' #│   ├── basedata.csv
-#' #│   ├── custom_INT.cls
-#' #│   ├── custom_INT.cmf
-#' #│   ├── GTAP-INTv1.tab
-#' #│   ├── int_parameters.csv
-#' #│   ├── model_diagnostics.txt
-#' #│   ├── out/
-#' #│   │   ├── coefficients
-#' #│   │   ├── variables/
-#' #│   │       ├── bin
-#' #│   ├── parameters.csv
-#' #│   ├── pfa_140725.shf
-#' #│   ├── sets.csv
-#' #│   ├── time_data.csv
-#' #├── store/
-#' #│   ├── meta/
-#' #│   │   ├── meta
-#' #│   │   ├── process
-#' #│   │   ├── progress
-#' #│   ├── objects/
-#' #│   │   ├── base_array
-#' #│   │   ├── checked.closure
-#' #│   │   ├── checked.set_mappings
-#' #│   │   ├── closure
-#' #│   │   ├── constructed.shocks
-#' #│   │   ├── core_read_files
-#' #│   │   ├── CPHI
-#' #│   │   ├── endowment_mapping
-#' #│   │   ├── expanded.closure
-#' #│   │   ├── final.base_tib
-#' #│   │   ├── final.closure
-#' #│   │   ├── final.par_tib
-#' #│   │   ├── final.set_tib
-#' #│   │   ├── final.tablo
-#' #│   │   ├── init.base_tib
-#' #│   │   ├── init.par_tib
-#' #│   │   ├── init.set_tib
-#' #│   │   ├── int_param
-#' #│   │   ├── int_read_files
-#' #│   │   ├── internal_tab_file
-#' #│   │   ├── KAPPA
-#' #│   │   ├── LRORG
-#' #│   │   ├── ls_dat
-#' #│   │   ├── ls_par
-#' #│   │   ├── ls_set
-#' #│   │   ├── metadata
-#' #│   │   ├── par_array
-#' #│   │   ├── parsed.tablo
-#' #│   │   ├── precheck.set_mappings
-#' #│   │   ├── prepped.base_tib
-#' #│   │   ├── prepped.par_tib
-#' #│   │   ├── prepped.shocks
-#' #│   │   ├── read_files
-#' #│   │   ├── region_mapping
-#' #│   │   ├── sector_mapping
-#' #│   │   ├── set_array
-#' #│   │   ├── set_mappings
-#' #│   │   ├── shocks
-#' #│   │   ├── swap_in
-#' #│   │   ├── swap_out
-#' #│   │   ├── swapped.in.cls
-#' #│   │   ├── swapped.out.cls
-#' #│   │   ├── tab_file_check
-#' #│   │   ├── tablo_coeff
-#' #│   │   ├── tablo_files
-#' #│   │   ├── tablo_sets
-#' #│   │   ├── tablo_var
-#' #│   │   ├── time_coeff
-#' #│   │   ├── time_sets
-#' #│   │   ├── weighted.par_tib
-#' #│   ├── user
-#'
 #' # Any of the objects above in (/home/user/custom_INT/store/objects)
 #' # can be inspected using [`targets::tar_read()`]. For example, the
 #' # final model closure:
@@ -256,7 +179,6 @@ teems_deploy <- function(model_config,
 {
 call <- match.call()
 args_list <- mget(x = names(x = formals()))
-browser()
 # check for missing arguments here (across inputs)
 teems_paths <- .path_ledger(base_dir = base_dir,
                             model_name = model_name,
@@ -279,14 +201,28 @@ targets <- .write_pipeline(model_config = model_config,
                            shock_config = shock_config,
                            metadata = metadata,
                            teems_paths = teems_paths)
-cmf_path  <- .execute_pipeline(teems_paths = teems_paths,
-                               model_name = model_name,
-                               base_call = base_config[["call"]],
-                               par_call = param_config[["call"]],
-                               set_call = set_config[["call"]],
-                               metadata = metadata,
-                               quiet = quiet,
-                               tar_load_everything = tar_load_everything,
-                               .testing = .testing)
-cmf_path
+.execute_pipeline(teems_paths = teems_paths,
+                  base_call = base_config[["call"]],
+                  par_call = param_config[["call"]],
+                  set_call = set_config[["call"]],
+                  tar_load_everything = tar_load_everything,
+                  .testing = .testing)
+if (tar_load_everything) {
+  targets::tar_load_everything(store = teems_paths[["store"]],
+                               envir = .GlobalEnv)
+}
+coefficient_names <- purrr::pluck(.x = model_specs, "coeff_extract", "name")
+gen_out <- .write_cmf(model_name = model_name,
+                      coefficient_names = coefficient_names,
+                      model_dir = teems_paths[["model"]],
+                      store_dir = teems_paths[["store"]],
+                      launchpad_dir = teems_paths[["launchpad"]])
+.pipeline_diagnostics(model_dir = teems_paths[["model"]],
+                      launchpad_dir = teems_paths[["launchpad"]],
+                      model_name = model_name,
+                      metadata = metadata,
+                      store_dir = teems_paths[["store"]],
+                      io_files = gen_out[["io_files"]],
+                      quiet = quiet)
+gen_out[["cmf_path"]]
 }
