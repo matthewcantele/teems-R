@@ -4,7 +4,6 @@
                          sol_parse_cmd,
                          paths,
                          quiet) {
-
   elapsed_time <- system.time(system(command = exec_cmd))
   print(elapsed_time)
   cat(exec_cmd, file = file.path(paths[["run"]], "model_exec.txt"))

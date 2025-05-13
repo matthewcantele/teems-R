@@ -13,7 +13,7 @@
   diagnostic_out <- file.path(run_dir,
                               "out",
                               paste0("solver_out", "_", timeID, ".txt"))
-  docker_run_dir <- "/home/launchpad"
+  docker_run_dir <- "/opt/launchpad"
   docker_cmf_path <- sub(pattern = dirname(path = cmf_path),
                          replacement = docker_run_dir,
                          x = cmf_path)

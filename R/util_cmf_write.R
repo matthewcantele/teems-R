@@ -115,7 +115,7 @@
     FUN = gsub,
     USE.NAMES = FALSE,
     pattern = model_dir,
-    replacement = "/home"
+    replacement = "/opt"
   )
 
   cmf_file <- paste0(model_name, ".cmf")

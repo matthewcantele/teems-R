@@ -19,15 +19,15 @@
 
   docker_preamble <- paste(
     "docker run --rm --mount",
-    paste("type=bind", paste0("src=", paths[["run"]]), "dst=/home/launchpad", sep = ","),
+    paste("type=bind", paste0("src=", paths[["run"]]), "dst=/opt/launchpad", sep = ","),
     paste0("teems", ":", docker_tag),
     "/bin/bash -c"
   )
   exec_preamble <- paste(
     docker_preamble,
-    '"/home/teems-solver/lib/mpi/bin/mpiexec',
+    '"/opt/teems-solver/lib/mpi/bin/mpiexec',
     "-n", n_tasks,
-    "/home/teems-solver/solver/hsl",
+    "/opt/teems-solver/solver/hsl",
     "-cmdfile", paths[["docker_cmf"]]
   )
   docker_diagnostic_out <- file.path(paths[["docker_run"]], "out", paste0("solver_out", "_", timeID, ".txt"))
@@ -58,7 +58,7 @@
     paste0(docker_diagnostic_out, '"')
   )
   exec_cmd <- paste(exec_preamble, solver_param)
-  sol_parse_cmd <- paste(docker_preamble, '"make -C /home/bin_parser"')
+  sol_parse_cmd <- paste(docker_preamble, '"make -C /opt/teems-parser"')
   if (terminal_run) {
     cat(cmd, file = file.path(paths[["run"]], "model_exec.txt"))
     hsl <- "hsl"
