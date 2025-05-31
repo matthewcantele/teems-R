@@ -5,65 +5,87 @@
 #' @noRd
 .update_set_names <- function(ls_array,
                               coeff_extract,
-                              metadata,
-                              data_type) {
-  list2env(x = metadata, envir = rlang::current_env())
+                              data_format,
+                              set_extract) {
+  if (any(set_extract[["intertemporal"]])) {
+    int_sets <- subset(x = set_extract,
+                       subset = intertemporal,
+                       select = name)[[1]]
+    int_sets <- paste0(int_sets, "t")
+    intertemporal <- TRUE
+  } else {
+    intertemporal <- FALSE
+  }
 
   ls_array <- lapply(
     X = ls_array,
     FUN = function(header) {
-      coeff <- header[["coefficient"]]
-      mixed_names <- purrr::pluck(coeff_extract, "ls_mixed_idx", coeff)
-      if (!identical(x = mixed_names, y = "ALLTIMEt")) {
-        mixed_names <- setdiff(x = mixed_names, y = "ALLTIMEt")
-      }
+      # have to use header here for matching because older database has
+      # coefficient names in input data that no longer exist in input data
+      # but are present in the model (e.g., PRIVEXP)
+      r_idx <- match(x = header[["header"]], table = coeff_extract[["header"]])
+      new_names <- purrr::pluck(.x = coeff_extract, "ls_mixed_idx", r_idx)
       stnd_names <- names(x = dimnames(x = header[["data"]]))
-      # standard NULL if no-set var, mixed null if not in in extract
-      if (!is.null(x = stnd_names) && !is.null(x = mixed_names)) {
-        names(x = dimnames(x = header[["data"]])) <- mixed_names
-      } else if (!is.null(x = stnd_names) && is.null(x = mixed_names)) {
-        if (identical(
-          x = sum(grepl(pattern = "REG", x = stnd_names),
-            na.rm = TRUE
-          ),
-          y = 2L
-        )) {
-          stnd_names[duplicated(x = stnd_names)] <- "REGs"
-          mixed_names <- sub(
-            pattern = "^REG$",
-            replacement = "REGr",
-            x = stnd_names
-          )
-        } else if (identical(
-          x = sum(
-            grepl(
-              pattern = "REG",
-              x = stnd_names
-            ),
-            na.rm = TRUE
-          ),
-          y = 1L
-        )) {
-          mixed_names <- sub(
-            pattern = "^REG$",
-            replacement = "REGr",
-            x = stnd_names
-          )
+      if (is.null(x = new_names) && is.null(x = stnd_names)) {
+        return(header)
+      } 
+      if (!is.null(x = new_names)) {
+        if (!identical(x = new_names, y = "null_set")) {
+          if (intertemporal) {
+            if (any(is.element(el = int_sets, set = new_names))) {
+              if (!identical(x = length(x = new_names), y = 1L)) {
+              new_names <- setdiff(x = new_names, int_sets)
+              } else {
+                return(header)
+              }
+            }
+          }
+        } else {
+          return(header)
         }
-        origin_col <- paste(data_format, "upper", sep = "_")
-        dest_col <- paste(model_version, "mixed", sep = "_")
-        vect_mapping <- setNames(
-          object = set_table[[dest_col]],
-          nm = set_table[[origin_col]]
-        )
+      } else {
+        if (identical(
+            x = sum(grepl(pattern = "REG", x = stnd_names),
+              na.rm = TRUE
+            ),
+            y = 2L
+          )) {
+            new_names[duplicated(x = stnd_names)] <- "REGs"
+            new_names <- sub(
+              pattern = "^REG$",
+              replacement = "REGr",
+              x = stnd_names
+            )
+          } else if (identical(
+            x = sum(
+              grepl(
+                pattern = "REG",
+                x = stnd_names
+              ),
+              na.rm = TRUE
+            ),
+            y = 1L
+          )) {
+            new_names <- sub(
+              pattern = "^REG$",
+              replacement = "REGr",
+              x = stnd_names
+            )
+          }
 
-        mixed_names <- ifelse(test = is.element(el = stnd_names, set = names(x = vect_mapping)),
-          yes = vect_mapping[stnd_names],
-          no = mixed_names
-        )
+          origin_col <- paste(data_format, "upper", sep = "_")
+          dest_col <- paste(data_format, "mixed", sep = "_")
+          vect_mapping <- setNames(
+            object = set_table[[dest_col]],
+            nm = set_table[[origin_col]]
+          )
 
-        names(x = dimnames(x = header[["data"]])) <- mixed_names
-      }
+          new_names <- ifelse(test = is.element(el = new_names, set = names(x = vect_mapping)),
+            yes = vect_mapping[new_names],
+            no = new_names
+          )
+    }
+          names(x = dimnames(x = header[["data"]])) <- new_names
       return(header)
     }
   )

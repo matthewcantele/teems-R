@@ -22,7 +22,7 @@
       call = call
     )
   } else {
-    args_list[["closure_file"]] <- path.expand(path = closure_file)
+    args_list[["closure_file"]] <- normalizePath(path = closure_file)
   }
 
   if (!is.null(x = shock_file)) {
@@ -42,7 +42,7 @@
         call = call
       )
     }
-    args_list[["shock_file"]] <- path.expand(path = shock_file)
+    args_list[["shock_file"]] <- normalizePath(path = shock_file)
   } else {
     if (is.null(x = shock)) {
       if (!quiet) {

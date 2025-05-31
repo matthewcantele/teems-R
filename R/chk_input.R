@@ -2,36 +2,50 @@
 #'
 #' @keywords internal
 #' @noRd
-.check_input <- function(file,
+.check_input <- function(file = NULL,
                          valid_ext,
                          call,
+                         cache = TRUE,
                          internal = TRUE) {
-  arg <- as.character(x = substitute(expr = file))
-  file_ext <- tolower(x = tools::file_ext(x = basename(path = file)))
-  numeric_ext <- !is.na(suppressWarnings(as.numeric(file_ext)))
-  if (dir.exists(paths = file)) {
-    .cli_action(msg = "A filepath is expected, not the directory {.file {file}}.",
-                action = "abort",
-                call = call)
-  }
-  if (!identical(x = file_ext, y = "") && !numeric_ext) {
-    file <- .check_usr_file(
-      file = file,
-      valid_ext = valid_ext,
-      file_ext = file_ext,
-      arg = arg,
-      call = call
-    )
-  } else if (internal) {
-    file <- .check_internal_file(
-      file = file,
-      ext = valid_ext,
-      call = call
-    )
+  # file to object
+  if (!is.list(x = file)) {
+    arg <- as.character(x = substitute(expr = file))
+    file_ext <- tolower(x = tools::file_ext(x = basename(path = file)))
+    numeric_ext <- !is.na(suppressWarnings(as.numeric(file_ext)))
+    if (dir.exists(paths = file)) {
+      .cli_action(
+        msg = "A filepath is expected, not the directory {.file {file}}.",
+        action = "abort",
+        call = call
+      )
+    }
+    if (!identical(x = file_ext, y = "") && !numeric_ext) {
+      file <- .check_usr_file(
+        file = file,
+        valid_ext = valid_ext,
+        file_ext = file_ext,
+        arg = arg,
+        call = call
+      )
+    } else if (internal) {
+      file <- .check_internal_file(
+        file = file,
+        ext = valid_ext,
+        call = call
+      )
+    }
+  } else {
+    if (cache) {
+      file <- .teems_cache(
+        input = file,
+        file = deparse(substitute(file)),
+        ext = "qs2",
+        dir = "inputdata"
+      )
+    }
   }
   return(file)
 }
-
 .check_usr_file <- function(file,
                             valid_ext,
                             file_ext,
@@ -47,7 +61,7 @@
                 action = "abort",
                 call = call)
   }
-  file <- path.expand(path = file)
+  file <- normalizePath(path = file)
   attr(x = file, which = "file_ext") <- file_ext
   return(file)
 }

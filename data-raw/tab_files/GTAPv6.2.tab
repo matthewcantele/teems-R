@@ -27,7 +27,7 @@
     HISTORY of this file
     --------------------
 
-    Syntactic modifications made for use within TEEMS
+    May 2025: Syntactic modifications made for use within TEEMS
 
     Version 6.2 fixes bugs and provides minor enhancements:
         - EV_ALT, CNTdpar fix
@@ -175,8 +175,7 @@ Subset
 Set
     NMRG_COMM # non-margin commodities # = TRAD_COMM - MARG_COMM;
 Set
-    CGDS_COMM # capital goods commodities #
-    maximum size 1 read elements from file GTAPSETS header "H9";
+    CGDS_COMM # capital goods commodities # (zcgds);
 Set
     ENDW_COMM # endowment commodities #
     maximum size 5 read elements from file GTAPSETS header "H6";
@@ -219,17 +218,6 @@ Formula
     SIZE_PROD = sum(i,PROD_COMM, 1);
 Assertion (initial)
     SIZE_PROD = SIZE_TRAD + SIZE_CGDS;
-
-!<
-    The sluggish endowments are now defined dynamically, based on the variable
-    SLUG.  SLUG is a binary variable that is zero for mobile endowments and
-    one for sluggish endowments.  We must define and read in this variable
-    before proceeding further.
->!
-!Coefficient (integer,parameter) (all,i,ENDW_COMM)
-    SLUG(i) # sluggish primary factor endowments #;
-Read
-    SLUG from file GTAPPARM header "SLUG";!
 
 Set
     ENDWS_COMM

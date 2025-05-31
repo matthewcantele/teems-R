@@ -1,65 +1,64 @@
 #' @importFrom purrr pmap
 #' @importFrom data.table fwrite setorder dcast.data.table uniqueN
-#' 
+#'
 #' @keywords internal
 #' @noRd
 .ragged_write <- function(dat,
                           ndigits,
                           out_dir) {
-
   paths <- purrr::pmap(
     .l = list(
       dat[["dt"]],
       dat[["lead"]],
       dat[["idx"]],
-      dat[["input_file"]]
+      dat[["file"]]
     ),
     .f = function(dt, lead, idx, file) {
       write_path <- file.path(out_dir, paste0(file, ".txt"))
-      
+
       # column names for the algo
       if (!identical(x = colnames(x = dt), y = "Value")) {
         dtColnames <- setdiff(x = colnames(x = dt), y = "Value")
       } else {
         dtColnames <- "Value"
       }
-
-      if (!grepl(pattern = "Integer", x = lead)) {
-      # format values
-      dt[, Value := format(
-        round(Value, ndigits),
-        trim = TRUE,
-        nsmall = ndigits,
-        scientific = FALSE
-      )]
+      
+      if (!grepl(pattern = "integer", x = lead)) {
+        # format values
+        dt[, Value := format(
+          round(Value, ndigits),
+          trim = TRUE,
+          nsmall = ndigits,
+          scientific = FALSE
+        )]
       } else {
         dt[, Value := as.integer(x = Value)]
       }
 
       if (!identical(x = idx, y = 0L)) {
-      # consistency check between lead (constructed from sets) and actual data
-      dim_sizes <- sapply(
-        X = 1:(idx),
-        FUN = function(i) {
-          data.table::uniqueN(dt[[i]])
-        }
-      )
-
-      lead_dim <- as.integer(x = strsplit(x = trimws(x = sapply(
-        X = strsplit(x = lead, split = "Real|Integer"), "[[", 1
-      )), "\\s")[[1]])
-
-      if (!identical(x = dim_sizes, y = lead_dim)) {
-        # check duplicates as well and move this check to a prior function
-        stop(
-          cat(
-            "Lead set dim and data dim mismatch detected.\nLead dim:",
-            lead,
-            "\nData dim:",
-            dim_sizes
-          )
+        # consistency check between lead (constructed from sets) and actual data
+        dim_sizes <- sapply(
+          X = 1:(idx),
+          FUN = function(i) {
+            data.table::uniqueN(dt[[i]])
+          }
         )
-      }
+
+        lead_dim <- as.integer(x = strsplit(x = trimws(x = sapply(
+          X = strsplit(x = lead, split = "real|integer"), "[[", 1
+        )), "\\s")[[1]])
+
+        if (!identical(x = dim_sizes, y = lead_dim)) {
+          # check duplicates as well and move this check to a prior function
+          stop(
+            cat(
+              "Lead set dim and data dim mismatch detected.\nLead dim:",
+              lead,
+              "\nData dim:",
+              dim_sizes
+            )
+          )
+        }
       }
 
       # write the header lead with attributes
@@ -69,23 +68,22 @@
         append = TRUE
       )
 
-    # algo for converting to the ragged edge style
-    if (identical(x = idx, y = 0L)) {
-      data.table::fwrite(
-        x = dt,
-        file = write_path,
-        quote = FALSE,
-        append = TRUE
-      )
-
-    } else if (identical(x = idx, y = 1L)) {
-      data.table::setorder(dt)
-      data.table::fwrite(
-        x = dt[, -1],
-        file = write_path,
-        quote = FALSE,
-        append = TRUE
-      )
+      # algo for converting to the ragged edge style
+      if (identical(x = idx, y = 0L)) {
+        data.table::fwrite(
+          x = dt,
+          file = write_path,
+          quote = FALSE,
+          append = TRUE
+        )
+      } else if (identical(x = idx, y = 1L)) {
+        data.table::setorder(dt)
+        data.table::fwrite(
+          x = dt[, -1],
+          file = write_path,
+          quote = FALSE,
+          append = TRUE
+        )
       } else {
         data.table::setcolorder(x = dt, neworder = rev(x = colnames(x = dt[, !"Value"])))
         data.table::setorder(x = dt)
@@ -102,9 +100,11 @@
           )
         } else {
           # dynamic indexing for >= 3 dim
-          ls_dt <- .slice_array(arr = arr,
-                                dim_sizes = dim_sizes,
-                                n_dim = idx)
+          ls_dt <- .slice_array(
+            arr = arr,
+            dim_sizes = dim_sizes,
+            n_dim = idx
+          )
 
           lapply(
             X = ls_dt,
@@ -118,18 +118,19 @@
               )
 
               cat("\n",
-                  file = write_path,
-                  sep = "",
-                  append = TRUE)
+                file = write_path,
+                sep = "",
+                append = TRUE
+              )
             }
           )
         }
       }
       if (idx < 3) {
         cat("\n",
-            file = write_path,
-            sep = "",
-            append = TRUE
+          file = write_path,
+          sep = "",
+          append = TRUE
         )
       }
       return(write_path)

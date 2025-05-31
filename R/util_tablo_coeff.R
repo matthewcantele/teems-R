@@ -16,23 +16,21 @@
     select = -type
   )
 
-  # check that information is available for each coefficient
+  # check that label is available for each coefficient
   if (any(!grepl("#", coeff[["remainder"]]))) {
     .cli_action(msg = "One or more variables or coefficients within the provided
-                Tablo file is missing information - add # NA # if descriptive 
-                information is not available.",
+                Tablo file is missing label - add # NA # if descriptive 
+                label is not available.",
                 action = "abort",
                 call = call)
   }
 
-  coeff[["information"]] <- paste(
-    "#",
-    trimws(x = unlist(x = purrr::map(.x = sapply(
+  coeff[["label"]] <- trimws(x = unlist(x = purrr::map(.x = sapply(
       X = coeff[["remainder"]],
-      FUN = strsplit, split = "#"
-    ), 2))),
-    "#"
-  )
+      FUN = strsplit, split = "#",
+      USE.NAMES = FALSE
+    ), 2)))
+
 
   coeff[["remainder"]] <- trimws(x = unlist(x = purrr::map(.x = sapply(
     X = coeff[["remainder"]],
@@ -71,8 +69,8 @@
   coeff[["remainder"]] <- .advance_remainder(remainder = coeff[["remainder"]],
                                              pattern = coeff[["qualifier_list"]])
 
-  # pull out names
-  coeff[["name"]] <- unlist(x = purrr::map(
+  # pull out coefficients
+  coeff[["coefficient"]] <- unlist(x = purrr::map(
     .x = sapply(X = coeff[["remainder"]], FUN = strsplit, split = " "),
     .f = function(x) {
       tail(x, 1)
@@ -80,9 +78,9 @@
   ))
 
   # subindex (c,a,r)
-  coeff[["lower_idx"]] <- unlist(x = ifelse(test = grepl(pattern = "\\(", x = coeff[["name"]]),
+  coeff[["lower_idx"]] <- unlist(x = ifelse(test = grepl(pattern = "\\(", x = coeff[["coefficient"]]),
     yes = paste0("(", lapply(
-      X = strsplit(x = coeff[["name"]], split = "\\("),
+      X = strsplit(x = coeff[["coefficient"]], split = "\\("),
       FUN = function(s) {
         s[2]
       }
@@ -96,15 +94,18 @@
     strsplit(x = si, split = ",")
   }, USE.NAMES = FALSE)
 
-  names(x = coeff[["ls_lower_idx"]]) <- coeff[["name"]]
-
   coeff[["remainder"]] <- .advance_remainder(remainder = coeff[["remainder"]],
-                                             pattern = coeff[["name"]])
+                                             pattern = coeff[["coefficient"]])
 
-  # remove subindex from name
-  coeff[["name"]] <- unlist(x = purrr::map(.x = sapply(X = coeff[["name"]], FUN = strsplit, split = "\\("), 1))
+  # remove subindex from coefficient
+  coeff[["coefficient"]] <- unlist(x = purrr::map(.x = sapply(X = coeff[["coefficient"]],
+                                                              FUN = strsplit,
+                                                              split = "\\(",
+                                                              USE.NAMES = FALSE),
+                                                  1))
 
-
+  names(x = coeff[["ls_lower_idx"]]) <- coeff[["coefficient"]]
+  
   # main index (COMM,ACTS,REG)
   coeff[["ls_upper_idx"]] <- ifelse(test = coeff[["remainder"]] == "",
     yes = "null_set",
@@ -113,7 +114,7 @@
     })
   )
 
-  names(x = coeff[["ls_upper_idx"]]) <- coeff[["name"]]
+  names(x = coeff[["ls_upper_idx"]]) <- coeff[["coefficient"]]
 
   # ls_upper_idx in concat form
   coeff[["upper_idx"]] <- sapply(
@@ -148,7 +149,7 @@
   coeff[["mixed_idx"]] <- paste0("(", coeff[["mixed_idx"]], ")")
   coeff[["data_type"]] <- ifelse(test = grepl(pattern = "parameter", coeff[["qualifier_list"]]),
                                  yes = "par",
-                                 no = "base")
+                                 no = "dat")
   # full standard writeout
   data.table::setnames(x = coeff,
                        old = "remainder",
@@ -159,14 +160,14 @@
     tolower(x = type) == "read"
   })
 
-  r[["name"]] <- trimws(x = purrr::map(.x = sapply(
+  r[["coefficient"]] <- trimws(x = purrr::map(.x = sapply(
     X = toupper(x = r[["remainder"]]),
     FUN = strsplit,
     split = "FROM FILE"
   ), 1))
 
   r[["remainder"]] <- .advance_remainder(remainder = r[["remainder"]],
-                                         pattern = paste(r[["name"]], "from file"))
+                                         pattern = paste(r[["coefficient"]], "from file"))
 
   r[["file"]] <- .get_element(input = r[["remainder"]], split = " ", index = 1)
   r[["header"]] <- gsub(
@@ -176,17 +177,17 @@
   )
 
   # field to mark coefficients read in to a different name (VTWR to VTMFSD)
-  r[["diff"]] <- r[["name"]] == r[["header"]]
+  r[["diff"]] <- r[["coefficient"]] == r[["header"]]
   r <- subset(x = r, select = -remainder)
 
   # match read statements to associated coefficients
-  r_idx <- match(x = coeff[["name"]], table = r[["name"]])
+  r_idx <- match(x = coeff[["coefficient"]], table = r[["coefficient"]])
   coeff[["header"]] <- r[["header"]][r_idx]
   coeff[["file"]] <- r[["file"]][r_idx]
 
-  data.table::setcolorder(x = coeff, neworder = c("name",
+  data.table::setcolorder(x = coeff, neworder = c("coefficient",
                                                   "header",
-                                                  "information",
+                                                  "label",
                                                   "file",
                                                   "data_type",
                                                   "qualifier_list",

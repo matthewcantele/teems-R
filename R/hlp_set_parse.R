@@ -16,7 +16,7 @@
       call = call
     )
   }
-  
+
   # metadata in the first line of each "csv", rest is ragged data
   ls_data <- lapply(X = paths, FUN = readLines)
 
@@ -29,10 +29,10 @@
     dat <- dat[-1]
     # get name
     name <- purrr::pluck(.x = strsplit(x = lead, split = '"'), 1, 2)
-    # get information
-    information <- purrr::pluck(.x = strsplit(x = lead, split = '"'), 1, 4)
+    # get label
+    label <- purrr::pluck(.x = strsplit(x = lead, split = '"'), 1, 4)
 
-    list(name, information, dat)
+    list(name, label, dat)
   })
 
   transposed <- purrr::transpose(.l = list_set)
@@ -40,7 +40,7 @@
   # Create the tibble
   set_tib <- tibble::tibble(
     name = purrr::simplify(.x = transposed[[1]], .type = "character"),
-    information = purrr::simplify(.x = transposed[[2]], .type = "character"),
+    label = purrr::simplify(.x = transposed[[2]], .type = "character"),
     ls_data = transposed[[3]]
   )
 
@@ -68,11 +68,12 @@
       return(dt)
     }
   )
-  
+
+  # chekc length first
   purrr::pmap(
     .l = list(
       set_tib[["dat"]],
-      sets[["elements"]],
+      sets[["mapped_ele"]],
       set_tib[["name"]]
     ),
     .f = function(ele_out, ele_in, set_name) {
@@ -88,6 +89,7 @@
     }
   )
 
-  set_tib <- subset(x = set_tib, select = c(name, information, dat))
+  set_tib <- subset(x = set_tib, select = c(name, label, dat))
+  names(x = set_tib[["dat"]]) <- set_tib[["name"]]
   return(set_tib)
 }

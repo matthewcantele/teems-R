@@ -6,7 +6,6 @@
                          concatenated_data = NULL,
                          var_name = NULL,
                          drop_quotes = FALSE) {
-
   if (!is.null(x = structured_data)) {
 
     # unnest if necessary

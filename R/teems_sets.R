@@ -66,36 +66,37 @@
 #' unlink(x = temp_dir, recursive = TRUE)
 #'
 #' @export
-teems_sets <- function(set_har,
-                       region_mapping,
-                       sector_mapping,
-                       endowment_mapping,
-                       time_steps = NULL,
-                       interval_switch = FALSE,
+teems_sets <- function(set_input,
+                       aux_set = NULL,
+                       ...,
+                       model_version = NULL,
                        quiet = FALSE)
 {
 call <- match.call()
-trace <- rlang::trace_back(bottom = rlang::current_env())
 args_list <- mget(x = names(x = formals()))
-args_list[["set_har"]] <- .check_input(file = set_har,
-                                       valid_ext = "har",
-                                       call = call,
-                                       internal = FALSE)
-metadata <- .get_metadata(con = args_list[["set_har"]])
-args_list <- .check_set_mappings(args_list = args_list,
-                                 database_version = metadata[["database_version"]],
-                                 call = call,
-                                 envir = rlang::current_env(),
-                                 quiet = quiet)
-if (!is.null(x = time_steps)) {
-args_list[["time_steps"]] <- .check_time_steps(t0 = metadata[["reference_year"]],
-                                               time_steps = time_steps,
-                                               interval_switch = interval_switch,
-                                               call = call,
-                                               quiet = quiet)
+args_list[["set_input"]] <- .check_input(file = set_input,
+                                         valid_ext = c("har", "qs2"),
+                                         call = call,
+                                         internal = FALSE)
+metadata <- .get_metadata(con = args_list[["set_input"]])
+if (!is.null(x = aux_set)) {
+  aux_set_file <- .teems_cache(input = aux_set,
+                               file = "aux_set",
+                               ext = "qs2",
+                               dir = "inputdata")
+  args_list[["aux_set_file"]] <- aux_set_file
 }
+sets <- .check_set_mappings(set_mappings = list(...),
+                            time_format = time_format,
+                            metadata = metadata,
+                            call = call,
+                            envir = rlang::current_env(),
+                            quiet = quiet)
+args_list[["..."]] <- NULL
 config <- c(args_list,
-            call = call,
-            trace = trace)
+            sets,
+            metadata = metadata,
+            call = call)
+config[["quiet"]] <- NULL
 config
 }

@@ -33,7 +33,7 @@
           }
         } else {
           stop(
-            "Plain variable names without additional information to be provided when
+            "Plain variable names without additional label to be provided when
                      using the 'var_names' argument."
           )
         }

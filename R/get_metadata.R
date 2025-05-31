@@ -2,8 +2,9 @@
 #'
 #' @keywords internal
 #' @noRd
-.get_metadata <- function(con,
-                          model_version = NULL) {
+.get_metadata <- function(con) {
+  if (!identical(x = attr(x = con, which = "file_ext"),
+                y = "qs2")) {
   # map connection to data type (GTAP database file naming is inconsistent across releases)
   data_type <- .har_match(con = con)
 
@@ -142,9 +143,9 @@
 
   # Process first and second records
   for (h in names(headers)) {
-    headers[[h]]$header_name <- trimws(rawToChar(headers[[h]]$records[[1]][1:4]))
+    headers[[h]]$header <- trimws(rawToChar(headers[[h]]$records[[1]][1:4]))
     headers[[h]]$type <- rawToChar(headers[[h]]$records[[2]][5:10])
-    headers[[h]]$information <- trimws(rawToChar(headers[[h]]$records[[2]][11:80]))
+    headers[[h]]$label <- trimws(rawToChar(headers[[h]]$records[[2]][11:80]))
     headers[[h]]$numberOfDimensions <- readBin(headers[[h]]$records[[2]][81:84], "integer",
                                                size =
                                                  4
@@ -324,7 +325,7 @@
       headers[[h]]$data <- m
     }
   }
-
+  
   # get metadata
   # this data is not consistent across GTAP database releases
   DREL <- purrr::pluck(.x = headers, "DREL", "data")
@@ -337,17 +338,9 @@
   metadata[["database_version"]] <- gsub(pattern = "(\\d.*?)[A-Za-z]",
                                          replacement = "\\1",
                                          x = metadata[["database_version"]])
-  
-  if (!is.null(x = model_version)) {
-    metadata[["model_version"]] <- model_version
-    
-    if (!identical(x = metadata[["data_format"]],
-                   y = metadata[["model_version"]])) {
-      metadata[["convert"]] <- TRUE
-    } else {
-      metadata[["convert"]] <- FALSE
-    }
+  } else {
+    object <- qs2::qs_read(file = con)
+    metadata <- attr(x = object, which = "metadata")
   }
-
   return(metadata)
 }

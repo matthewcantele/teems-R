@@ -9,7 +9,6 @@
     checklist = list(
       tab_file = "is.character",
       var_omit = c("is.null", "is.character"),
-      model_version = c("is.null", "is.character"),
       ndigits = "is.integer",
       full_exclude = c("is.character", "is.null"),
       notes = c("is.character", "is.null"),

@@ -140,7 +140,8 @@
             expanded_shk <- .expand_closure(
               closure = checked_shk,
               var_extract = var_extract,
-              sets = sets
+              sets = sets,
+              var_omit = NULL
             )
 
             var_specific_exo <- purrr::list_flatten(x = subset(

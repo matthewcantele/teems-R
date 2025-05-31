@@ -3,11 +3,13 @@
 #' @keywords internal
 #' @noRd
 .execute_pipeline <- function(teems_paths,
-                              base_call,
-                              par_call,
+                              data_call,
+                              # base_call,
+                              # par_call,
                               set_call,
                               tar_load_everything,
                               .testing) {
+
   if (!.testing) {
     output <- try({
       targets::tar_make(
@@ -18,8 +20,11 @@
       errored_tar <- targets::tar_errored(store = teems_paths[["store"]])
       raw_error <- targets::tar_meta(names = errored_tar,
                                      store = teems_paths[["store"]])[["error"]]
-      first_colon <- regexpr("(?<!:):(?!:)", raw_error, perl = TRUE)
-      error_inputs <- trimws(x = substring(raw_error, first_colon + 1))
+      first_colon <- regexpr(pattern = "(?<!:):(?!:)",
+                             text =  raw_error,
+                             perl = TRUE)
+      error_inputs <- trimws(x = substring(text = raw_error,
+                                           first = first_colon + 1))
       expr <- parse(text = error_inputs)
       eval(expr = expr)
     }

@@ -1,89 +1,56 @@
-#' @importFrom rlang try_fetch
 #' @importFrom purrr map2
 #' @importFrom tools file_ext
+#' @importFrom cli cli_h1 cli_text
 #'
 #'
 #' @keywords internal
 #' @noRd
-.check_set_mappings <- function(args_list,
-                                database_version,
+.check_set_mappings <- function(set_mappings,
+                                time_format,
+                                metadata,
                                 call,
                                 envir,
                                 quiet) {
-  map_args <- names(x = args_list)[grepl("_mapping", names(x = args_list))]
-  mappings <- mget(x = map_args, envir = envir)
-
-  if (is.element(el = database_version, set = c("v9", "v10"))) {
-    endowment_set <- "ENDW_COMM"
-    region_set <- "REG"
-    tradables_set <- "TRAD_COMM"
-  } else if (identical(x = database_version, y = "v11")) {
-    endowment_set <- "ENDW"
-    region_set <- "REG"
-    tradables_set <- "COMM"
-  }
-
-  ls_set_ele <- rlang::try_fetch(purrr::map2(
-    .x = mappings,
-    .y = names(x = mappings),
-    .f = function(mapping, mapping_name)
-    {
-      if (identical(x = tolower(x = tools::file_ext(x = mapping)), y = "csv")) {
-        .check_input(file = mapping,
-                     valid_ext = "csv",
-                     call = call)
-        if (identical(x = mapping_name, y = "endowment_mapping")) {
-          map <- .read_set_ele(file = mapping,
-                               col = 2,
-                               set_name = mappings[["endowment_mapping"]])
-        } else if (identical(x = mapping_name, y = "region_mapping")) {
-          map <- .read_set_ele(file = mapping,
-                               col = 2,
-                               set_name = mappings[["region_mapping"]])
-        } else if (identical(x = mapping_name, y = "sector_mapping")) {
-          map <- .read_set_ele(file = mapping,
-                               col = 2,
-                               set_name = mappings[["sector_mapping"]])
-        }
+  ls_set_ele <- purrr::map2(
+    .x = set_mappings,
+    .y = names(x = set_mappings),
+    .f = function(set_map, map_name) {
+      if (identical(x = tolower(x = tools::file_ext(x = set_map)), y = "csv")) {
+        set_map <- .check_input(
+          file = set_map,
+          valid_ext = "csv",
+          call = call,
+          internal = FALSE
+        )
+        set_ele <- .check_external_set_map(
+          map_name = map_name,
+          metadata = metadata,
+          set_map = set_map,
+          call = call
+        )
       } else {
-        if (identical(x = mapping_name, y = "endowment_mapping")) {
-          .check_internal_set_mapping(set = endowment_set,
-                                      database_version = database_version,
-                                      mapping = mapping,
-                                      call = call)
-        } else if (identical(x = mapping_name, y = "region_mapping")) {
-          .check_internal_set_mapping(set = region_set,
-                                      database_version = database_version,
-                                      mapping = mapping,
-                                      call = call)
-        } else if (identical(x = mapping_name, y = "sector_mapping")) {
-          .check_internal_set_mapping(set = tradables_set,
-                                      database_version = database_version,
-                                      mapping = mapping,
-                                      call = call)
-        }
+        set_ele <- .check_internal_set_map(
+          map_name = map_name,
+          metadata = metadata,
+          set_map = set_map,
+          call = call
+        )
       }
+      return(set_ele)
     }
-  ))
+  )
+  
   if (!quiet) {
-    with(data = ls_set_ele, expr = {
-      .inform_set_ele(set_ele = endowment_mapping,
-                      set_name = "endowment",
-                      model_set = endowment_set)
-      .inform_set_ele(set_ele = region_mapping,
-                      set_name = "region",
-                      model_set = region_set)
-      .inform_set_ele(set_ele = sector_mapping,
-                      set_name = "sector",
-                      model_set = tradables_set)
-    })
+    cli::cli_h1(text = "Core sets")
+    purrr::map2(
+      .x = names(x = ls_set_ele),
+      .y = ls_set_ele,
+      .f = function(set_name, ele) {
+        ele <- unlist(x = ele)
+        cli::cli_text("{set_name}: {.val {ele}}")
+      }
+    )
   }
-  set_files <- sapply(X = ls_set_ele, FUN = names)
-  r_idx <- match(x = names(x = set_files), table = names(x = args_list))
-  args_list[r_idx] <- set_files
 
-return(args_list)
+  return(ls_set_ele)
 }
-
-
-

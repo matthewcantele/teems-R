@@ -11,8 +11,8 @@
     .l = list(
       sets[["header"]],
       sets[["name"]],
-      sets[["elements"]],
-      sets[["information"]],
+      sets[["mapped_ele"]],
+      sets[["label"]],
       sets[["file"]]
     ),
     .f = function(header, set_name, ele, info, file) {

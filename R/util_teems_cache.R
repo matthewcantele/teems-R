@@ -21,7 +21,11 @@
   } else if (identical(x = ext, y = "csv")) {
     data.table::fwrite(input,
                        file = file_path)
+  } else if (identical(x = ext, y = "qs2")) {
+    qs2::qs_save(object = input,
+                 file = file_path)
   }
 
+  attr(x = file_path, which = "file_ext") <- "qs2"
   return(file_path)
 }

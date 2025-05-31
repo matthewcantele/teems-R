@@ -12,12 +12,12 @@
   if (any(sets[["intertemp"]])) {
     intertemporal <- TRUE
     # eventually remove all targets retrieval commands
-    AYRS <- purrr::pluck(.x = targets::tar_read(
-      name = final.par_tib,
+    YEAR <- purrr::pluck(.x = targets::tar_read(
+      name = final.data_tib,
       store = file.path(model_dir, "store")
-    ), "dt", "AYRS")
-    AYRS[["Value"]] <- AYRS[["Value"]] + metadata[["reference_year"]]
-    CYRS <- AYRS
+    ), "dt", "YEAR")
+    YEAR[["Value"]] <- YEAR[["Value"]] + metadata[["reference_year"]]
+    CYRS <- YEAR
   } else {
     intertemporal <- FALSE
     CYRS <- NULL

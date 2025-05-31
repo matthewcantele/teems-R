@@ -11,7 +11,7 @@
     table = postmodel[["setname"]]
   )
 
-  premodel[["post_ele"]] <- postmodel[["elements"]][r_idx]
+  premodel[["post_ele"]] <- postmodel[["mapped_ele"]][r_idx]
   names(x = premodel[["post_ele"]]) <- premodel[["name"]]
 
   # coerce strings to numeric in post if possible
@@ -29,7 +29,7 @@
 
   # check that the sets and elements parsed from tablo code are identical
   # to the postmodel binary output
-  if (!isTRUE(x = all.equal(target = premodel[["elements"]],
+  if (!isTRUE(x = all.equal(target = premodel[["mapped_ele"]],
                             current = premodel[["post_ele"]]))) {
     .cli_action(
       action = "abort",

@@ -12,7 +12,7 @@
                         !is.element(el = full_var, set = var_omit)
                       })
   }
-  
+
   # check that all variable names from closure are present within the var extract
   if (!all(is.element(el = tolower(x = closure[["var_name"]]), set = tolower(x = var_extract[["name"]])))) {
     var_discrepany <- tolower(x = closure[["var_name"]])[!is.element(
@@ -37,28 +37,28 @@
       if (!is.na(x = ele)) {
         .expand_var(
           set_names = .convert_var(concatenated_data = ele),
-          set_elements = sets[["elements"]],
+          set_elements = sets[["mapped_ele"]],
           sorted = FALSE
         )
       } else if (!is.na(x = mixed)) {
         # mixed qo(ENDWNC_COMM,"asa",alltime)
         .expand_var(
           set_names = .convert_var(concatenated_data = mixed),
-          set_elements = sets[["elements"]],
+          set_elements = sets[["mapped_ele"]],
           sorted = FALSE
         )
       } else if (!is.na(x = subsets)) {
         # partial var via subsets (e.g., qo(ENDWNC_COMM,REG,alltime))
         .expand_var(
           set_names = .convert_var(concatenated_data = subsets),
-          set_elements = sets[["elements"]],
+          set_elements = sets[["mapped_ele"]],
           sorted = FALSE
         )
       } else if (!is.na(x = full)) {
         # full var: afall
         .expand_var(
           var_names = full,
-          set_elements = sets[["elements"]],
+          set_elements = sets[["mapped_ele"]],
           var_extract = var_extract,
           sorted = FALSE
         )

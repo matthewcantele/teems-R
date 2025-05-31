@@ -5,8 +5,6 @@
 #' @noRd
 .shock_control <- function(shock,
                            shock_file,
-                           var_extract,
-                           metadata,
                            ndigits,
                            write_dir) {
   if (!is.null(x = shock_file)) {
@@ -31,7 +29,7 @@
       name = "prepped.shocks",
       command = expression(.shock_prep(
         shocks = shocks,
-        var_extract = !!var_extract,
+        var_extract = !!var_extract
       )),
       cue = targets::tar_cue(mode = "always")
     ))
@@ -41,10 +39,10 @@
       command = expression(.shock_construct(
         shock_list = prepped.shocks,
         closure = swapped.out.cls,
-        var_extract = !!var_extract,
+        var_extract = tab_comp[["var_extract"]],
         sets = final.set_tib,
         param = final.par_tib,
-        reference_year = !!metadata[["reference_year"]]
+        reference_year = metadata[["reference_year"]]
       )),
       cue = targets::tar_cue(mode = "always")
     ))

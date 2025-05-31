@@ -1,5 +1,5 @@
 #' @importFrom purrr map
-#' 
+#'
 #' @keywords internal
 #' @noRd
 .tablo_sets <- function(tab_extract,
@@ -31,9 +31,11 @@
   valid_qual <- c("(intertemporal)", "(non_intertemporal)")
   if (!any(is.element(el = tolower(x = sets[["qualifier"]]), set = valid_qual))) {
     invalid_qual <- sets[["qualifier"]][!is.element(el = tolower(x = sets[["qualifier"]]), set = valid_qual)]
-    .cli_action(msg = "Invalid set qualifier detected: {.val {invalid_qual}}.",
-                action = "abort",
-                call = call)
+    .cli_action(
+      msg = "Invalid set qualifier detected: {.val {invalid_qual}}.",
+      action = "abort",
+      call = call
+    )
   }
 
   # clear qualifier from remainder
@@ -56,18 +58,23 @@
   )
 
   # get descriptive info
-  sets[["information"]] <- paste0(
-    "#",
-    .get_element(input = sets[["remainder"]], split = "#", index = 2, fixed = TRUE),
-    "#"
-  )
-
-  # clear information from remainder
+  sets[["label"]] <- trimws(x = .get_element(
+    input = sets[["remainder"]],
+    split = "#",
+    index = 2,
+    fixed = TRUE
+  ))
+  # clear label from remainder
   sets[["remainder"]] <- .advance_remainder(
     remainder = sets[["remainder"]],
-    pattern = sets[["information"]]
+    pattern = sets[["label"]]
   )
 
+  sets[["remainder"]] <- trimws(x = gsub(
+    pattern = "#",
+    replacement = "",
+    x = sets[["remainder"]]
+  ))
   # maximum size if present (note that this feature does not appear to have any interaction with our solver)
   sets[["max_size"]] <- unlist(x = ifelse(
     test = grepl(
@@ -145,25 +152,33 @@
   )
 
   if (any(!is.element(el = "", set = sets[["remainder"]]))) {
-    .cli_action(msg = "Remnant set information detected during Tablo parsing.",
-                action = "abort",
-                call = call)
+    .cli_action(
+      msg = "Remnant set label detected during Tablo parsing.",
+      action = "abort",
+      call = call
+    )
   } else {
     sets <- subset(x = sets, select = -remainder)
   }
 
   # check for incompatible Tablo statements
-  if (any(sapply(sets[["definition"]],
-                 function(entry) {
-                   sum(grepl(pattern = "\\+",
-                             x = unlist(x = strsplit(x = entry, "")))) >= 2
-                 }))) {
-    .cli_action(msg = c("Multiple {.val +} and/or {.val -} were detected within 
-                a single Tablo Set statement.", "For compatibility, split into 
-                multiple statements:\nInstead of A123=A1+A2+A3, A12=A1+A2 then 
+  if (any(sapply(
+    sets[["definition"]],
+    function(entry) {
+      sum(grepl(
+        pattern = "\\+",
+        x = unlist(x = strsplit(x = entry, ""))
+      )) >= 2
+    }
+  ))) {
+    .cli_action(
+      msg = c("Multiple {.val +} and/or {.val -} were detected within
+                a single Tablo Set statement.", "For compatibility, split into
+                multiple statements:\nInstead of A123=A1+A2+A3, A12=A1+A2 then
                 A123=A12+A3"),
-                action = c("abort", "inform"),
-                call = call)
+      action = c("abort", "inform"),
+      call = call
+    )
   }
 
   lapply(sets[["definition"]], function(entry) {
@@ -174,22 +189,30 @@
         ignore.case = TRUE
       ))) {
         if (grepl(pattern = "=", x = entry)) {
-          .cli_action(msg = c("It appears that one set has been defined as 
-                              identical to a second set (e.g., Set SET_B 
-                              # example set B # = SET_A;).", "If duplicate sets 
-                              are desired, multiple Read statements should be 
-                              implemented (e.g., Set SET_A # example set A # 
-                              maximum size 5 read elements from file GTAPSETS 
-                              header \"H2\";Set SET_B # example set B # 
-                              maximum size 5 read elements from file GTAPSETS 
+          .cli_action(
+            msg = c("It appears that one set has been defined as
+                              identical to a second set (e.g., Set SET_B
+                              # example set B # = SET_A;).", "If duplicate sets
+                              are desired, multiple Read statements should be
+                              implemented (e.g., Set SET_A # example set A #
+                              maximum size 5 read elements from file GTAPSETS
+                              header \"H2\";Set SET_B # example set B #
+                              maximum size 5 read elements from file GTAPSETS
                               header \"H2\";)"),
-                      action = c("abort", "inform"),
-                      call = call)
+            action = c("abort", "inform"),
+            call = call
+          )
         }
       }
     }
   })
-
+  
+  # remove "=,),(" from definitions
+  sets[["definition"]] <- trimws(x = gsub(pattern = "\\(|=|\\)", replacement = "", x = sets[["definition"]]))
+  sets[["definition"]] <- ifelse(test = grepl(pattern = ",", sets[["definition"]]),
+                                 yes = strsplit(x = sets[["definition"]], split = ","),
+                                 no = sets[["definition"]])
+  sets[["definition"]] <- lapply(X = sets[["definition"]], FUN = trimws)
   sets[["intertemporal"]] <- is.element(el = sets[["qualifier"]], set = "(intertemporal)")
   sets[["data_type"]] <- "set"
   # other checks should include
@@ -208,9 +231,11 @@
   )
 
   if (any(grepl(pattern = "\\(by numbers\\)", subsets[["remainder"]]))) {
-    .cli_action(msg = "Subset '(by numbers)' argument not supported.",
-                action = "abort",
-                call = call)
+    .cli_action(
+      msg = "Subset '(by numbers)' argument not supported.",
+      action = "abort",
+      call = call
+    )
   }
 
   subsets[["subset"]] <- trimws(x = purrr::map(sapply(
@@ -227,8 +252,10 @@
 
   subsets <- subset(x = subsets, select = -remainder)
 
-  set_info <- list(sets = sets,
-                   subsets = subsets)
+  set_info <- list(
+    sets = sets,
+    subsets = subsets
+  )
 
   return(set_info)
 }

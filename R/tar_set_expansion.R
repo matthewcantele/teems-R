@@ -3,26 +3,26 @@
 #' @keywords internal
 #' @noRd
 .expand_sets <- function(sets,
-                         time_steps,
+                         n_timestep,
                          set_extract) {
-
-  if (!is.null(x = time_steps)) {
-    time_sets <- set_extract[set_extract[["intertemporal"]], ]
-    int_sets <- .fill_time_sets(time_steps = time_steps,
-                                time_sets = time_sets)
+  if (!is.na(x = n_timestep)) {
+    int_sets <- subset(x = set_extract, subset = intertemporal)
+    n_timestep_coeff <- attr(x = n_timestep, which = "n_timestep_coeff")
+    int_sets <- .fill_time_sets(n_timestep = n_timestep,
+                                n_timestep_coeff = n_timestep_coeff,
+                                int_sets = int_sets)
     sets <- rbind(sets, int_sets)
   }
 
-  # remove "=,),(" from definitions
-  set_extract[["definition"]] <- trimws(x = gsub(pattern = "\\(|=|\\)", replacement = "", x = set_extract[["definition"]]))
+  r_idx <- ifelse(test = is.element(el = set_extract[["header"]],
+                                    set = sets[["header"]]),
+                  yes = match(table = sets[["header"]], x = set_extract[["header"]]),
+                  no = ifelse(test = is.element(el = set_extract[["name"]],
+                                                set = sets[["header"]]),
+                              yes = match(table = sets[["header"]], x = set_extract[["name"]]),
+                              no = NA))
 
-  set_extract[["definition"]] <- ifelse(test = grepl(pattern = ",", set_extract[["definition"]]),
-                                        yes = strsplit(x = set_extract[["definition"]], split = ","),
-                                        no = set_extract[["definition"]])
-
-  # bring data from read-in sets over
-  r_idx <- match(x = set_extract[["name"]], table = sets[["set_name"]])
-  set_extract[["elements"]] <- lapply(X = sets[["dt"]], FUN = function(d) {
+  set_extract[["full_ele"]] <- lapply(X = sets[["dt"]], FUN = function(d) {
     d[[1]]
   })[r_idx]
 
@@ -44,13 +44,13 @@
     )
 
   # sort sets that will be sorted (note explicitly defined sets not sorted)
-  set_extract[["elements"]] <- sapply(X = set_extract[["elements"]], FUN = sort)
+  set_extract[["full_ele"]] <- sapply(X = set_extract[["full_ele"]], FUN = sort)
 
   # sets that are explicitly defined within the tab file
   # non_intertemporal sets tolower
-  set_extract[["elements"]] <- purrr::pmap(
+  set_extract[["full_ele"]] <- purrr::pmap(
     .l = list(
-      set_extract[["elements"]],
+      set_extract[["full_ele"]],
       set_extract[["operator"]],
       set_extract[["definition"]],
       set_extract[["qualifier"]]
@@ -59,11 +59,7 @@
       if (is.null(x = ele) && is.na(x = op)) {
         trimws(x = tolower(x = def))
       } else {
-        if (identical(x = qual, y = "(non_intertemporal)")) {
-          tolower(x = ele)
-        } else {
-          return(ele)
-        }
+        return(ele)
       }
     }
   )
@@ -105,47 +101,46 @@
     NA
   )
 
-  names(x = set_extract[["elements"]]) <- set_extract[["name"]]
+  names(x = set_extract[["full_ele"]]) <- set_extract[["name"]]
 
   # complicated while loop here to generate sets based on set formulas iteratively
+  # counter here for exit after x num loops
   # until all sets are reconstructed
-  while (any(sapply(X = set_extract[["elements"]], FUN = identical, character(0)))) {
-    set_extract[["elements"]] <- purrr::pmap(
+  counter <- 0
+  while (any(sapply(X = set_extract[["full_ele"]], FUN = is.null))) {
+    counter <- counter + 1
+    if (counter > 20) {
+      stop("Get dev to fix while loop in set expansion.")
+    }
+    set_extract[["full_ele"]] <- purrr::pmap(
       .l = list(
         set_extract[["operator"]],
         set_extract[["comp1"]],
         set_extract[["comp2"]],
-        set_extract[["elements"]]
+        set_extract[["full_ele"]]
       ),
       .f = function(op, c1, c2, ele) {
-        if (!is.na(x = op) && identical(x = ele, y = character(0))) {
-          if (!identical(x = with(data = set_extract[["elements"]], expr = get(x = c1)), y = character(0)) &&
-            !identical(x = with(data = set_extract[["elements"]], expr = get(x = c2)), y = character(0))) {
-            with(data = set_extract[["elements"]], expr = eval(expr = parse(text = paste0(op, "(", c1, ",", c2, ")"))))
+        if (!is.na(x = op) && is.null(x = ele)) {
+          x <- with(data = set_extract[["full_ele"]], expr = get(x = c1))
+          y <- with(data = set_extract[["full_ele"]], expr = get(x = c2))
+          if (!any(is.null(x = x), is.null(x = y))) {
+            ele <- do.call(what = op, args = list(x, y))
           } else {
-            ele
+            return(NULL)
           }
         } else {
-          ele
+          return(ele)
         }
       }
     )
-    names(x = set_extract[["elements"]]) <- set_extract[["name"]]
+    names(x = set_extract[["full_ele"]]) <- set_extract[["name"]]
   }
-
-  # post model sets all lowercase
-  set_extract[["name"]] <- tolower(x = set_extract[["name"]])
-
   # check whether any sets were not able to be constructed
-  if (any(sapply(X = set_extract[["elements"]], FUN = function(e) {
+  if (any(sapply(X = set_extract[["full_ele"]], FUN = function(e) {
     any(is.na(x = e))
   }))) {
     stop("Set construction of dependent (not read-in) sets was not possible")
   }
-
-  # bind non-int set mapping to a single object
-  r_idx <- match(x = set_extract[["header"]], table = sets[["header"]])
-  set_extract[["full_sets"]] <- sets[["full_sets"]][r_idx]
-
+  
   return(set_extract)
 }

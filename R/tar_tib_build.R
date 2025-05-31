@@ -1,120 +1,112 @@
 #' @importFrom tibble as_tibble
-#' @importFrom data.table rbindlist setkey
+#' @importFrom data.table as.data.table setnames setDT rbindlist setkey
 #' 
 #' @keywords internal
 #' @noRd
-.build_tibble <- function(ls_data,
-                          preagg_header_replace,
-                          comp_extract) {
+.build_tibble <- function(ls_array,
+                          is_set_array = FALSE,
+                          set_extract,
+                          unaggregated_input = NULL,
+                          coeff_extract = NULL) {
 
-  data_type <- attr(x = ls_data, which = "data_type")
+  # create list of data.tables from arrays
+  if (any(set_extract[["intertemporal"]])) {
+    int_sets <- subset(x = set_extract,
+                       subset = intertemporal,
+                       select = name)[[1]]
+  } else {
+    int_sets <- NA
+  }
+  
+  ls_array <- lapply(X = ls_array, FUN = function(header) {
+    dim_length <- length(x = dimnames(x = header[["data"]]))
+    # set file
+    if (identical(x = dim_length, y = 0L)) {
+      header[["dt"]] <- data.table::as.data.table(x = as.matrix(x = header[["data"]]))
+      if (!is_set_array) {
+        data.table::setnames(x = header[["dt"]], new = "Value")
+      } else {
+        data.table::setnames(x = header[["dt"]], new = header[["header"]])
+      }
+    } else {
+      header[["dt"]] <- array2DF(x = header[["data"]])
+      stnd_col <- substr(x = colnames(header[["dt"]]), start = 1, stop = nchar(colnames(header[["dt"]])) - 1)
+      if (!isTRUE(x = is.na(x = int_sets))) {
+      if (any(is.element(el = stnd_col, set = int_sets))) {
+        int_col <- colnames(header[["dt"]])[is.element(el = stnd_col, set = int_sets)]
+        header[["dt"]][[int_col]] <- as.integer(x = header[["dt"]][[int_col]])
+      }
+      }
+      data.table::setDT(x = header[["dt"]])
+    } 
+    return(header)
+  })
 
   # header_replace if != NULL
-  if (!is.null(x = preagg_header_replace)) {
-    for (header in seq_along(preagg_header_replace)) {
-      new_header <- preagg_header_replace[header]
-      header_name <- names(x = new_header)
+  if (!is.null(x = unaggregated_input)) {
+    ls_array <- .inject_unagg_input(ls_data = ls_array,
+                                    unaggregated_input = unaggregated_input)
 
-      if (!rlang::is_integerish(x = new_header)) {
-        # check that file exists
-        if (!file.exists(new_header)) {
-          stop(paste(
-            "File with header replacement data for header:",
-            header_name,
-            "not found."
-          ))
-        }
-
-        # load file
-        new_header_data <- data.table::fread(input = new_header)
-
-        if (!is.element(el = "Value", set = colnames(x = new_header_data))) {
-          stop(paste(
-            dQuote(x = "Value"),
-            "column missing from the pre-agg header:",
-            header_name
-          ))
-        }
-
-        # load data to be replaced
-        old_header_data <- purrr::pluck(.x = ls_data, header_name, "dt")
-
-        # check that datasets are equal
-        if (!isTRUE(x = all.equal(
-          current = old_header_data[, !"Value"],
-          target = new_header_data[, !"Value"],
-          ignore.row.order = TRUE,
-          ignore.col.order = TRUE
-        ))) {
-          stop(paste(
-            "One or more columns and/or rows in the new pre-agg header data for:",
-            header_name,
-            "is inconsistent or missing."
-          ))
-        }
-
-        # replace data
-        purrr::pluck(.x = ls_data, header_name, "dt") <- new_header_data
-      } else {
-        purrr::pluck(.x = ls_data, header_name, "dt", "Value") <- new_header
-      }
-    }
   }
-
+  
   # create and write out metadata file
-  metadata <- data.table::rbindlist(l = lapply(X = ls_data, FUN = function(header) {
-    if (!identical(x = data_type, y = "set")) {
-      list(
-        header = header[["header_name"]],
-        information = header[["information"]],
-        coeff = header[["coefficient"]],
-        type = header[["type"]],
-        aggregate = header[["aggregate"]]
-      )
-    } else {
-      list(
-        header = header[["header_name"]],
-        information = header[["information"]],
-        type = header[["type"]],
-        aggregate = header[["aggregate"]]
-      )
-    }
+  # if arrays are desired this is where they enter
+  metadata <- data.table::rbindlist(l = lapply(X = ls_array, FUN = function(header) {
+    list(
+      header = header[["header"]],
+      label = header[["label"]],
+      coefficient = header[["coefficient"]]
+    )
   }))
 
   # convert to tibble
   tib_data <- tibble::as_tibble(x = metadata)
 
-  # add attributes
-  attr(x = tib_data, which = "data_type") <- data_type
+  # add write to file here
+  if (!is_set_array) {
+    r_idx <- match(x = tib_data[["header"]], table = coeff_extract[["header"]])
+    tib_data[["file"]] <- coeff_extract[["file"]][r_idx]
+    tib_data[["data_type"]] <- ifelse(test = grepl(pattern = "parameter",
+                                                   x = coeff_extract[["qualifier_list"]][r_idx]),
+                                      yes = "par",
+                                      no = ifelse(test = is.element(el = tib_data[["header"]],
+                                                                    set = coeff_extract[["header"]]),
+                                                  yes = "dat",
+                                                  no = NA))
+    tib_data[["type"]] <- ifelse(test = grepl(pattern = "integer",
+                                              x = coeff_extract[["qualifier_list"]][r_idx]),
+                                      yes = "integer",
+                                      no = ifelse(test = is.element(el = tib_data[["header"]],
+                                                                    set = coeff_extract[["header"]]),
+                                                  yes = "real",
+                                                  no = NA))
+  } else {
+    r_idx <- match(x = tib_data[["header"]], table = set_extract[["header"]])
+    tib_data[["file"]] <- set_extract[["file"]][r_idx]
+    tib_data[["data_type"]] <- "set"
+    tib_data[["type"]] <- "character"
+  }
 
   # join metadata with data (match unnecessary but to be safe...)
-  r_idx <- match(x = names(x = ls_data), table = tib_data[["header"]])
-
+  r_idx <- match(x = names(x = ls_array), table = tib_data[["header"]])
+  
   # check metadata/data match
   if (any(is.na(x = r_idx))) {
     stop("NA found in match between metadata and data")
   }
 
-  # add write to file here
-  r_idx <- match(x = tib_data[["header"]], table = comp_extract[["header"]])
-  tib_data[["input_file"]] <- comp_extract[["file"]][r_idx]
-
-  tib_data[["dt"]] <- lapply(X = ls_data, FUN = function(d) {
+  tib_data[["dt"]] <- lapply(X = ls_array, FUN = function(d) {
     d[["dt"]]
-  })
+  })[r_idx]
 
   # check for mismatches
-  if (!all(is.element(
-    el = names(x = tib_data[["dt"]]),
-    set = tib_data[["header"]]
-  ))) {
+  if (!all(is.element(el = names(x = tib_data[["dt"]]),set = tib_data[["header"]]))) {
     stop("Name mismatch after metadata/data merge")
   }
 
   # names for later
-  names(x = tib_data[["information"]]) <- tib_data[["header"]]
+  names(x = tib_data[["label"]]) <- tib_data[["header"]]
   names(x = tib_data[["type"]]) <- tib_data[["header"]]
-  names(x = tib_data[["aggregate"]]) <- tib_data[["header"]]
 
   # sort data
   lapply(X = tib_data[["dt"]], FUN = data.table::setkey)

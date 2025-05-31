@@ -95,7 +95,6 @@
 #' @export
 teems_model <- function(tab_file,
                         var_omit = NULL,
-                        model_version = NULL,
                         ndigits = 6L,
                         full_exclude = c("DREL", "DVER", "XXCR", "XXCD", "XXCP", "SLUG", "EFLG"),
                         notes = NULL,
@@ -107,10 +106,9 @@ args_list <- .validate_model_args(args_list = args_list,
                                   call = call,
                                   quiet = quiet)
 tab_comp <- .process_tablo(tab_file = args_list[["tab_file"]],
-                           model_version = model_version,
                            var_omit = args_list[["var_omit"]],
                            call = call,
                            quiet = quiet)
-config <- c(args_list, tab_comp, call = call)
+config <- c(args_list, call = call)
 config
 }

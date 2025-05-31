@@ -130,13 +130,11 @@
 File
     GTAPSETS # file with set specification #;
 File
-    GTAPDATA # file containing all base data #;
+    GTAPDATA # file containing all standard coefficient base data #;
 File
     GTAPPARM # file containing behavioral parameters #;
 File
-    INTDATA # file containing the number time steps and associated intervals #;
-File
-    INTPARM # file containing intertemporal-specific parameters #;
+    GTAPINT # file containing GTAP-INT intertemporal-specific coefficients #;
 
 
 !<
@@ -190,13 +188,12 @@ Subset
 Set
     NMRG_COMM # non-margin commodities # = TRAD_COMM - MARG_COMM;
 Set
-    CGDS_COMM # capital goods commodities #
-    maximum size 1 read elements from file GTAPSETS header "H9";
+    CGDS_COMM # capital goods commodities # (zcgds);
 Set
     ENDW_COMM # endowment commodities #
     maximum size 5 read elements from file GTAPSETS header "H6";
 Set
-    PROD_COMM # produced commodities # = TRAD_COMM union CGDS_COMM;
+    PROD_COMM # produced commodities # = TRAD_COMM + CGDS_COMM;
 Set
     DEMD_COMM # demanded commodities # = ENDW_COMM union TRAD_COMM;
 Set
@@ -235,18 +232,6 @@ Formula
 Assertion (initial)
     SIZE_PROD = SIZE_TRAD + SIZE_CGDS;
 
-!<
-    The sluggish endowments are now defined dynamically, based on the variable
-    SLUG.  SLUG is a binary variable that is zero for mobile endowments and
-    one for sluggish endowments.  We must define and read in this variable
-    before proceeding further.
->!
-
-!Coefficient (integer,parameter) (all,i,ENDW_COMM)
-    SLUG(i) # sluggish primary factor endowments #;
-Read
-    SLUG from file GTAPPARM header "SLUG";!
-
 Set
     ENDWS_COMM
     # sluggish endowment commodities # (land, natlres);
@@ -270,34 +255,32 @@ Subset
     Time
 >!
 
-
 Coefficient (integer)
-    NINTERVAL # Number of time-steps #;
+    NTIMESTEPS # Number of time-steps #;
 
 Read
-    NINTERVAL from file INTDATA header "NTSP";
-
+    NTIMESTEPS from file GTAPINT header "NTSP";
 
 Set (intertemporal)
-    ALLTIME # All time steps # maximum size 51 (P[0] - P[NINTERVAL-1]);
+    ALLTIME # All time steps # maximum size 51 (P[0] - P[NTIMESTEPS-1]);
 
 Coefficient (parameter)(all,t,ALLTIME)
     YEAR(t) # Actual number of years #;
 
 Read
-    YEAR from file INTDATA header "AYRS";
+    YEAR from file GTAPINT header "YEAR";
 
 Set (intertemporal)
     INITIME # Initial time step # size 1 (P[0]);
 
 Set (intertemporal)
-    ENDTIME # End time step # size 1 (P[NINTERVAL-1]);
+    ENDTIME # End time step # size 1 (P[NTIMESTEPS-1]);
 
 Set (intertemporal)
-    FWDTIME # All time steps except ENDTIME # maximum size 50 (P[0] - P[NINTERVAL-2]);
+    FWDTIME # All time steps except ENDTIME # maximum size 50 (P[0] - P[NTIMESTEPS-2]);
 
 Set (intertemporal)
-    FTRTIME # All time steps except INITIME # maximum size 200 (P[1]-P[NINTERVAL-1]);
+    FTRTIME # All time steps except INITIME # maximum size 200 (P[1]-P[NTIMESTEPS-1]);
 
 Subset INITIME is subset of ALLTIME ;
 Subset ENDTIME is subset of ALLTIME ;
@@ -4163,22 +4146,22 @@ are not 1 then shock them to 1 to get the baseline scenario!
 Coefficient (integer,parameter)
     INIDELTA # binary coefficient to switch mechanism of initial condition #;
 Read
-    INIDELTA from file INTPARM header "INID";
+    INIDELTA from file GTAPINT header "INID";
 
 Coefficient (parameter)(all,r,REG)(all,t,ALLTIME)
     CPHI(r,t) # investment parameter #;
 Read
-    CPHI from file INTPARM header "CPHI";
+    CPHI from file GTAPINT header "CPHI";
 
 Coefficient (parameter)(all,r,REG)(all,t,ALLTIME)
     KAPPA(r,t) # depreciation rate #;
 Read
-    KAPPA from file INTPARM header "KAPP";
+    KAPPA from file GTAPINT header "KAPP";
 
 Coefficient (all,t,ALLTIME)
     LRORG(t) # value of global interest rate #;
 Read
-    LRORG from file INTPARM header "IRAT";
+    LRORG from file GTAPINT header "IRAT";
 
 Formula (all,r,REG)(all,t,ALLTIME)
     LINVPRC(r,t) = 1; !Normalised value of ps("zcgds",r,t)!
@@ -4193,27 +4176,27 @@ Formula (initial)(all,r,REG)(all,t,ALLTIME)
     LCAPPRC(r,t) = INIDELTA * [VMU(r,t) * (LRORG(t) + KAPPA(r,t)) - CPHI(r,t) * KAPPA(r,t)^2 / 2 * LINVPRC(r,t)]
                     + [1 - INIDELTA] * EVOA("capital",r,t) / VKB(r,t);
 Formula (all,r,REG)(all,t,FWDTIME)
-    MUSUM(r,t) = VMU(r,t) * ((LRORG(t) + KAPPA(r,t)) * (Year(t+1) - Year(t)) + 1)
-                 - CPHI(r,t) * [VCAPINCR(r,t) / VKB(r,t)]^2 / 2 * LINVPRC(r,t) * (Year(t+1) - Year(t))
-                 - LCAPPRC(r,t) * (Year(t+1) - Year(t));
+    MUSUM(r,t) = VMU(r,t) * ((LRORG(t) + KAPPA(r,t)) * (YEAR(t+1) - YEAR(t)) + 1)
+                 - CPHI(r,t) * [VCAPINCR(r,t) / VKB(r,t)]^2 / 2 * LINVPRC(r,t) * (YEAR(t+1) - YEAR(t))
+                 - LCAPPRC(r,t) * (YEAR(t+1) - YEAR(t));
 Formula (all,r,REG)(all,t,ENDTIME)
-    MUSUM(r,t) = VMU(r,t) * ((LRORG(t) + KAPPA(r,t)) * (Year(t) - Year(t-1)) + 1)
-                 - CPHI(r,t) * [VCAPINCR(r,t) / VKB(r,t)]^2 / 2 * LINVPRC(r,t) * (Year(t) - Year(t-1))
-                 - LCAPPRC(r,t) * (Year(t) - Year(t-1));
+    MUSUM(r,t) = VMU(r,t) * ((LRORG(t) + KAPPA(r,t)) * (YEAR(t) - YEAR(t-1)) + 1)
+                 - CPHI(r,t) * [VCAPINCR(r,t) / VKB(r,t)]^2 / 2 * LINVPRC(r,t) * (YEAR(t) - YEAR(t-1))
+                 - LCAPPRC(r,t) * (YEAR(t) - YEAR(t-1));
 Formula (all,r,REG)(all,t,FWDTIME)
-    MUSHR(r,t) = VMU(r,t) * ((LRORG(t) + KAPPA(r,t)) * (Year(t+1) - Year(t)) + 1) / MUSUM(r,t);
+    MUSHR(r,t) = VMU(r,t) * ((LRORG(t) + KAPPA(r,t)) * (YEAR(t+1) - YEAR(t)) + 1) / MUSUM(r,t);
 Formula (all,r,REG)(all,t,ENDTIME)
-    MUSHR(r,t) = VMU(r,t) * ((LRORG(t) + KAPPA(r,t)) * (Year(t) - Year(t-1)) + 1) / MUSUM(r,t);
+    MUSHR(r,t) = VMU(r,t) * ((LRORG(t) + KAPPA(r,t)) * (YEAR(t) - YEAR(t-1)) + 1) / MUSUM(r,t);
 Formula (all,r,REG)(all,t,FWDTIME)
-    PCAPSHR(r,t) = -LCAPPRC(r,t) * (Year(t+1) - Year(t)) / MUSUM(r,t);
+    PCAPSHR(r,t) = -LCAPPRC(r,t) * (YEAR(t+1) - YEAR(t)) / MUSUM(r,t);
 Formula (all,r,REG)(all,t,ENDTIME)
-    PCAPSHR(r,t) = -LCAPPRC(r,t) * (Year(t) - Year(t-1)) / MUSUM(r,t);
+    PCAPSHR(r,t) = -LCAPPRC(r,t) * (YEAR(t) - YEAR(t-1)) / MUSUM(r,t);
 Formula (all,r,REG)(all,t,FWDTIME)
-    CAPISHR(r,t) = [(Year(t+1) - Year(t)) * VCAPINCR(r,t)]
-                   / [(Year(t+1) - Year(t)) * VCAPINCR(r,t) + (1 - KAPPA(r,t) * (Year(t+1) - Year(t))) * VKB(r,t)];
+    CAPISHR(r,t) = [(YEAR(t+1) - YEAR(t)) * VCAPINCR(r,t)]
+                   / [(YEAR(t+1) - YEAR(t)) * VCAPINCR(r,t) + (1 - KAPPA(r,t) * (YEAR(t+1) - YEAR(t))) * VKB(r,t)];
 Formula (initial)(all,r,REG)(all,t,FWDTIME)
     LCAPHAT(r,t) = VKB(r,t+1)
-                   / [(VCAPINCR(r,t) - KAPPA(r,t) * VKB(r,t)) * (Year(t+1) - Year(t)) + VKB(r,t)];
+                   / [(VCAPINCR(r,t) - KAPPA(r,t) * VKB(r,t)) * (YEAR(t+1) - YEAR(t)) + VKB(r,t)];
 Formula (initial)(all,r,REG)(all,t,FWDTIME)
     LMUHAT(r,t) = VMU(r,t+1) / MUSUM(r,t);
 Formula (initial)(all,r,REG)(all,t,ENDTIME)
@@ -4259,16 +4242,16 @@ Equation E_capdot
 Equation E_mu
 # mu motion equation #
 (all,r,REG)(all,t,FWDTIME)
-    mu(r,t+1) = MUSHR(r,t) * [mu(r,t) + LRORG(t) * (Year(t+1) - Year(t))
-                              / ((LRORG(t) + KAPPA(r,t)) * (Year(t+1) - Year(t)) + 1) * rorg(t)]
+    mu(r,t+1) = MUSHR(r,t) * [mu(r,t) + LRORG(t) * (YEAR(t+1) - YEAR(t))
+                              / ((LRORG(t) + KAPPA(r,t)) * (YEAR(t+1) - YEAR(t)) + 1) * rorg(t)]
                + [1 - MUSHR(r,t) - PCAPSHR(r,t)] * [ps("zcgds",r,t) + 2 * capincr(r,t) - 2 * capital(r,t)]
                + PCAPSHR(r,t) * ps("capital",r,t) + delmu(r,t);
 
 Equation E_mu_end
 # ENDTIME mu #
 (all,r,REG)(all,t,ENDTIME)
-    mu(r,t) = MUSHR(r,t) * [mu(r,t) + LRORG(t) * (Year(t) - Year(t-1))
-                            / ((LRORG(t) + KAPPA(r,t)) * (Year(t) - Year(t-1)) + 1) * rorg(t)]
+    mu(r,t) = MUSHR(r,t) * [mu(r,t) + LRORG(t) * (YEAR(t) - YEAR(t-1))
+                            / ((LRORG(t) + KAPPA(r,t)) * (YEAR(t) - YEAR(t-1)) + 1) * rorg(t)]
               + [1 - MUSHR(r,t) - PCAPSHR(r,t)] * [ps("zcgds",r,t) + 2 * capincr(r,t) - 2 * capital(r,t)]
               + PCAPSHR(r,t) * ps("capital",r,t) + delmu(r,t);
 
@@ -4278,3 +4261,5 @@ Equation E_mu_end
     END OF GTAP.TAB FILE
     =====================
 >!
+
+

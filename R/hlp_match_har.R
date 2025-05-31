@@ -3,9 +3,9 @@
 .har_match <- function(con) {
   file_name <- basename(con)
   data_type <- switch(file_name,
-                      "gddat.har" = "base",
-                      "gsddat.har" = "base",
-                      "gsdfdat.har" = "base",
+                      "gddat.har" = "dat",
+                      "gsddat.har" = "dat",
+                      "gsdfdat.har" = "dat",
                       "gdpar.har" = "par",
                       "gsdpar.har" = "par",
                       "gsdfpar.har" = "par",

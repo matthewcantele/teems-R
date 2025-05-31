@@ -23,7 +23,7 @@
   data.table::setnames(
     x = files,
     old = "remainder",
-    new = "information"
+    new = "label"
   )
 
   return(files)

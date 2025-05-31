@@ -7,6 +7,7 @@
                               matrix_method,
                               solution_method,
                               steps,
+                              n_timesteps,
                               paths,
                               call) {
 
@@ -27,7 +28,7 @@
                 action = "abort",
                 call = call)
   }
-  
+
   matsol <- switch(
     EXPR = matrix_method,
     "LU" = 0,
@@ -54,14 +55,15 @@
   }
 
   if (identical(x = matrix_method, y = "NDBBD")) {
+    if (is.null(x = n_timesteps)) {
+      .cli_action(msg = "The {.arg n_timesteps} argument is required when using 
+                  the {.val {matrix_method}} method.",
+                  action = "abort",
+                  call = call)
+    }
     nesteddbbd <- 1
-    time_data <- .cmf_retrieve(file = "INTDATA",
-                               cmf_path = cmf_path,
-                               run_dir = run_dir)
-    n_timesteps <- time_data[grep(pattern = "NTSP", x = time_data) + 1]
   } else {
     nesteddbbd <- 0
-    n_timesteps <- NULL
   }
   if (identical(x = solution_method, y = "mod_midpoint")) {
     solmed <- "Mmid"

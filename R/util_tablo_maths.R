@@ -42,7 +42,7 @@
     }
   ))
 
-  maths[["information"]] <- sapply(
+  maths[["label"]] <- sapply(
     X = strsplit(
       x = maths[["remainder"]],
       split = "#"
@@ -59,7 +59,7 @@
   maths[["remainder"]] <- unlist(x = pmap(
     .l = list(
       maths[["remainder"]],
-      maths[["information"]],
+      maths[["label"]],
       maths[["type"]]
     ),
     .f = function(rem, info, t) {

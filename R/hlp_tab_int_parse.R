@@ -1,14 +1,14 @@
 #' @keywords internal
 #' @noRd
 .parse_tab_int <- function(expr,
-                           ninterval) {
+                           n_timestep,
+                           n_timestep_coeff) {
   expr <- gsub(
     pattern = "^\\(|\\)$",
     replacement = "",
     x = expr
   )
   terms <- strsplit(x = expr, split = "-|\\s*-\\s*")[[1]]
-
   .convert_p_term <- function(term) {
     content <- gsub(
       pattern = "P\\[|\\]",
@@ -16,8 +16,8 @@
       x = term
     )
     content <- gsub(
-      pattern = "NINTERVAL",
-      replacement = as.character(x = ninterval),
+      pattern = n_timestep_coeff,
+      replacement = as.character(x = n_timestep),
       x = content
     )
     eval(expr = parse(text = content))
@@ -38,5 +38,6 @@
   } else {
     num_vec <- .convert_p_term(term = expr)
   }
-  return(num_vec)
+  ls_int <- list(num_vec)
+  return(ls_int)
 }

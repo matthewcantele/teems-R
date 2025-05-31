@@ -2,6 +2,7 @@
 #' @noRd
 .shock_prep <- function(shocks,
                         var_extract) {
+  
 
   # length 0 will be returned for at least one element on an unwrapped list
   if (any(is.element(el = 0, set = sapply(X = shocks, FUN = length)))) {

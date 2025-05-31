@@ -24,7 +24,7 @@
       chron_yrs = int[["CYRS"]],
       call = call
     )
-  } else if (is.element(el = type, set = c("coefficient", "basedata"))) {
+  } else if (is.element(el = type, set = c("coefficient", "inputdata"))) {
     output <- .parse_coeff(
       paths = paths[["coeff"]],
       coeff_extract = comp_extract,
@@ -33,8 +33,8 @@
       call = call
     )
     
-    if (identical(x = type, y = "basedata")) {
-      pre_coeff <- targets::tar_read(name = final.base_tib,
+    if (identical(x = type, y = "inputdata")) {
+      pre_coeff <- targets::tar_read(name = final.data_tib,
                                      store = file.path(paths[["model"]],
                                                        "store"))
       reference_year <- qs2::qs_read(file = paths[["metadata"]])[["reference_year"]]
@@ -44,7 +44,8 @@
         sets = sets[["premodel"]],
         coeff_extract = comp_extract,
         reference_year = reference_year,
-        intertemporal = int[["intertemporal"]]
+        intertemporal = int[["intertemporal"]],
+        call = call
       )
     }
   } else if (identical(x = type, y = "set")) {

@@ -20,23 +20,23 @@
                         "header",
                         paste0('"', sets[["name"]], '"'),
                         "longname",
-                        paste0('"', trimws(x = gsub(pattern = "#", replacement = "", x = sets[["information"]])), '"', ";"))
+                        paste0('"', trimws(x = gsub(pattern = "#", replacement = "", x = sets[["label"]])), '"', ";"))
 
   # coefficient writeout
   coeff_writeout <- paste(
     "File",
     "(new)",
-    coeff_extract[["name"]],
+    coeff_extract[["coefficient"]],
     "#",
-    coeff_extract[["name"]],
+    coeff_extract[["coefficient"]],
     "output file #;\nWrite",
-    coeff_extract[["name"]],
+    coeff_extract[["coefficient"]],
     "to file",
-    coeff_extract[["name"]],
+    coeff_extract[["coefficient"]],
     "header",
-    paste0('"', coeff_extract[["name"]], '"'),
+    paste0('"', coeff_extract[["coefficient"]], '"'),
     "longname",
-    paste0('"', trimws(x = gsub(pattern = "#", replacement = "", x = coeff_extract[["information"]])), '"', ";")
+    paste0('"', trimws(x = gsub(pattern = "#", replacement = "", x = coeff_extract[["label"]])), '"', ";")
   )
 
   # here we append still due to potential for more write statements

@@ -9,24 +9,22 @@
     is.element(el = tolower(x = type), set = "variable")
   })
 
-  # check that information is available for each variable and coefficient
+  # check that label is available for each variable and coefficient
   if (any(!grepl("#", var[["remainder"]]))) {
     .cli_action(msg = "One or more variables or coefficients is missing a 
-                label - add # NA # if not descriptive information is 
+                label - add # NA # if not descriptive label is 
                 available.",
                 action = "abort",
                 call = call)
   }
 
-  var[["information"]] <- paste(
-    "#",
-    trimws(x = unlist(x = purrr::map(.x = sapply(
+  var[["label"]] <- trimws(x = unlist(x = purrr::map(.x = sapply(
       X = var[["remainder"]],
-      FUN = strsplit, split = "#"
-    ), 2))),
-    "#"
-  )
-
+      FUN = strsplit,
+      split = "#",
+      USE.NAMES = FALSE
+    ), 2)))
+  
   var[["remainder"]] <- trimws(x = unlist(x = purrr::map(.x = sapply(
     X = var[["remainder"]],
     FUN = strsplit, split = "#"
@@ -152,7 +150,7 @@
 
   data.table::setcolorder(x = var, neworder = c(
     "name",
-    "information",
+    "label",
     "qualifier_list",
     "full_set",
     "mixed_idx",

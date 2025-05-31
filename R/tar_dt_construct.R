@@ -3,7 +3,6 @@
 #' @keywords internal
 #' @noRd
 .construct_dt <- function(ls_array,
-                          metadata,
                           data_type,
                           set_extract = NULL) {
 
@@ -22,7 +21,7 @@
       if (!identical(x = data_type, y = "set")) {
         data.table::setnames(x = header[["dt"]], new = "Value")
       } else if (identical(x = data_type, y = "set")) {
-        data.table::setnames(x = header[["dt"]], new = header[["header_name"]])
+        data.table::setnames(x = header[["dt"]], new = header[["header"]])
       }
     } else {
       header[["dt"]] <- array2DF(x = header[["data"]])

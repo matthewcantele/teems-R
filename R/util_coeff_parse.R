@@ -10,10 +10,9 @@
                          chron_yrs = NULL,
                          call) {
   # check paths
-  if (!all(sapply(X = paths, FUN = file.exists))) {
-    .cli_action(
+  if (!isTRUE(x = all(sapply(X = paths, FUN = file.exists)))) {
+    .cli_action(msg = "Internal error: one or more coefficient file paths does not exist.",
       action = "abort",
-      msg = "One or more coefficient file paths does not exist.",
       call = call
     )
   }
@@ -31,14 +30,15 @@
       dat <- dat[-1]
       # get name
       name <- purrr::pluck(.x = strsplit(x = lead, split = '"'), 1, 2)
-      # get information
-      information <- purrr::pluck(.x = strsplit(x = lead, split = '"'), 1, 4)
+      # get label
+      label <- purrr::pluck(.x = strsplit(x = lead, split = '"'), 1, 4)
       # get dim
+      # so we can change the Real tolower in ha_cgeiof.c
       dim <- as.integer(x = strsplit(x = trimws(x = sapply(
         X = strsplit(x = lead, split = "Real|Integer"), "[[", 1
       )), "\\s")[[1]])
       
-      coeff <- list(name, information, dim, dat)
+      coeff <- list(name, label, dim, dat)
       return(coeff)
     }
   )
@@ -47,8 +47,8 @@
 
   # Create the tibble
   coeff_tib <- tibble::tibble(
-    name = purrr::simplify(.x = transposed[[1]], .type = "character"),
-    information = purrr::simplify(.x = transposed[[2]], .type = "character"),
+    coefficient = purrr::simplify(.x = transposed[[1]], .type = "character"),
+    label = purrr::simplify(.x = transposed[[2]], .type = "character"),
     dim = purrr::simplify(.x = transposed[[3]], .type = "character"),
     ls_data = transposed[[4]]
   )
@@ -56,7 +56,7 @@
   # filter by specified outdata coefficients
   coeff_extract <- subset(x = coeff_extract, subset = {
     is.element(
-      el = name,
+      el = coefficient,
       set = gsub(pattern = ".csv", replacement = "", x = basename(path = paths))
     )
   })
@@ -72,7 +72,8 @@
   }
 
   # bring mixed set names over from the extract
-  r_idx <- match(x = coeff_tib[["name"]], table = coeff_extract[["name"]])
+  r_idx <- match(x = coeff_tib[["coefficient"]],
+                 table = coeff_extract[["coefficient"]])
   coeff_tib[["set_nmes"]] <- coeff_extract[["ls_mixed_idx"]][r_idx]
 
   # if there is a gap in the coefficient declaration like (all, r, REG) we have
@@ -86,10 +87,10 @@
     .f = function(dimen, col_nmes, num_ls) {
       dim_length <- length(x = dimen)
 
-      if (!identical(x = dimen, y = 1L)) {
+      if (!identical(x = col_nmes, y = "null_set")) {
         plain_col <- tolower(x = substring(text = col_nmes, 1, nchar(x = col_nmes) - 1))
         r_idx <- match(x = plain_col, table = sets[["setname"]])
-        setele <- sets[["elements"]][r_idx]
+        setele <- sets[["mapped_ele"]][r_idx]
         if (is.null(x = setele)) {
           .cli_action(
             action = "abort",
@@ -102,7 +103,7 @@
       }
 
       if (identical(x = dim_length, y = 1L)) {
-        if (identical(x = dimen, y = 1L)) {
+        if (identical(x = col_nmes, y = "null_set")) {
           df <- data.frame(Value = num_ls)
         } else {
           df <- data.frame(setele, Value = as.numeric(x = num_ls))
@@ -144,9 +145,9 @@
     }
   )
 
-  names(x = coeff_tib[["dat"]]) <- coeff_tib[["name"]]
+  names(x = coeff_tib[["dat"]]) <- coeff_tib[["coefficient"]]
 
-  # add year information if time_sets != NULL
+  # add year label if time_sets != NULL
   if (!is.null(x = chron_yrs)) {
     coeff_tib[["dat"]] <- lapply(
       X = coeff_tib[["dat"]],
@@ -159,6 +160,6 @@
   # setkey
   lapply(X = coeff_tib[["dat"]], data.table::setkey)
 
-  coeff_tib <- subset(x = coeff_tib, select = c(name, information, dat))
+  coeff_tib <- subset(x = coeff_tib, select = c(coefficient, label, dat))
   return(coeff_tib)
 }

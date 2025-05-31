@@ -5,7 +5,6 @@
 #' @keywords internal
 #' @noRd
 .closure_control <- function(config,
-                             var_extract,
                              var_omit,
                              write_dir,
                              model_name) {
@@ -43,7 +42,7 @@
     command = expression(.expand_closure(
       closure = checked.closure,
       var_omit = !!var_omit,
-      var_extract = !!var_extract,
+      var_extract = tab_comp[["var_extract"]],
       sets = final.set_tib
     ))
   ))
@@ -54,7 +53,7 @@
       closure = expanded.closure,
       swap_in = !!config[["swap_in"]],
       sets = final.set_tib,
-      var_extract = !!var_extract
+      var_extract = tab_comp[["var_extract"]]
     )),
     cue = targets::tar_cue(mode = "always")
   ))
@@ -65,7 +64,7 @@
       closure = swapped.in.cls,
       swap_out = !!config[["swap_out"]],
       sets = final.set_tib,
-      var_extract = !!var_extract
+      var_extract = tab_comp[["var_extract"]]
     )),
     cue = targets::tar_cue(mode = "always")
   ))

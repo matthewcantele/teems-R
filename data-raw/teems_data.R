@@ -20,20 +20,11 @@ list(
   tar_target(name = data_format,
              command = c("v6.2", "v7.0")),
   # mapping related --------------------------------------------------
-  tar_target(name = mapping_repo,
-             command = {
-               list.files(path = file.path("../teems-mappings/", db_version),
-                          full.names = TRUE,
-                          recursive = TRUE)
-             },
-             pattern = map(db_version),
-             format = "file"),
-  
   tar_target(name = mapping_files,
              command = {
-               package_mappings <- file.path("data-raw", "mappings")
-               file.copy(from = mapping_repo,
-                         to = package_mappings,
+               package_mappings <- "../teems-mappings"
+               file.copy(from = package_mappings,
+                         to = "./data-raw",
                          recursive = T)
                list.files(path = package_mappings,
                           recursive = TRUE,
@@ -47,7 +38,8 @@ list(
                                         data_format = data_format)),
   # tab related ------------------------------------------------------
   tar_target(name = tab_repo,
-             command =  list.files(path = file.path("../teems-tabs/"),
+             command =  list.files(pattern = "\\.tab",
+                                   path = file.path("../teems-tabs"),
                                    full.names = TRUE),
              format = "file"),
   
@@ -55,8 +47,7 @@ list(
              command = {
                package_tabs <- file.path("data-raw", "tab_files")
                file.copy(from = tab_repo,
-                         to = package_tabs,
-                         recursive = TRUE)
+                         to = package_tabs)
                list.files(path = package_tabs,
                           full.names = TRUE)
              },
@@ -84,23 +75,23 @@ list(
              }),
 
 
-  tar_target(name = parsed_tabs,
-             command = {
-               lapply(X = tab_files,
-                      FUN = function(tab) {
-                        tablo <- teems:::.parse_tablo(tab,
-                                                      model_version = NULL)
-                        tablo[["extract"]]
-                      })
-             }),
-
-  tar_target(name = var_extracts,
-             command = {
-               extract <- lapply(X = parsed_tabs,
-                                 FUN = teems:::.tablo_variables)
-               names(x = extract) <- tab_names
-               return(extract)
-             }),
+  # tar_target(name = var_extracts,
+  #            command = {
+  #              lapply(X = tab_files,
+  #                     FUN = function(tab) {
+  #                       tablo <- teems:::.check_tab_file(tab_file = tab)
+  #                       browser()
+  #                       tablo[["extract"]]
+  #                     })
+  #            }),
+  # 
+  # tar_target(name = var_extracts,
+  #            command = {
+  #              extract <- lapply(X = parsed_tabs,
+  #                                FUN = teems:::.tablo_variables)
+  #              names(x = extract) <- tab_names
+  #              return(extract)
+  #            }),
 
   # parameter related ------------------------------------------------
   # static ===========================================================
@@ -190,7 +181,7 @@ list(
              format = "file"),
 
   tar_target(name = reg_big3_file,
-             command = "./data-raw/mappings/v9/v6.2/REG/big3.csv",
+             command = "./data-raw/teems-mappings/v9/v6.2/REG/big3.csv",
              format = "file"),
 
   tar_target(name = reg_big3,
@@ -234,7 +225,7 @@ list(
              format = "file"),
 
   tar_target(name = sector_macro_file,
-             command = "./data-raw/mappings/v9/v6.2/TRAD_COMM/macro_sector.csv",
+             command = "./data-raw/teems-mappings/v9/v6.2/TRAD_COMM/macro_sector.csv",
              format = "file"),
 
   tar_target(name = sector_macro,
@@ -263,7 +254,7 @@ list(
              format = "file"),
 
   tar_target(name = endw_labagg_file,
-             command = "./data-raw/mappings/v9/v6.2/ENDW_COMM/labor_agg.csv",
+             command = "./data-raw/teems-mappings/v9/v6.2/ENDW_COMM/labor_agg.csv",
              format = "file"),
 
   tar_target(name = endw_labagg,
@@ -421,9 +412,11 @@ list(
                               v7.0_param,
                               by = "idx",
                               all = TRUE)
+               param[["data_type"]] <- "par"
+               return(param)
              }),
 
-  tar_target(name = base_conversion,
+  tar_target(name = dat_conversion,
              command = {
                coeff_table <- tabulapdf::extract_tables(file = GTAPv7_manual,
                                                         pages = 85:86)
@@ -457,20 +450,26 @@ list(
                               v7.0_coeff,
                               by = "idx",
                               all = TRUE)
-
+               coeff[["v6.2set"]] <- NA
+               coeff[["v7.0set"]] <- NA
+               coeff[["data_type"]] <- "dat"
+               return(coeff)
+             }),
+  
+  tar_target(name = coeff_conversion,
+             command = {
+               rbind(dat_conversion, param_conversion)
              }),
   # internal data ====================================================
   tar_target(name = internal_data,
              command = {
                usethis::use_data(mappings,
                                  internal_tab,
-                                 var_extracts,
                                  param_weights,
                                  internal_cls,
                                  set_table,
                                  set_conversion,
-                                 param_conversion,
-                                 base_conversion,
+                                 coeff_conversion,
                                  overwrite = TRUE,
                                  internal = TRUE)
              })

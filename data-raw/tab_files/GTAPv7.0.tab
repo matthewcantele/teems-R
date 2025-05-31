@@ -159,13 +159,6 @@ File
 
 >!
 
-!Coefficient
-    VERNUM # version of GTAP Data Base #;
-Read
-    VERNUM from file GTAPDATA header "DVER";
-Update (change)
-    VERNUM = 0.0;  force it to be copied to update file !
-
 Set
     REG # regions #
     read elements from file GTAPSETS header "REG";                 

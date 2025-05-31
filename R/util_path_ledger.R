@@ -5,7 +5,7 @@
                          call) {
 
   if (!identical(x = base_dir, y = tempdir())) {
-    base_dir <- path.expand(path = base_dir)
+    base_dir <- normalizePath(path = base_dir)
     if (!dir.exists(path = base_dir)) {
       .cli_action(action = "abort",
                   msg = "The path provided for {.arg base_dir}, {.path {base_dir}}, does not exist.",

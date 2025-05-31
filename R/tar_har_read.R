@@ -1,19 +1,20 @@
 #' @details Function modified from
 #'   https://rdrr.io/github/USDA-ERS/MTED-HARr/src/R/read_har.r
 #'
-#' @importFrom purrr pluck   
+#' @importFrom purrr pluck
 #' @keywords internal
 #' @noRd
 .read_har <- function(con,
-                      data_type,
+                      data_type = NULL,
                       call) {
+  # cut this down to essentials
   # Open the file
   if (is.character(x = con)) {
     con <- file(con, "rb")
   }
 
   # map connection to data type (GTAP database file naming is inconsistent across releases)
-  full_har_path <- summary(object = con)[["description"]]
+  full_har_path <- normalizePath(path = summary(object = con)[["description"]])
 
   # Read all bytes into a vector
   cf <- raw()
@@ -29,32 +30,33 @@
   # Close the file
   close(con)
 
+
   implied_data_type <- .har_match(con = full_har_path)
   har_file <- basename(path = full_har_path)
-
-  if (!identical(x = data_type, y = implied_data_type)) {
-    error_fun <- substitute(expr = .cli_action(
-      action = "abort",
-      msg = "The HAR file provided {.val {full_har_path}} has been
+  if (!is.null(x = data_type)) {
+    if (!identical(x = data_type, y = implied_data_type)) {
+      error_fun <- substitute(expr = .cli_action(
+        action = "abort",
+        msg = "The HAR file provided {.val {full_har_path}} has been
                 loaded as a {.val {data_type}} file but appears to be a {.val
                 {implied_data_type}} file.",
-      call = call
-    ))
+        call = call
+      ))
 
-    error_var <- substitute(variables <- list(
-      full_har_path = full_har_path,
-      data_type = data_type,
-      implied_data_type = implied_data_type
-    ))
+      error_var <- substitute(variables <- list(
+        full_har_path = full_har_path,
+        data_type = data_type,
+        implied_data_type = implied_data_type
+      ))
 
-    error_inputs <- .package_error(
-      error_var = error_var,
-      error_fun = error_fun,
-      call = call
-    )
-    stop(message = error_inputs)
+      error_inputs <- .package_error(
+        error_var = error_var,
+        error_fun = error_fun,
+        call = call
+      )
+      stop(message = error_inputs)
+    }
   }
-
   if (cf[1] == 0xfd) {
     currentHeader <- ""
     headers <- list()
@@ -171,9 +173,9 @@
 
   # Process first and second records
   for (h in names(headers)) {
-    headers[[h]]$header_name <- trimws(rawToChar(headers[[h]]$records[[1]][1:4]))
+    headers[[h]]$header <- trimws(rawToChar(headers[[h]]$records[[1]][1:4]))
     headers[[h]]$type <- rawToChar(headers[[h]]$records[[2]][5:10])
-    headers[[h]]$information <- trimws(rawToChar(headers[[h]]$records[[2]][11:80]))
+    headers[[h]]$label <- trimws(rawToChar(headers[[h]]$records[[2]][11:80]))
     headers[[h]]$numberOfDimensions <- readBin(headers[[h]]$records[[2]][81:84], "integer",
       size =
         4
@@ -403,19 +405,18 @@
   headers <- lapply(
     X = headers,
     FUN = function(h) {
-      h <- h[is.element(el = names(x = h),
-                        set = c("header_name", "type", "information", "coefficient", "data")
+      h <- h[is.element(
+        el = names(x = h),
+        set = c("header", "label", "coefficient", "data")
       )]
       return(h)
     }
   )
 
-  # GDYN database uses natres instead of natlres for whatever reason (support email submitted)
-  # temporarily disable GDYN runs
-  if (identical(x = har_file, y = "gdset.har")) {
-    if (any(grepl(pattern = "NatRes", purrr::pluck(.x = headers, "ENDW", "data")))) {
-      stop("GDYN 11c database temporarily incompatible due to NatRes/NatlRes mismatch in set file.")
-    }
+  if (is.null(x = data_type)) {
+    attr(x = headers, "data_type") <- implied_data_type
+  } else {
+    attr(x = headers, "data_type") <- data_type
   }
   return(headers)
 }

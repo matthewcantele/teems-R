@@ -27,7 +27,7 @@
 #'   type.
 #' @export
 teems_parse <- function(cmf_path,
-                        type = c("variable", "coefficient", "set", "basedata"),
+                        type = c("variable", "coefficient", "set", "inputdata"),
                         name = NULL)
 {
 call <- match.call()

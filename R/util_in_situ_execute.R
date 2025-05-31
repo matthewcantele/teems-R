@@ -73,7 +73,7 @@
       )
     }
 
-    io_files <- sapply(X = io_files, FUN = path.expand)
+    io_files <- sapply(X = io_files, FUN = normalizePath)
     model_dir <- dirname(path = tab_file)
     launchpad_dir <- file.path(model_dir, "launchpad")
     if (dir.exists(paths = launchpad_dir)) {

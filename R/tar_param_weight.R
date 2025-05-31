@@ -4,8 +4,7 @@
 #' @return A data frame of parameters with adjusted weights.
 #' @keywords internal
 #' @noRd
-.weight_param <- function(weights,
-                          par,
+.weight_param <- function(tib_data,
                           data_format) {
 
   # the chances of someone providing all parameter values is low so we will
@@ -20,7 +19,7 @@
   weight_headers <- gsub(pattern = "-", "", unique(x = unlist(x = weight_map)))
 
   # get weight header data
-  weights <- subset(x = weights,
+  weights <- subset(x = tib_data,
                     subset = {is.element(el = header, set = weight_headers)})
 
   # merge weights into parameter tibble
@@ -70,7 +69,7 @@
   )
 
   # pull weighted parameters
-  par_weights <- subset(x = par,
+  par_weights <- subset(x = tib_data,
                         subset = {is.element(el = header, set = weight_map[["header"]])})
 
   # combine all data in single object
@@ -109,20 +108,9 @@
     }
   )
 
-  # weighted elasticities
-  par_weights <- subset(x = par_weights, select = c("header", "information", "coeff", "type", "aggregate", "input_file"))
-
   # place elasticities ready for aggregation into main prm object
-  r_idx <- match(x = names(x = elasticities), table = par_weights[["header"]])
-  par_weights[["dt"]][r_idx] <- elasticities
-  names(x = par_weights[["dt"]]) <- par_weights[["header"]]
-
-  # all other parameters
-  other_par <- subset(x = par, !is.element(el = header, set = par_weights[["header"]]))
-
-  # consolidated
-  par <- rbind(par_weights, other_par)
-
-
-  return(par)
+  r_idx <- match(x = names(x = elasticities), table = tib_data[["header"]])
+  tib_data[["dt"]][r_idx] <- elasticities
+  
+  return(tib_data)
 }

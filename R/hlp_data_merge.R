@@ -8,21 +8,33 @@
                         sets,
                         coeff_extract,
                         reference_year,
-                        intertemporal) {
+                        intertemporal,
+                        call) {
   # use elaborated set names to match
   r_idx <- match(x = names(x = pre_coeff), table = coeff_extract[["header"]])
 
   # first check on the merge
   if (!identical(x = length(x = r_idx), y = length(x = pre_coeff))) {
-    stop("Index/coefficient length mismatch indicates Tab parsing error.")
+    .cli_action(msg = c("Index/coefficient length mismatch indicates Tab parsing error.",
+                        "Contact the developer."),
+                action = c("abort", "inform"),
+                call = call)
   }
+
   # set "Year" to base year of reference data
   # set ALLTIME in premodel to -1
   pre_coeff <- lapply(X = pre_coeff, FUN = function(dt) {
     if (intertemporal) {
-      if (is.element(el = "ALLTIMEt", set = colnames(dt))) {
-        dt <- dt[ALLTIMEt == 0]
-        dt[["ALLTIMEt"]] <- -1
+      int_sets <- unlist(x = subset(x = sets,
+                                    subset = intertemporal,
+                                    select = name))
+      stnd_names <- substring(text = colnames(x = dt),
+                              first = 1,
+                              last = nchar(x = colnames(x = dt)) - 1)
+      if (any(is.element(el = int_sets, set = stnd_names))) {
+        int_set <- colnames(x = dt)[is.element(el = stnd_names, set = int_sets)]
+        dt <- dt[get(x = int_set) == 0]
+        dt[[int_set]] <- -1
         dt[["Year"]] <- reference_year
       }
     }
@@ -31,32 +43,26 @@
 
   # rename pre_coeff names from headers to actual names (e.g., VTWR from VTMFSD)
   r_idx <- match(x = names(x = pre_coeff), table = coeff_extract[["header"]])
-  names(x = pre_coeff) <- coeff_extract[["name"]][r_idx]
-
-  # filter post_coeff data by pre_coeff
-  header_nmes <- unlist(x = subset(
-    x = coeff_extract,
-    subset = {
-      is.element(el = name, set = names(x = pre_coeff))
-    },
-    select = "name"
-  ), use.names = FALSE)
+  names(x = pre_coeff) <- coeff_extract[["coefficient"]][r_idx]
 
   # get basedata coefficients from output data using
   post_base <- subset(x = post_coeff, subset = {
-    is.element(el = name, set = header_nmes)
+    is.element(el = coefficient, set = names(x = pre_coeff))
   })
 
   # check that all pre_coeff data exists in post_coeff
   if (!identical(
     x = character(0),
-    y = setdiff(x = names(x = pre_coeff), y = post_base[["name"]])
+    y = setdiff(x = names(x = pre_coeff), y = post_base[["coefficient"]])
   )) {
-    stop("Set difference found on pre/post model header names.")
+    .cli_action(msg = c("Set difference found on pre/post model header names.",
+                        "This is an internal error, contact dev"),
+                action = c("abort", "inform"),
+                call = call)
   }
 
   # and merge data
-  r_idx <- match(x = post_base[["name"]], table = names(x = pre_coeff))
+  r_idx <- match(x = post_base[["coefficient"]], table = names(x = pre_coeff))
   post_base[["pre_dat"]] <- pre_coeff[r_idx]
 
   if (intertemporal) {
@@ -90,6 +96,7 @@
         pre[, Year := paste("ante", reference_year, sep = "_")]
         final <- data.table::rbindlist(l = list(pre, post))
         data.table::setcolorder(x = final, "Value", after = ncol(x = final))
+        final[["Value"]] <- as.numeric(x = final[["Value"]])
         return(final)
       }
     )

@@ -1,31 +1,15 @@
 #' @importFrom purrr pluck
 #' @importFrom abind abind
-#' 
+#'
 #' @keywords internal
 #' @noRd
-.convert_format <- function(ls_array,
-                            data_format,
-                            data_type) {
-  if (identical(x = data_format, y = "v6.2")) {
-    if (identical(x = data_type, y = "set")) {
-      # change header names and duplicate H2/COMM for ACTS
-      ls_array <- lapply(
-        X = ls_array,
-        FUN = function(header) {
-          .convert_id(
-            header = header,
-            table = set_conversion,
-            origin = data_format
-          )
-        }
-      )
-
-      ACTS <- purrr::pluck(.x = ls_array, "H2")
-      ACTS[["header_name"]] <- "ACTS"
-      ACTS <- list(ACTS = ACTS)
-
-      ls_array <- c(ls_array, ACTS)
-    } else if (identical(x = data_type, y = "par")) {
+.convert_coeff_format <- function(ls_array,
+                                  coeff_extract,
+                                  target_format,
+                                  data_type) {
+  if (identical(x = data_type, y = "par")) {
+    param_conversion <- subset(x = coeff_conversion, data_type == "par")
+    if (identical(x = target_format, y = "v7.0")) {
       # don't see any drawback to using the regions from here rather than bringing forth the prior set object
       REG <- dimnames(x = purrr::pluck(.x = ls_array, "RFLX", "data"))[["REG"]]
       ACTS <- dimnames(x = purrr::pluck(.x = ls_array, "ESBD", "data"))[["TRAD_COMM"]]
@@ -34,7 +18,7 @@
         X = ls_array,
         FUN = function(header) {
           arr <- header[["data"]]
-          nme <- header[["header_name"]]
+          nme <- header[["header"]]
           v7.0_colnames <- unlist(x = subset(
             x = param_conversion,
             subset = {
@@ -108,7 +92,7 @@
               )
 
               list(
-                header_name = nme,
+                header = nme,
                 data = arr
               )
             }
@@ -119,15 +103,91 @@
       names(x = missing_v7.0) <- sapply(
         X = missing_v7.0,
         FUN = function(x) {
-          x[["header_name"]]
+          x[["header"]]
         }
       )
       ls_array <- c(ls_array, missing_v7.0)
-    } else if (identical(x = data_type, y = "base")) {
+    } else if (identical(x = target_format, y = "v6.2")) {
+      drop_headers <- subset(
+        x = param_conversion,
+        subset = {
+          is.na(x = v6.2header)
+        },
+        select = v7.0header
+      )[[1]]
+
+      ls_array <- ls_array[!is.element(el = names(x = ls_array), set = drop_headers)]
+      # v7.0 to v6.2 on parameters involves summing over the additional (uniform) sets and adding zcgds
+      ls_array <- lapply(
+        X = ls_array,
+        FUN = function(header) {
+          arr <- header[["data"]]
+          orig_dim_names <- names(x = dimnames(x = arr))
+          nme <- header[["header"]]
+          v6.2_colnames <- unlist(x = subset(
+            x = param_conversion,
+            subset = {
+              is.element(
+                el = v7.0header,
+                set = nme
+              )
+            },
+            select = v6.2set
+          ))
+
+          if (!anyNA(x = v6.2_colnames) && !is.null(x = v6.2_colnames)) {
+            r_idx <- match(x = orig_dim_names, table = set_table[["v7.0_upper"]])
+            cnvrt_dim_names <- ifelse(test = is.na(x = r_idx),
+              yes = orig_dim_names,
+              no = set_table[["v6.2_upper"]][r_idx]
+            )
+
+            drop_dim <- cnvrt_dim_names[!is.element(
+              el = cnvrt_dim_names,
+              set = v6.2_colnames
+            )]
+
+            if (!identical(x = drop_dim, y = character(0))) {
+              arr <- apply(
+                X = arr,
+                MARGIN = which(!is.element(
+                  el = orig_dim_names,
+                  set = drop_dim
+                )),
+                FUN = unique
+              )
+            }
+
+            # CGDS additions
+            if (identical(x = nme, y = "ESBT")) {
+              CGDS <- array(data = 0, dimnames = list("CGDS"))
+              arr <- c(arr, CGDS)
+            }
+
+            if (identical(x = nme, y = "ESBV")) {
+              CGDS <- array(data = 1, dimnames = list("CGDS"))
+              arr <- c(arr, CGDS)
+            }
+
+            if (!is.array(x = arr)) {
+              arr <- as.array(x = arr)
+            }
+
+            names(x = dimnames(x = arr)) <- v6.2_colnames
+          }
+          header[["data"]] <- arr
+          return(header)
+        }
+      )
+    }
+  } else if (identical(x = data_type, y = "dat")) {
+    dat_conversion <- subset(x = coeff_conversion, data_type == "dat")
+    if (identical(x = target_format, y = "v7.0")) {
+      # ------------------------------------------------------------------------
       # TVOM has MAKB and MAKS (net OSEP)
       # missing headers (MAKS, MAKB, VDIB, VDIP, VMIP, VMIB, CSEP)
       missing_v7.0 <- unlist(x = subset(
-        x = base_conversion,
+        x = dat_conversion,
         subset = {
           is.na(x = v6.2header)
         },
@@ -189,7 +249,7 @@
           }
 
           list(
-            header_name = nme,
+            header = nme,
             data = arr
           )
         }
@@ -199,7 +259,7 @@
         X = ls_array,
         FUN = function(header) {
           arr <- header[["data"]]
-          nme <- header[["header_name"]]
+          nme <- header[["header"]]
 
           if (is.element(el = nme, set = c("EVFA", "VFM", "FBEP", "FTRV", "FBEP", "VDFA", "VDFM", "VIFA", "VIFM"))) {
             arr_dimnames <- dimnames(x = arr)
@@ -258,117 +318,13 @@
         FUN = function(header) {
           .convert_id(
             header = header,
-            table = base_conversion,
-            origin = data_format
+            table = dat_conversion,
+            target_format = target_format
           )
         }
       )
       ls_array <- c(ls_array, missing_v7.0)
-    }
-  } else if (identical(x = data_format, y = "v7.0")) {
-    if (identical(x = data_type, y = "set")) {
-      # v7.0 to v6.2 on sets involves changing set names
-      ls_array <- lapply(
-        X = ls_array,
-        FUN = function(header) {
-          .convert_id(
-            header = header,
-            table = set_conversion,
-            origin = data_format
-          )
-        }
-      )
-
-      # add CGDS
-      CGDS <- subset(
-        x = set_conversion,
-        subset = {
-          is.element(el = v6.2header, set = "H9")
-        }
-      )
-
-      CGDS <- list(CGDS_COMM = list(
-        header_name = CGDS[["v6.2header"]],
-        type = "character",
-        information = CGDS[["v6.2description"]],
-        data = "CGDS",
-        aggregate = FALSE
-      ))
-
-      ls_array <- c(ls_array, CGDS)
-    } else if (identical(x = data_type, y = "par")) {
-      drop_headers <- subset(
-        x = param_conversion,
-        subset = {
-          is.na(x = v6.2header)
-        },
-        select = v7.0header
-      )[[1]]
-
-      ls_array <- ls_array[!is.element(el = names(x = ls_array), set = drop_headers)]
-      # v7.0 to v6.2 on parameters involves summing over the additional (uniform) sets and adding zcgds
-      ls_array <- lapply(
-        X = ls_array,
-        FUN = function(header) {
-          arr <- header[["data"]]
-          orig_dim_names <- names(x = dimnames(x = arr))
-          nme <- header[["header_name"]]
-          v6.2_colnames <- unlist(x = subset(
-            x = param_conversion,
-            subset = {
-              is.element(
-                el = v7.0header,
-                set = nme
-              )
-            },
-            select = v6.2set
-          ))
-
-          if (!anyNA(x = v6.2_colnames) && !is.null(x = v6.2_colnames)) {
-            r_idx <- match(x = orig_dim_names, table = set_table[["v7.0_upper"]])
-            cnvrt_dim_names <- ifelse(test = is.na(x = r_idx),
-              yes = orig_dim_names,
-              no = set_table[["v6.2_upper"]][r_idx]
-            )
-
-            drop_dim <- cnvrt_dim_names[!is.element(
-              el = cnvrt_dim_names,
-              set = v6.2_colnames
-            )]
-
-            if (!identical(x = drop_dim, y = character(0))) {
-              arr <- apply(
-                X = arr,
-                MARGIN = which(!is.element(
-                  el = orig_dim_names,
-                  set = drop_dim
-                )),
-                FUN = unique
-              )
-            }
-
-            # CGDS additions
-            if (identical(x = nme, y = "ESBT")) {
-              CGDS <- array(data = 0, dimnames = list("CGDS"))
-              arr <- c(arr, CGDS)
-            }
-
-            if (identical(x = nme, y = "ESBV")) {
-              CGDS <- array(data = 1, dimnames = list("CGDS"))
-              arr <- c(arr, CGDS)
-            }
-
-            if (!is.array(x = arr)) {
-              arr <- as.array(x = arr)
-            }
-
-            names(x = dimnames(x = arr)) <- v6.2_colnames
-          }
-          header[["data"]] <- arr
-          return(header)
-        }
-      )
-    } else if (identical(x = data_type, y = "base")) {
+    } else if (identical(x = target_format, y = "v6.2")) {
       # v7.0 to v6.2 on base involves changing names, adding CGDS, and other op
       ls_array <- lapply(
         X = ls_array,
@@ -377,7 +333,7 @@
           arr_dim <- dim(x = arr)
           arr_dimnames <- dimnames(x = arr)
           arr_names <- names(x = arr_dimnames)
-          nme <- header[["header_name"]]
+          nme <- header[["header"]]
 
           if (is.element(el = nme, set = c("VDFB", "VDFP", "VMFB", "VMFP"))) {
             CGDS_header <- switch(EXPR = nme,
@@ -436,8 +392,8 @@
         FUN = function(header) {
           .convert_id(
             header = header,
-            table = base_conversion,
-            origin = data_format
+            table = dat_conversion,
+            target_format = target_format
           )
         }
       )
@@ -447,9 +403,52 @@
   names(x = ls_array) <- sapply(
     X = ls_array,
     FUN = function(x) {
-      x[["header_name"]]
+      x[["header"]]
     }
   )
+
+  origin_format <- ifelse(test = identical(x = target_format, y = "v6.2"),
+    yes = "v7.0",
+    no = "v6.2"
+  )
+
+  # we could do set info here but no point
+  # use tablo extract for coefficient and descriptive data
+  r_idx <- match(x = names(x = ls_array), table = coeff_extract[["header"]])
+  ls_array <- purrr::map2(
+    .x = ls_array,
+    .y = r_idx,
+    .f = function(header, id) {
+      if (!is.na(x = id)) {
+        header[["coefficient"]] <- purrr::pluck(coeff_extract[id, ], "coefficient", 1)
+        header[["label"]] <- purrr::pluck(coeff_extract[id, ], "label", 1)
+      } else {
+        header[["coefficient"]] <- header[["header"]]
+        header[["label"]] <- NA
+      }
+
+      if (is.numeric(x = header[["data"]])) {
+        nme_dimname <- names(x = dimnames(x = header[["data"]]))
+        if (!is.null(x = nme_dimname)) {
+          r_idx <- match(x = nme_dimname, table = with(
+            data = set_conversion,
+            expr = get(x = paste0(origin_format, "name"))
+          ))
+
+          new_names <- with(data = set_conversion,
+               expr = get(paste0(target_format, "name"))[r_idx])
+
+          if (any(is.na(x = new_names))) {
+            revert <- which(is.na(x = new_names))
+            new_names[revert] <- nme_dimname[revert]
+          }
+          names(x = dimnames(x = header[["data"]])) <- new_names
+        }
+      }
+      return(header)
+    }
+  )
+
 
   return(ls_array)
 }

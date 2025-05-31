@@ -16,8 +16,7 @@
   if (!in_situ) {
     # io files
     io_files <- c(
-      targets::tar_read(write.base, store = store_dir),
-      targets::tar_read(write.par, store = store_dir),
+      targets::tar_read(write.data, store = store_dir),
       targets::tar_read(write.set, store = store_dir)
     )
 

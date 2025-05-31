@@ -2,29 +2,13 @@
 #' 
 #' @keywords internal
 #' @noRd
-.prep_data <- function(data_type,
-                       tib_data,
+.prep_data <- function(tib_data,
                        sets,
-                       coeff_extract,
-                       data_format) {
+                       coeff_extract) {
 
-  # all set mappings consolidated
-  full_sets <- subset(x = sets, subset = {
-    !is.na(header)
-  }, select = full_sets)[[1]]
-  lapply(
-    X = full_sets,
-    FUN = data.table::setnames,
-    new = c("origin", "map")
-  )
-
-  type <- data_type
   req_headers <- unlist(x = subset(
     x = coeff_extract,
-    subset = {
-      is.element(el = data_type, set = type) &
-        !is.na(x = file)
-    },
+    subset = {!is.na(x = file)},
     select = header
   ))
 
@@ -43,37 +27,34 @@
       is.element(el = header, set = req_headers)
     }
   )
+  
+  # merge required coeff_extract information
+  r_idx <- match(x = tib_data[["coefficient"]],
+                 table = coeff_extract[["coefficient"]])
+  
+  tib_data[["ls_upper_idx"]] <- coeff_extract[["ls_upper_idx"]][r_idx]
+  tib_data[["ls_mixed_idx"]] <- coeff_extract[["ls_mixed_idx"]][r_idx]
+  
+  # mappings
+  tib_data[["dt"]] <- lapply(X = tib_data[["dt"]],
+                             FUN = function(dt) {
 
-  # PROD_COMM isn't read in so it isn't needed elsewhere
-  if (identical(x = data_format, y = "v6.2")) {
-    full_sets[["PROD_COMM"]] <- data.table::rbindlist(l = list(
-      full_sets[["TRAD_COMM"]],
-      full_sets[["CGDS_COMM"]]
-    ))
-  }
-
-  # new set mappings (note use of is.character to differential set col from value col)
-  tib_data[["dt"]] <- purrr::map2(.x = tib_data[["dt"]],
-                                  .y = tib_data[["aggregate"]],
-                                  .f = function(dt, agg) {
-                                    if (agg) {
-                                    set_col_mixed <- colnames(x = dt)[sapply(X = dt, FUN = is.character)]
-                                    for (c in seq_along(set_col_mixed)) {
-                                      set_col <- set_col_mixed[c]
-                                      set_map <- substr(
-                                        x = set_col,
-                                        start = 1,
-                                        stop = nchar(x = set_col) - 1
-                                      )
-                                      table <- full_sets[[set_map]]
-                                      r_idx <- match(x = dt[[set_col]], table = table[["origin"]])
-                                      dt[, (set_col) := lapply(.SD, function(r) {
-                                        table[["map"]][r_idx]
-                                      }), .SDcols = set_col]
-                                    }
-                                    }
-                                    return(dt)
-                                  })
+                               ls_mixed_idx <- colnames(x = dt)[sapply(X = dt, FUN = is.character)]
+                               for (c in seq_along(ls_mixed_idx)) {
+                                 set_col <- ls_mixed_idx[c]
+                                 set_map <- substr(
+                                   x = set_col,
+                                   start = 1,
+                                   stop = nchar(x = set_col) - 1
+                                 )
+                                 table <- purrr::pluck(.x = sets, "mapping", set_map)
+                                 r_idx <- match(x = dt[[set_col]], table = table[["origin"]])
+                                 dt[, (set_col) := lapply(.SD, function(r) {
+                                   table[["mapping"]][r_idx]
+                                 }), .SDcols = set_col]
+                               }
+                               return(dt)
+                             })
 
   return(tib_data)
 }

@@ -1,7 +1,8 @@
 #' @importFrom targets tar_read
-#' @importFrom cli cli_fmt cli_h1 cli_h2 cli_h3 cli_dl cli_text cli_ul cli_verbatim
+#' @importFrom cli cli_fmt cli_h1 cli_h2 cli_h3 cli_dl cli_text cli_ul
+#'   cli_verbatim cli_alert_warning
 #' @importFrom purrr pmap
-#' 
+#'
 #' @keywords internal
 #' @noRd
 .pipeline_diagnostics <- function(tab_path,
@@ -16,16 +17,28 @@
   mod_tab_path <- tar_read(write.tablo_mod, store = store_dir)
   orig_tab_path <- tar_read(write.tablo_orig, store = store_dir)
   sets <- targets::tar_read(name = final.set_tib, store = store_dir)
-  dat <- targets::tar_read(name = final.base_tib, store = store_dir)
-  param <- targets::tar_read(name = final.par_tib, store = store_dir)
   closure <- targets::tar_read(name = final.closure, store = store_dir)
   closure <- head(tail(closure, -1), -3)
   shocks <- targets::tar_read(name = constructed.shocks, store = store_dir)[[1]]
+  if (!is.null(x = shocks)) {
   shock_var <- paste0(unique(x = substring(
     text = names(x = shocks),
     first = 1,
     last = nchar(x = names(x = shocks)) - 1
   )), collapse = ", ")
+  } else {
+    shocks <- NULL
+    shock_var <- NULL
+    if (!quiet) {
+      null_shk <- cli::cli_fmt({cli::cli_alert_warning("No shock has been provided so a 
+      {.val NULL} shock will be used. A null shock will return all model 
+      coefficients as they are read and/or calculated in the Tablo file.
+      Any significant deviation under these conditions would indicate an error 
+      in the loading of input files or parsing of model outputs.",
+                                                       wrap = TRUE)
+      })
+    }
+  }
 
   if (any(sets[["intertemporal"]])) {
     temporal_dynamics <- "intertemporal"
@@ -37,9 +50,7 @@
   if (file.exists(diagnostic_file)) {
     unlink(x = diagnostic_file)
   }
-  r_idx <- match(x = dat[["input_file"]], table = names(x = io_files))
-  dat[["file_path"]] <- io_files[r_idx]
-
+  
   diag_output <- cli::cli_fmt({
     # Start output generation
     cli::cli_h1(text = "Diagnostic outputs follow")
@@ -54,7 +65,7 @@
     ))
     cli::cli_h2(text = "Set specifications")
     purrr::pmap(
-      .l = list(sets[["name"]], sets[["elements"]], sets[["information"]]),
+      .l = list(sets[["name"]], sets[["mapped_ele"]], sets[["label"]]),
       .f = function(nme, ele, info) {
         nme <- toupper(x = nme)
         info <- trimws(x = gsub(pattern = "#", replacement = "", x = info))
@@ -78,7 +89,10 @@
     cli::cli_ul(paste(names(io_files), io_files, sep = ": "))
   })
   if (!quiet) {
-    cli::cli_verbatim(diag_output)
+    cli::cli_verbatim(diag_output, null_shk)
+    # if (exists(x = "null_shk")) {
+    # cli::cli_verbatim(null_shk)
+    # }
   }
   writeLines(
     text = diag_output,

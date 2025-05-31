@@ -18,11 +18,13 @@
       tab_extract = extract,
       call = call
     )
-  } else if (is.element(el = type, set = c("coefficient", "basedata"))) {
+  } else if (is.element(el = type, set = c("coefficient", "inputdata"))) {
     comp_extract <- .tablo_coeff(
       tab_extract = extract,
       call = call
     )
+  } else if (identical(x = type, y = "set")) {
+    comp_extract <- NULL
   }
   return(comp_extract)
 }

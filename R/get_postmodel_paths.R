@@ -2,7 +2,7 @@
 #' @noRd
 .get_postmodel_paths <- function(cmf_path,
                                  call) {
-  launchpad_dir <- dirname(path = path.expand(path = cmf_path))
+  launchpad_dir <- dirname(path = normalizePath(path = cmf_path))
   model_dir <- sub(pattern = "/launchpad",
                    replacement = "",
                    x = launchpad_dir)

@@ -166,8 +166,7 @@
 #' }
 #' @export
 teems_deploy <- function(model_config,
-                         base_config,
-                         param_config,
+                         data_config,
                          set_config,
                          closure_config = NULL,
                          model_name = "teems",
@@ -191,19 +190,20 @@ closure_config <- .assert_config(model_config = model_config,
                                  model_name = model_name,
                                  call = set_config[["call"]],
                                  quiet = quiet)
-metadata <- .get_metadata(con = base_config[["base_har"]],
-                          model = model_config[["model_version"]])
+n_timestep <- .get_timesteps(aux_data = data_specs[["aux_input"]],
+                             intertemporal = model_specs[["intertemporal"]])
+set_map_files <- .get_setmap_info(config = set_specs)
 targets <- .write_pipeline(model_config = model_config,
-                           base_config = base_config,
-                           param_config = param_config,
+                           data_config = data_config,
                            set_config = set_config,
                            closure_config = closure_config,
                            shock_config = shock_config,
-                           metadata = metadata,
+                           n_timestep = n_timestep,
+                           set_map_files = set_map_files,
+                           metadata = data_specs[["metadata"]],
                            teems_paths = teems_paths)
 .execute_pipeline(teems_paths = teems_paths,
-                  base_call = base_config[["call"]],
-                  par_call = param_config[["call"]],
+                  data_call = data_config[["call"]],
                   set_call = set_config[["call"]],
                   tar_load_everything = tar_load_everything,
                   .testing = .testing)
@@ -211,7 +211,8 @@ if (tar_load_everything) {
   targets::tar_load_everything(store = teems_paths[["store"]],
                                envir = .GlobalEnv)
 }
-coefficient_names <- purrr::pluck(.x = model_specs, "coeff_extract", "name")
+coefficient_names <- .process_tablo(tab_file = model_specs[["tab_file"]],
+                                    type = "coefficient")[["coefficient"]]
 gen_out <- .write_cmf(model_name = model_name,
                       coefficient_names = coefficient_names,
                       model_dir = teems_paths[["model"]],
@@ -220,7 +221,7 @@ gen_out <- .write_cmf(model_name = model_name,
 .pipeline_diagnostics(model_dir = teems_paths[["model"]],
                       launchpad_dir = teems_paths[["launchpad"]],
                       model_name = model_name,
-                      metadata = metadata,
+                      metadata = data_specs[["metadata"]],
                       store_dir = teems_paths[["store"]],
                       io_files = gen_out[["io_files"]],
                       quiet = quiet)

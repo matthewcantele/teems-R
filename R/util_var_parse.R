@@ -42,7 +42,7 @@
 
   vars[["elements"]] <- sapply(X = vars[["column_id"]], function(c_id) {
     c_idx <- match(c_id, sets[["r_idx"]])
-    set_col <- sets[["elements"]][c_idx]
+    set_col <- sets[["mapped_ele"]][c_idx]
     return(set_col)
   })
 
@@ -150,12 +150,12 @@
     )
   }
 
-  # bring over variables information for output
+  # bring over variables label for output
   r_idx <- match(names(x = var_out), tolower(x = var_extract[["name"]]))
 
   f_var <- tibble::tibble(
     name = var_extract[["name"]][r_idx],
-    information = var_extract[["information"]][r_idx],
+    label = var_extract[["label"]][r_idx],
     dat = var_out
   )
 
