@@ -7,9 +7,15 @@
 
 Clone the repository to a local directory
 Username is your git username (where you got the invite)
-Password is: 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
+Password is: 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
+
 ```bash
 git clone https://github.com/matthewcantele/teems-R
+```
+
+Some necessary packages for this beta stage
+```bash
+R -e "install.packages(c("devtools", "data.table"))
 ```
 
 Enter directory
