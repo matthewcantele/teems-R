@@ -69,7 +69,6 @@
 teems_sets <- function(set_input,
                        aux_set = NULL,
                        ...,
-                       model_version = NULL,
                        quiet = FALSE)
 {
 call <- match.call()

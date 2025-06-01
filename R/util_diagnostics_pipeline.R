@@ -89,7 +89,11 @@
     cli::cli_ul(paste(names(io_files), io_files, sep = ": "))
   })
   if (!quiet) {
+    if (exists("null_shk")) {
     cli::cli_verbatim(diag_output, null_shk)
+    } else {
+      cli::cli_verbatim(diag_output)
+    }
     # if (exists(x = "null_shk")) {
     # cli::cli_verbatim(null_shk)
     # }

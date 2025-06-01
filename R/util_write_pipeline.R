@@ -6,8 +6,7 @@
 .write_pipeline <- function(model_config,
                             data_config,
                             set_config,
-                            closure_config,
-                            shock_config,
+                            model_name,
                             set_map_files,
                             n_timestep,
                             metadata,
@@ -28,14 +27,16 @@
                                 ndigits = model_config[["ndigits"]],
                                 full_exclude = model_config[["full_exclude"]],
                                 write_dir = teems_paths[["launchpad"]])
-   
-  closure_targets <- .closure_control(config = closure_config,
+  
+  closure_targets <- .closure_control(closure_file = model_config[["closure_file"]],
+                                      swap_in = model_config[["swap_in"]],
+                                      swap_out = model_config[["swap_out"]],
                                       var_omit = model_config[["var_omit"]],
                                       write_dir = teems_paths[["launchpad"]],
                                       model_name = model_name)
    
-  shock_targets <- .shock_control(shock = closure_config[["shock"]],
-                                  shock_file = closure_config[["shock_file"]],
+  shock_targets <- .shock_control(shock = model_config[["shock"]],
+                                  shock_file = model_config[["shock_file"]],
                                   ndigits = model_config[["ndigits"]],
                                   write_dir = teems_paths[["launchpad"]])
    

@@ -26,10 +26,10 @@ teems_time <- function(tab_file,
     )
   
     set_file_type <- attr(x = set_file, which = "file_ext")
-    
+
     if (identical(x = set_file_type, y = "har")) {
     sets <- .read_har(
-      con = set_har,
+      con = set_input,
       data_type = "set",
       call = call
     )

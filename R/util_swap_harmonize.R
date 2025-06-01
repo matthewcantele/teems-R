@@ -2,6 +2,7 @@
 #' @noRd
 .harmonize_swap <- function(raw_swap,
                             call) {
+
   swap_ <- substitute(raw_swap)
   if (is.character(x = raw_swap)) {
     call[[as.character(x = swap_)]] <- teems_swap(var = raw_swap)

@@ -12,7 +12,7 @@
     name = "model_call",
     command = rlang::expr(quote(expr = !!config[["call"]]))
   ))
-  
+
   t_model_metadata <- rlang::expr(targets::tar_target_raw(
     name = "metadata",
     command = quote(expr = !!metadata)

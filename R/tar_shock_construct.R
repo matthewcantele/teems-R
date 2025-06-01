@@ -38,6 +38,8 @@
 
           # convert to ALLTIMEt if only Year given
           if (is.element(el = "Year", set = colnames(x = value))) {
+            browser()
+            # fix this
             AYRS <- purrr::pluck(.x = param, "dt", "AYRS")
             AYRS[["CYRS"]] <- reference_year + AYRS[["Value"]]
             if (!all(is.element(el = value[["Year"]], set = AYRS[["CYRS"]]))) {
@@ -95,7 +97,7 @@
             .x = user_set_ele,
             .y = names(x = user_set_ele),
             .f = function(ele, ele_set) {
-              recognized_ele <- purrr::pluck(.x = sets, "elements", ele_set)
+              recognized_ele <- purrr::pluck(.x = sets, "mapped_ele", ele_set)
 
               if (!all(is.element(el = ele, set = recognized_ele))) {
                 stop(paste(
@@ -211,7 +213,7 @@
           # check that all tuples with entries are valid
           # construct data.table from var sets
           set_ele <- with(
-            data = sets[["elements"]],
+            data = sets[["mapped_ele"]],
             expr = mget(x = ls_upper_idx)
           )
 

@@ -3,7 +3,7 @@
 #' @keywords internal
 #' @noRd
 .expand_closure <- function(closure,
-                            var_omit,
+                            var_omit = NULL,
                             var_extract,
                             sets) {
   if (!is.null(x = var_omit)) {

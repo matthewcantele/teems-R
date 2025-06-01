@@ -168,7 +168,6 @@
 teems_deploy <- function(model_config,
                          data_config,
                          set_config,
-                         closure_config = NULL,
                          model_name = "teems",
                          base_dir = tempdir(),
                          quiet = FALSE,
@@ -182,22 +181,13 @@ args_list <- mget(x = names(x = formals()))
 teems_paths <- .path_ledger(base_dir = base_dir,
                             model_name = model_name,
                             call)
-closure_config <- .assert_config(model_config = model_config,
-                                 set_config = set_config,
-                                 closure_config = closure_config,
-                                 base_dir = teems_paths[["base"]],
-                                 store_dir = teems_paths[["store"]],
-                                 model_name = model_name,
-                                 call = set_config[["call"]],
-                                 quiet = quiet)
 n_timestep <- .get_timesteps(aux_data = data_specs[["aux_input"]],
                              intertemporal = model_specs[["intertemporal"]])
 set_map_files <- .get_setmap_info(config = set_specs)
 targets <- .write_pipeline(model_config = model_config,
                            data_config = data_config,
                            set_config = set_config,
-                           closure_config = closure_config,
-                           shock_config = shock_config,
+                           model_name = model_name,
                            n_timestep = n_timestep,
                            set_map_files = set_map_files,
                            metadata = data_specs[["metadata"]],

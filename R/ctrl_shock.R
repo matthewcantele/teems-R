@@ -29,7 +29,7 @@
       name = "prepped.shocks",
       command = expression(.shock_prep(
         shocks = shocks,
-        var_extract = !!var_extract
+        var_extract = tab_comp[["var_extract"]]
       )),
       cue = targets::tar_cue(mode = "always")
     ))

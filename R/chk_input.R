@@ -78,6 +78,7 @@
       "tab" = "Tablo",
       "cls" = "closure"
     )
+    if (!identical(x = ext, y = "cls")) {
     .cli_action(msg = c("The specified internal {file_type} file: {.val {file}} 
                         is not supported.",
                         "Currently supported {file_type} files include: 
@@ -89,6 +90,19 @@
                         functions (link here)."),
                 action = c("abort", rep(x = "inform", 3)),
                 call = call)
+    } else {
+      .cli_action(msg = c("The closure file inferred from the provided 
+      {.arg tab_file}: {.val {file}} does not exist.",
+                          "Currently supported internal {file_type} files are available for: 
+                        {.val {file_names}}.",
+                          "Alternatively, path to a user-provided {file_type} 
+                        file is supported (e.g., \"/my/{file_type}/path.{ext}\")",
+                          "Note that user-provided {file_type} files may need to 
+                        be modified for compatibility with various {.pkg teems} 
+                        functions (link here)."),
+                  action = c("abort", rep(x = "inform", 3)),
+                  call = call)
+    }
   } else {
     input <- valid_internal_files[[file]]
     dir <- paste(ext, "files", sep = "_")

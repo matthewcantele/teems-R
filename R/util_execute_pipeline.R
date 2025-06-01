@@ -4,12 +4,9 @@
 #' @noRd
 .execute_pipeline <- function(teems_paths,
                               data_call,
-                              # base_call,
-                              # par_call,
                               set_call,
                               tar_load_everything,
                               .testing) {
-
   if (!.testing) {
     output <- try({
       targets::tar_make(

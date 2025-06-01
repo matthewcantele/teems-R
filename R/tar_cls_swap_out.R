@@ -10,11 +10,6 @@
                       var_extract) {
 
   if (!is.null(x = swap_out)) {
-    swap_out <- lapply(
-      X = swap_out,
-      FUN = .swap_reconstruct
-    )
-
     concat_swap_out <- lapply(
       X = swap_out,
       FUN = .check_swap,
@@ -36,10 +31,10 @@
       sets = sets
     )
 
-    # initialize for potential tab set append
-    tab_append <- list()
     # swap out preferentially from full var names to tuples
     # use for loop due to iterative nature of swaps
+    # implement simultaneous swap feater
+    # this is nightmarish, refactor!
     for (out_var in unique(x = expanded_exits[["var_name"]])) {
       if (!is.element(el = out_var, set = closure[["var_name"]])) {
         stop(paste("The variable:", out_var, "is not present in the underlying closure."))
@@ -134,17 +129,17 @@
           )
 
           # create new set entry (for new set in tab)
-          out_ele <- swap_out[is.element(
-            el = names(x = purrr::list_flatten(x = swap_out)),
-            set = out_var
-          )]
-
-          out_ele <- purrr::list_flatten(x = out_ele)
-
-          var_concat_swap_out <- concat_swap_out[is.element(
-            el = names(x = list_flatten(x = concat_swap_out)),
-            set = out_var
-          )]
+          # out_ele <- swap_out[is.element(
+          #   el = names(x = purrr::list_flatten(x = swap_out)),
+          #   set = out_var
+          # )]
+          # 
+          # out_ele <- purrr::list_flatten(x = out_ele)
+          # 
+          # var_concat_swap_out <- concat_swap_out[is.element(
+          #   el = names(x = list_flatten(x = concat_swap_out)),
+          #   set = out_var
+          # )]
 
           # swap-wise diff (note previous remaining_exo_var is var-specific, this is swap-specific)
           standard_var_sets <- .get_sets(
@@ -157,21 +152,21 @@
 
           # algo to pull out largest complete sets by element as possible
           # get set lengths
-          set_ele <- with(data = sets[["elements"]], expr = mget(x = standard_var_sets))
-          set_length <- sapply(X = set_ele, FUN = length)
+          set_ele <- with(data = sets[["mapped_ele"]], expr = mget(x = standard_var_sets))
+          # set_length <- lengths(x = set_ele)
 
           # sets that have been swapped on
-          stnd_swap <- unique(x = unlist(x = lapply(X = out_ele, FUN = names)))
-          stnd_swap <- substring(text = stnd_swap, first = 1, last = nchar(x = stnd_swap) - 1)
+          swapped_sets <- setdiff(colnames(remaining_exo_var), colnames(var_swap_outs[[1]]))
+
           set_length <- sapply(
-            X = stnd_swap,
+            X = swapped_sets,
             FUN = function(s) {
-              set_length <- length(x = with(data = sets[["elements"]], expr = get(x = s)))
+              set_length <- length(x = with(data = sets[["mapped_ele"]], expr = get(x = s)))
               return(set_length)
             }
           )
 
-          stnd_swap <- stnd_swap[order(rank(x = set_length))]
+          swapped_sets <- swapped_sets[order(rank(x = set_length))]
 
           full_ss <- do.call(what = data.table::CJ, set_ele)
 
@@ -180,8 +175,8 @@
           struct_ss <- list()
 
           # no telling how robust this algo is - what a pain
-          for (d in seq_along(stnd_swap)) {
-            set_name <- stnd_swap[d]
+          for (d in seq_along(swapped_sets)) {
+            set_name <- swapped_sets[d]
 
             if (identical(x = d, y = 1L)) {
               full_ss <- split(x = full_ss, by = set_name)

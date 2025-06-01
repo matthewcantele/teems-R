@@ -95,6 +95,11 @@
 #' @export
 teems_model <- function(tab_file,
                         var_omit = NULL,
+                        closure_file = NULL,
+                        swap_in = NULL,
+                        swap_out = NULL,
+                        shock_file = NULL,
+                        shock = NULL,
                         ndigits = 6L,
                         full_exclude = c("DREL", "DVER", "XXCR", "XXCD", "XXCP", "SLUG", "EFLG"),
                         notes = NULL,
@@ -102,13 +107,10 @@ teems_model <- function(tab_file,
 {
 call <- match.call()
 args_list <- mget(x = names(x = formals()))
+envir <- rlang::current_env()
 args_list <- .validate_model_args(args_list = args_list,
                                   call = call,
+                                  envir = envir,
                                   quiet = quiet)
-tab_comp <- .process_tablo(tab_file = args_list[["tab_file"]],
-                           var_omit = args_list[["var_omit"]],
-                           call = call,
-                           quiet = quiet)
-config <- c(args_list, call = call)
-config
+config <- c(call = call, args_list)
 }

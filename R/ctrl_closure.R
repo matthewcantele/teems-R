@@ -4,20 +4,17 @@
 #' 
 #' @keywords internal
 #' @noRd
-.closure_control <- function(config,
+.closure_control <- function(closure_file,
+                             swap_in,
+                             swap_out,
                              var_omit,
                              write_dir,
                              model_name) {
 
-  t_closure_call <- rlang::expr(targets::tar_target_raw(
-    name = "closure_call",
-    command = rlang::expr(quote(expr = !!config[["call"]]))
-  ))
-  
   # track closure file and any changes
   t_closure.file <- rlang::expr(targets::tar_target_raw(
     name = "closure_file",
-    command = quote(expr = !!config[["closure_file"]]),
+    command = quote(expr = !!closure_file),
     format = "file"
   ))
   
@@ -51,7 +48,7 @@
     name = "swapped.in.cls",
     command = expression(.swap_in(
       closure = expanded.closure,
-      swap_in = !!config[["swap_in"]],
+      swap_in = !!swap_in,
       sets = final.set_tib,
       var_extract = tab_comp[["var_extract"]]
     )),
@@ -62,7 +59,7 @@
     name = "swapped.out.cls",
     command = expression(.swap_out(
       closure = swapped.in.cls,
-      swap_out = !!config[["swap_out"]],
+      swap_out = !!swap_out,
       sets = final.set_tib,
       var_extract = tab_comp[["var_extract"]]
     )),
