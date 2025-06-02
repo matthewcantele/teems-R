@@ -2,8 +2,7 @@
 #' @noRd
 .shock_prep <- function(shocks,
                         var_extract) {
-  
-
+browser()
   # length 0 will be returned for at least one element on an unwrapped list
   if (any(is.element(el = 0, set = sapply(X = shocks, FUN = length)))) {
     shocks <- list(shocks)
@@ -39,8 +38,22 @@
              el = tolower(x = shk[["var"]]),
              set = tolower(x = var_extract[["name"]])
            )) {
-             stop(paste(dQuote(x = shk[["var"]]),
-                        "was not found within the model Tablo file."))
+             shock_var <- shk[["var"]]
+             error_fun <- substitute(expr = .cli_action(msg = "The provided 
+             shock variable {.val {shock_var}} was not found within the model 
+                                                        Tablo file.",
+                                                        action = "abort",
+                                                        call = shock_call))
+             
+             error_var <- substitute(variables <- list(
+               shock_var = shock_var))
+             
+             error_inputs <- .package_error(
+               error_var = error_var,
+               error_fun = error_fun
+             )
+             
+             stop(message = error_inputs)
            }
 
          })

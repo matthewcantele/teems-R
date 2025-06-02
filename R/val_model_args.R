@@ -2,7 +2,6 @@
 #' @noRd
 .validate_model_args <- function(args_list,
                                  call,
-                                 envir,
                                  quiet) {
 
   args_list[["ndigits"]] <- as.integer(x = args_list[["ndigits"]])

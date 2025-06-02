@@ -7,6 +7,12 @@
                            shock_file,
                            ndigits,
                            write_dir) {
+  if (!is.null(x = call)) {
+    t_shock_call <- rlang::expr(targets::tar_target_raw(
+      name = "shock_call",
+      command = rlang::expr(quote(expr = !!call))
+    ))
+  }
   if (!is.null(x = shock_file)) {
     t_shock_file <- rlang::expr(targets::tar_target_raw(
       name = "shock_file",

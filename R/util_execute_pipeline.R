@@ -3,8 +3,10 @@
 #' @keywords internal
 #' @noRd
 .execute_pipeline <- function(teems_paths,
+                              model_call,
                               data_call,
                               set_call,
+                              shock_call,
                               tar_load_everything,
                               .testing) {
   if (!.testing) {

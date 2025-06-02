@@ -1,8 +1,7 @@
 #' @keywords internal
 #' @noRd
 .package_error <- function(error_var = NULL,
-                           error_fun,
-                           call) {
+                           error_fun) {
 # add backtrace
   if (!is.null(x = error_var)) {
     var_nchar <- nchar(x = deparse(expr = error_var),

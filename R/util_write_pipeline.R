@@ -1,4 +1,5 @@
 #' @importFrom targets tar_helper tar_option_set
+#' @importFrom purrr pluck discard
 #' @importFrom qs2 qs_save
 #' 
 #' @keywords internal
@@ -6,6 +7,8 @@
 .write_pipeline <- function(model_config,
                             data_config,
                             set_config,
+                            shock_config,
+                            shock_call,
                             model_name,
                             set_map_files,
                             n_timestep,
@@ -34,9 +37,9 @@
                                       var_omit = model_config[["var_omit"]],
                                       write_dir = teems_paths[["launchpad"]],
                                       model_name = model_name)
-   
-  shock_targets <- .shock_control(shock = model_config[["shock"]],
-                                  shock_file = model_config[["shock_file"]],
+
+  shock_targets <- .shock_control(shock = shock_config[["shock"]],
+                                  shock_file = shock_config[["shock_file"]],
                                   ndigits = model_config[["ndigits"]],
                                   write_dir = teems_paths[["launchpad"]])
    

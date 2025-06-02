@@ -107,10 +107,8 @@ teems_model <- function(tab_file,
 {
 call <- match.call()
 args_list <- mget(x = names(x = formals()))
-envir <- rlang::current_env()
 args_list <- .validate_model_args(args_list = args_list,
                                   call = call,
-                                  envir = envir,
                                   quiet = quiet)
 config <- c(call = call, args_list)
 }
