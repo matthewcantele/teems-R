@@ -13,9 +13,14 @@ Password is: github_pat_11AIV5SXI0In5a9z2dh0hc_hhP7B2AlAs7VoY1Kh7CXcxlQlbZ7DQmpx
 git clone https://github.com/matthewcantele/teems-R
 ```
 
+You need R if you haven't installed it yet
+```bash
+sudo apt intall r-base
+```
+
 Some necessary packages for this beta stage
 ```bash
-R -e "install.packages(c("devtools", "data.table"))
+R -e 'install.packages(c("devtools", "data.table"))'
 ```
 
 Enter directory

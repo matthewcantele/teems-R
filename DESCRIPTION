@@ -17,11 +17,17 @@ Encoding: UTF-8
 Roxygen: list(markdown = TRUE)
 RoxygenNote: 7.3.2
 Imports: 
+    abind,
+    cli,
     data.table,
+    dplyr,
     purrr,
+    qs2,
     rlang,
     targets,
-    tibble
+    tibble,
+    tools,
+    utils
 Suggests: 
     knitr,
     rmarkdown,

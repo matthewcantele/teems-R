@@ -4,22 +4,9 @@
 \alias{teems_sets}
 \title{Load set specifications}
 \usage{
-teems_sets(set_input, aux_set = NULL, ..., model_version = NULL, quiet = FALSE)
+teems_sets(set_input, aux_set = NULL, ..., quiet = FALSE)
 }
 \arguments{
-\item{model_version}{Character of length 1 (default is \code{NULL}), GTAP model
-base version corresponding to the selected Tablo model file. Note that this
-is distinct from the data format of input data files. If \code{NULL}, the first
-200 characters of the Tablo file will be parsed with \code{model_version}
-assigned the value following "Version". Choices:
-\itemize{
-\item \code{"v6.2"}: Classic GTAP model version 6.2 and models based off
-this version. See:
-https://www.gtap.agecon.purdue.edu/resources/res_display.asp?RecordID=2458
-\item \code{"v7.0"}: Standard GTAP model version 7 and models based off this
-version. See: https://jgea.org/ojs/index.php/jgea/article/view/47
-}}
-
 \item{quiet}{Logical of length 1 (default is \code{FALSE}). If \code{TRUE},
 function-specific diagnostics are silenced.}
 

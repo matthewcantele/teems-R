@@ -7,6 +7,11 @@
 teems_model(
   tab_file,
   var_omit = NULL,
+  closure_file = NULL,
+  swap_in = NULL,
+  swap_out = NULL,
+  shock_file = NULL,
+  shock = NULL,
   ndigits = 6L,
   full_exclude = c("DREL", "DVER", "XXCR", "XXCD", "XXCP", "SLUG", "EFLG"),
   notes = NULL,
