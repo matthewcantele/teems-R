@@ -167,6 +167,7 @@ args_list <- list(var = var,
 }
 ls_names <- names(x = args_list)
 args_list <- c(args_list, list(ls_names))
-config <- c(call = call, args_list)
-config
+args_list
+#config <- c(call = call, args_list)
+#config
 }

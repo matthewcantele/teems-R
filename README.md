@@ -1,4 +1,4 @@
-# TEEMS solver
+# TEEMS R package
 
 [![License](https://img.shields.io/badge/License-GPL-blue.svg)](LICENSE)
 [![Version](https://img.shields.io/badge/version-0.9-green.svg)](https://github.com/username/repo/releases)

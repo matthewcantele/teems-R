@@ -35,6 +35,17 @@
     tab_file = args_list[["tab_file"]],
     quiet = quiet
   )
+  
+  args_list[["swap_in"]] <- lapply(X = args_list[["swap_in"]],
+                                   FUN = .check_usr_swap,
+                                   quiet = quiet,
+                                   call = call)
+  
+  args_list[["swap_out"]] <- lapply(X = args_list[["swap_out"]],
+                                   FUN = .check_usr_swap,
+                                   quiet = quiet,
+                                   call = call)
+
   args_list[["closure_file"]] <- .check_closure_file(
     closure_file = args_list[["closure_file"]],
     tab_file = args_list[["tab_file"]],
@@ -42,22 +53,6 @@
     quiet = quiet,
     call = call
   )
-
-  call <- .check_swaps(swap_in = args_list[["swap_in"]],
-                       swap_out = args_list[["swap_out"]],
-                       call = call)
-
-  if (is.call(x = call[["swap_in"]])) {
-    args_list[["swap_in"]] <- eval(expr = call[["swap_in"]])
-  } else {
-    args_list[["swap_in"]] <- call[["swap_in"]]
-  }
   
-  if (is.call(x = call[["swap_out"]])) {
-    args_list[["swap_out"]] <- eval(expr = call[["swap_out"]])
-  } else {
-    args_list[["swap_out"]] <- call[["swap_out"]]
-  }
-
   return(args_list)
 }

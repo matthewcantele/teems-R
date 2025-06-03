@@ -185,7 +185,6 @@ n_timestep <- .get_timesteps(aux_data = data_specs[["aux_input"]],
                              intertemporal = model_specs[["intertemporal"]])
 set_map_files <- .get_setmap_info(config = set_specs)
 shock_config <- model_config["shock"]
-browser()
 shock_call <- purrr::pluck(.x = shock_config, "shock", "call")
 shock_config[["shock"]][["call"]] <- NULL
 targets <- .write_pipeline(model_config = model_config,
