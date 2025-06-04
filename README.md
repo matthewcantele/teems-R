@@ -6,11 +6,14 @@
 
 
 Clone the repository to a local directory
-Username is your git username (where you got the invite)
-Password is: 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
-
+For Tom:
 ```bash
-git clone https://github.com/matthewcantele/teems-R
+git clone https://tomkompas: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@github.com/matthewcantele/teems-R.git
+```
+
+For testing:
+```bash
+git clone https://mcantele_testing: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@github.com/matthewcantele/teems-R.git
 ```
 
 You need R if you haven't installed it yet
