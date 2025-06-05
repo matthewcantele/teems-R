@@ -33,9 +33,9 @@ teems_time <- function(tab_file,
       data_type = "set",
       call = call
     )
-    reference_year <- .get_metadata(con = set_file)[["reference_year"]]
+    metadata <- .get_metadata(con = set_file)
     } else {
-      reference_year <- attr(x = set_file, which = "metadata")[["reference_year"]]
+      metadata <- attr(x = set_file, which = "metadata")
       sets <- set_file
     }
   }
@@ -47,7 +47,7 @@ teems_time <- function(tab_file,
     values = c("chronological", "interval", "diff")
   )
   time_steps <- .check_time_steps(
-    t0 = reference_year,
+    t0 = metadata[["reference_year"]],
     time_steps = time_steps,
     time_format = time_format,
     timestep_coeff = timestep_coeff,
@@ -104,6 +104,7 @@ teems_time <- function(tab_file,
   )
 
   attr(x = aux_input[[n_timestep_coeff]], which = "n_timestep_coeff") <- n_timestep_coeff
+  attr(x = aux_input, which = "metadata") <- metadata
   names(x = aux_input) <- sapply(X = aux_input, FUN = function(c){c[["header"]]})
   return(aux_input)
 }

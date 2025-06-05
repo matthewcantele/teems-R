@@ -1,4 +1,4 @@
-#' @importFrom purrr map
+#' @importFrom purrr map map2
 #' 
 #' @keywords internal
 #' @noRd
@@ -129,19 +129,13 @@
   )
 
   # mixed concat
-  coeff[["mixed_idx"]] <- unlist(x = purrr::map2(
-    .x = coeff[["ls_upper_idx"]],
-    .y = coeff[["ls_lower_idx"]],
-    .f = function(sup, sub) {
-      if (unlist(x = !any(sup == "null_set"))) {
-        paste(map2(sup, sub, function(sup2, sub2) {
-          paste0(sup2, sub2)
-        }), collapse = ",")
-      } else {
-        "null_set"
-      }
-    }
-  ))
+  coeff[["mixed_idx"]] <- purrr::map2_chr(.x = coeff[["ls_upper_idx"]],
+                                          .y = coeff[["ls_lower_idx"]],
+                                          .f = function(upper, lower) {
+                                            ifelse(test = identical(x = upper, y = "null_set"),
+                                                   yes =  "null_set",
+                                                   no = paste0(upper, lower, collapse = ","))
+                                          })
 
   # list shock indices
   coeff[["ls_mixed_idx"]] <- strsplit(x = coeff[["mixed_idx"]], split = ",")

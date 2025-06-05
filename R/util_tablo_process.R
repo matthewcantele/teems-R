@@ -1,3 +1,7 @@
+#' @importFrom tibble tibble
+#' @importFrom purrr map_chr
+#' @importFrom cli cli_h1 cli_dl
+#' 
 #' @keywords internal
 #' @noRd
 .process_tablo <- function(tab_file,
@@ -19,7 +23,8 @@
 
   # extract prep
   extract <- tibble::tibble(
-    type = sapply(X = strsplit(x = tab_comp[["state"]], split = " ", perl = TRUE), "[[", 1),
+    type = purrr::map_chr(.x = strsplit(x = tab_comp[["state"]], split = " ", perl = TRUE),
+                          .f = 1),
     remainder = sub(pattern = "^\\S+\\s*", replacement = "", x = tab_comp[["state"]])
   )
   
@@ -61,7 +66,6 @@
   # add other statements eventually
   tab_comp <- list(conden_tab = conden_tab,
                    orig_tab = tab_comp[["orig"]],
-                   #model_version = tab_comp[["model_version"]],
                    var_extract = var_extract,
                    coeff_extract = coeff_extract,
                    set_extract = set_extract,

@@ -6,7 +6,6 @@
                         var_extract,
                         sets) {
   var_name <- swap[["var"]]
-  browser()
   if (!isTRUE(is.na(x = swap[["swap_sets"]]))) {
     components <- swap[["swap_ele"]]
     ls_mixed_names <- purrr::pluck(.x = var_extract, "ls_mixed_idx", var_name)

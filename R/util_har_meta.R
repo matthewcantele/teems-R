@@ -4,7 +4,8 @@
 #' @noRd
 .har_meta <- function(DREL,
                       DVER,
-                      data_type) {
+                      data_type,
+                      call) {
   metadata <- list()
   if (identical(x = length(x = DREL), y = 1L)) {
     string <- purrr::pluck(strsplit(DREL, "_"), 1, 1)
@@ -21,6 +22,12 @@
 
 
   if (identical(x = data_type, y = "dat")) {
+    if (is.null(x = DVER)) {
+      .cli_action(msg = "It appears that a non-dat file has been provided as a 
+                  {.arg dat_input}.",
+                  action = "abort",
+                  call = call)
+    }
     metadata[["data_format"]] <- switch(as.character(x = DVER),
                                         "5" = "v6.2",
                                         "6" = "v7.0",

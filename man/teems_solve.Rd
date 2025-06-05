@@ -96,10 +96,11 @@ running from the terminal.}
 tag to specify the which Docker image is use.}
 
 \item{tab_file}{Character of length 1, path to a local Tablo model file or
-selection of an internal Tablo file. -Command to query internal tab files.-}
+selection of an internal Tablo file. Currently supported internal Tablo
+model files can be viewed with ().}
 
-\item{closure_file}{Character of length 1, file name in working
-directory or path to a closure file.}
+\item{closure_file}{A character of length 1 (default is \code{NULL}). File name in
+working directory or path to a ".cls" closure file.}
 
 \item{shock_file}{Character of length 1, file name in working
 directory or path to a csv representing the final shock file. No

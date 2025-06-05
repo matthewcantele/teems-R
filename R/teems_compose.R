@@ -26,9 +26,9 @@
 #' @return A list containing the parsed model results according to the specified
 #'   type.
 #' @export
-teems_parse <- function(cmf_path,
-                        type = c("variable", "coefficient", "set", "inputdata"),
-                        name = NULL)
+teems_compose <- function(cmf_path,
+                          type = c("variable", "coefficient", "set", "inputdata"),
+                          name = NULL)
 {
 call <- match.call()
 type <- rlang::arg_match(arg = type)

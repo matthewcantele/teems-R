@@ -33,6 +33,7 @@
 
   implied_data_type <- .har_match(con = full_har_path)
   har_file <- basename(path = full_har_path)
+  
   if (!is.null(x = data_type)) {
     if (!identical(x = data_type, y = implied_data_type)) {
       error_fun <- substitute(expr = .cli_action(
@@ -57,6 +58,7 @@
       stop(message = error_inputs)
     }
   }
+  
   if (cf[1] == 0xfd) {
     currentHeader <- ""
     headers <- list()

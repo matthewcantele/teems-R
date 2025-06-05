@@ -5,6 +5,7 @@
 .get_metadata <- function(con) {
   if (!identical(x = attr(x = con, which = "file_ext"),
                 y = "qs2")) {
+    
   # map connection to data type (GTAP database file naming is inconsistent across releases)
   data_type <- .har_match(con = con)
 

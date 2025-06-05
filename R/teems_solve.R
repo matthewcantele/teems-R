@@ -11,7 +11,6 @@
 #'   in `vignette("something")`
 #'
 #' @inheritParams teems_model
-#' @inheritParams teems_closure
 #' @inheritParams teems_deploy
 #'
 #' @param cmf_path Character length 1 (default is `NULL`), path to the
@@ -78,7 +77,7 @@
 #'   are required for in-situ model runs.
 #'
 #'
-#' @seealso [`teems_parse()`] for retrieving model results.
+#' @seealso [`teems_compose()`] for retrieving model results.
 #'
 #' @examples
 #' \dontrun{
