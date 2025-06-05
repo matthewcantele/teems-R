@@ -13,22 +13,23 @@
 #'   model files can be viewed with ().
 #' @param var_omit A character vector (default is `NULL`). Variables to be
 #'   removed from the Tablo model file as well as from the designated closure
-#' (if present).
+#'   (if present).
 #' @param closure_file A character of length 1 (default is `NULL`). File name in
 #'   working directory or path to a ".cls" closure file.
 #' @param swap_in Character vector (default is `NULL`), or `swap` object created
 #'   by [`teems_swap()`], or a list of any combination of character vectors and
 #'   swap objects. Represents model variable or variables to be made exogenous.
-#' @param swap_out Character vector (default is `NULL`), or `swap` object created
-#'   by [`teems_swap()`], or a list of any combination of character vectors and
-#'   swap objects. Represents model variable or variables to be made endogenous.
-#' @param shock_file Character of length 1, file name in working
-#'   directory or path to a csv representing the final shock file. No
-#'   checks or modifications will be conducted on this file.
+#' @param swap_out Character vector (default is `NULL`), or `swap` object
+#'   created by [`teems_swap()`], or a list of any combination of character
+#'   vectors and swap objects. Represents model variable or variables to be made
+#'   endogenous.
+#' @param shock_file Character of length 1, file name in working directory or
+#'   path to a csv representing the final shock file. No checks or modifications
+#'   will be conducted on this file.
 #' @param shock A `shock` object or in the case of multiple shocks, list of
-#'   objects produced by [`teems_shock()`] (default is `NULL`). In the
-#' case of `NULL`, a `NULL` shock will be carried out which effectively returns
-#' the base data.
+#'   objects produced by [`teems_shock()`] (default is `NULL`). In the case of
+#'   `NULL`, a `NULL` shock will be carried out which effectively returns the
+#'   base data.
 #' @param ndigits Integer (default is `6`). Exact number of digits to the right
 #'   of the decimal point to be written to file for numeric type double (GEMPack
 #'   equivalent "real"). This value is passed to the `format()` nsmall argument
@@ -52,21 +53,26 @@
 #'   within [`teems_deploy()`] to produce a path-dependent pipeline resulting in
 #'   solver-ready input files for [`teems_solve()`].
 #'
+#' @seealso [`teems_swap()`] for loading both full variable swaps as well as
+#'   element-specific swaps.
+#' @seealso [`teems_shock()`] for loading a variety of shock types.
 #' @seealso [`teems_deploy()`] for loading the output of this function.
 #'
 #' @examples
 #' # Simple swap and shock
+#' # numeraire shock
 #' numeraire_shock <- teems_shock(var = "pfactwld",
 #'                                type = "uniform",
 #'                                value = 0.5)
-#' teems_model(tab_file = "GTAPv7.0",
+#' # internal Tablo file "GTAPv7.0" with standard variable omissions and 
+#' # standard closure implicitly selected
+#' teems_model(tab_file = "GTAPv7.0", 
 #'             var_omit = c("atall", "avaall", "tfe", "tfd", "tfm", "tgd", "tgm", 
 #'                          "tpdall", "tpmall", "tid", "tim"),
-#'             shock = numeraire_shock,
-#'             notes = "Numeraire shock on the standard GTAPv7.0 closure.")
+#'             shock = numeraire_shock)
 #'             
 #' # Mixed multiple swaps and shocks
-#' lam_qgdp <- teems_swap(var = "qgdp",
+#' lam_qgdp <- teems_swap(var = "qgdp", 
 #'                        REGr = "lam")
 #' lam_aoreg <- teems_swap(var = "aoreg",
 #'                         REGr = "lam")
@@ -82,9 +88,7 @@
 #'                          "tgd", "tgm", "tpd", "tpm"),
 #'             swap_in = list(lam_qgdp, "y"),
 #'             swap_out = list(lam_aoreg, "incomeslack"),
-#'             shock = list(lam_qgdp_shock, y_shock),
-#'             notes = "Element-specific swap and full variable swap with shock to 
-#'             the 'lam' element in set 'REGr' on the 'qgdp' exogenous variable.")
+#'             shock = list(lam_qgdp_shock, y_shock))
 #'             
 #' @export
 teems_model <- function(tab_file,
