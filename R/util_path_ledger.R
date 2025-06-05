@@ -20,6 +20,9 @@
   if (!dir.exists(paths = model_dir)) {
     dir.create(path = model_dir, recursive = TRUE)
   }
+  if (!dir.exists(paths = store_dir)) {
+    dir.create(path = store_dir, recursive = TRUE)
+  }
   if (dir.exists(paths = launchpad_dir)) {
     unlink(x = launchpad_dir, recursive = TRUE, force = TRUE)
   }
