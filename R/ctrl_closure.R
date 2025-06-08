@@ -51,8 +51,7 @@
       swap_in = !!swap_in,
       sets = final.set_tib,
       var_extract = tab_comp[["var_extract"]]
-    )),
-    cue = targets::tar_cue(mode = "always")
+    ))
   ))
 
   t_swap.out.closure <- rlang::expr(targets::tar_target_raw(
@@ -62,8 +61,7 @@
       swap_out = !!swap_out,
       sets = final.set_tib,
       var_extract = tab_comp[["var_extract"]]
-    )),
-    cue = targets::tar_cue(mode = "always")
+    ))
   ))
 
   t_final.closure <- rlang::expr(targets::tar_target_raw(

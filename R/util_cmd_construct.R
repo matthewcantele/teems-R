@@ -60,7 +60,7 @@
   exec_cmd <- paste(exec_preamble, solver_param)
   sol_parse_cmd <- paste(docker_preamble, '"make -C /opt/teems-parser"')
   if (terminal_run) {
-    cat(cmd, file = file.path(paths[["run"]], "model_exec.txt"))
+    cat(exec_cmd, file = file.path(paths[["run"]], "model_exec.txt"))
     hsl <- "hsl"
     diag_out <- paths[["diag_out"]]
     cmf_path <- paths[["cmf"]]

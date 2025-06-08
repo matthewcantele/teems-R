@@ -47,7 +47,7 @@
         closure = swapped.out.cls,
         var_extract = tab_comp[["var_extract"]],
         sets = final.set_tib,
-        param = final.par_tib,
+        data = final.data_tib,
         reference_year = metadata[["reference_year"]]
       )),
       cue = targets::tar_cue(mode = "always")

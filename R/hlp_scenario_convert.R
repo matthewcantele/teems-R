@@ -5,25 +5,25 @@
 .convert_scenario <- function(input,
                               reference_year,
                               sets,
-                              AYRS) {
+                              YEAR) {
 
   # convert CYRS to ALLTIMEt
   # t0 timestep to remain unshocked
   # function for this snippet below
-  chron_yrs <- AYRS[["Value"]] + reference_year
+  chron_yrs <- YEAR[["Value"]] + reference_year
   # check that chronological years are provied
-  if (!is.element(el = "CYRS", set = colnames(x = input))) {
+  if (!is.element(el = "Year", set = colnames(x = input))) {
     stop(
       paste(
         dQuote(x = "scenario"),
-        "type shocks must contain a column CYRS representing chronological years."
+        "type shocks must contain a column Year representing chronological years."
       )
     )
-  } else if (!all(is.element(el = chron_yrs, set = input[["CYRS"]]))) {
+  } else if (!all(is.element(el = chron_yrs, set = input[["Year"]]))) {
 
     missing_yrs <- chron_yrs[["Value"]][!is.element(
       el = chron_yrs[["Value"]],
-      set = input[["CYRS"]]
+      set = input[["Year"]]
     )]
     stop(
       paste(
@@ -38,26 +38,26 @@
     x = input,
     subset = {
       is.element(
-        el = CYRS,
+        el = Year,
         set = chron_yrs
       )
     }
   )
   
-  AYRS[["CYRS"]] <- chron_yrs
-  r_idx <- match(x = input[["CYRS"]], table = AYRS[["CYRS"]])
-  input[["ALLTIMEt"]] <- AYRS[["ALLTIMEt"]][r_idx]
-  input[, CYRS := NULL]
+  YEAR[["Year"]] <- chron_yrs
+  r_idx <- match(x = input[["Year"]], table = YEAR[["Year"]])
+  input[["ALLTIMEt"]] <- YEAR[["ALLTIMEt"]][r_idx]
+  input[, Year := NULL]
 
   set_maps <- subset(
     x = sets,
     subset = {
-      !is.na(x = names(x = sets[["full_sets"]]))
+      !is.na(x = names(x = sets[["mapping"]]))
     },
-    select = full_sets
+    select = mapping
   )
 
-  set_maps <- data.table::rbindlist(l = set_maps[["full_sets"]], use.names = FALSE)
+  set_maps <- data.table::rbindlist(l = set_maps[["mapping"]], use.names = FALSE)
   data.table::setnames(x = set_maps, new = c("origin", "map"))
 
   # this can eventually be made into a function
@@ -79,12 +79,8 @@
   # non-Value, non-int columns
   # write function to go between REG to REGr for all sets
 
-  non_int_sets <- toupper(x = unlist(x = subset(x = sets, subset = {
-    is.element(el = qualifier, set = "(non_intertemporal)")
-  }, select = name)))
-  int_sets <- toupper(x = unlist(x = subset(x = sets, subset = {
-    is.element(el = qualifier, set = "(intertemporal)")
-  }, select = name)))
+  non_int_sets <- toupper(x = unlist(x = subset(x = sets, subset = !intertemporal, select = name)))
+  int_sets <- toupper(x = unlist(x = subset(x = sets, subset = intertemporal, select = name)))
   non_int_value_col <- colnames(x = input)[is.element(
     el = sub(pattern = ".{1}$", replacement = "", x = colnames(x = input)),
     set = non_int_sets

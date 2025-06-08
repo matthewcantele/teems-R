@@ -8,7 +8,7 @@
                              closure,
                              var_extract,
                              sets,
-                             param,
+                             data,
                              reference_year) {
   final_shocks <- list()
   counter <- 0
@@ -25,7 +25,6 @@
         if (is.element(el = type, set = c("scenario", "custom"))) {
           # if scenario shock, prep and convert to custom
           value <- data.table::fread(input = eval(expr = file))
-
           # make sure there's a value column
           if (!is.element(el = "Value", set = colnames(x = value))) {
             stop(paste(
@@ -37,29 +36,31 @@
           }
 
           # convert to ALLTIMEt if only Year given
-          if (is.element(el = "Year", set = colnames(x = value))) {
-            browser()
-            # fix this
-            AYRS <- purrr::pluck(.x = param, "dt", "AYRS")
-            AYRS[["CYRS"]] <- reference_year + AYRS[["Value"]]
-            if (!all(is.element(el = value[["Year"]], set = AYRS[["CYRS"]]))) {
-              stop("One or more years provided within an intertemporal shock is not consistent with the implied years from time steps.")
-            }
-            r_idx <- match(x = value[["Year"]], AYRS[["CYRS"]])
-            value[["ALLTIMEt"]] <- AYRS[["ALLTIMEt"]][r_idx]
-            value <- value[, !"Year"]
-          }
+          # if (is.element(el = "Year", set = colnames(x = value))) {
+          #   browser()
+          #   # fix this
+          #   YEAR <- purrr::pluck(.x = data, "dt", "YEAR")
+          #   YEAR[["CYRS"]] <- reference_year + YEAR[["Value"]]
+          #   if (!all(is.element(set = value[["Year"]], el = YEAR[["CYRS"]]))) {
+          #     stop("Some years in the time mapping not present in the shock file")
+          #   }
+          #   value <- value[Year %in% unique(YEAR$CYRS)]
+          #   r_idx <- match(value$Year, YEAR[["CYRS"]])
+          #   value[["ALLTIMEt"]] <- YEAR[["ALLTIMEt"]][r_idx]
+          #   value <- value[, !"Year"]
+          # }
 
           if (identical(x = type, y = "scenario")) {
             value <- .convert_scenario(
               input = value,
               reference_year = reference_year,
-              AYRS = purrr::pluck(.x = param, "dt", "AYRS"),
+              YEAR = purrr::pluck(.x = data, "dt", "YEAR"),
               sets = sets
             )
             # now it is effectively a type "custom" shock
             type <- "custom"
           }
+          
         }
 
         # break into shock type specifc control flows
