@@ -17,14 +17,21 @@
     ls_array <- ls_array[!is.element(el = names(x = ls_array), set = full_exclude)]
   }
   
-  # records missing for the following parameter headers
-  if (is.element(el = "RDLT", set = names(x = ls_array))) {
-    purrr::pluck(ls_array, "RDLT", "coefficient") <- "RORDELTA"
-  }
-  if (is.element(el = "SLUG", set = names(x = ls_array))) {
-    purrr::pluck(ls_array, "SLUG", "coefficient") <- "SLUG"
-  }
-  
+  r_idx <- match(x = names(x = ls_array), table = coeff_extract[["header"]])
+  ls_array <- purrr::map2(
+    .x = ls_array,
+    .y = r_idx,
+    .f = function(h, id) {
+      if (!is.na(x = id)) {
+        coeff_name <- purrr::pluck(.x = coeff_extract, "coefficient", id)
+        label <- purrr::pluck(.x = coeff_extract, "label", id)
+        purrr::pluck(.x = h, "coefficient") <- coeff_name
+        purrr::pluck(.x = h, "label") <- label
+      }
+      return(h)
+    }
+  )
+
   # change ETRE set from ENDWS_COMM to ENDW_COMM and add null values for mobile factors
   if (is.element(el = metadata[["database_version"]], set = c("v9", "v10"))) {
         if (identical(x = metadata[["data_format"]], y = "v6.2")) {
@@ -47,19 +54,6 @@
 
     purrr::pluck(.x = ls_array, "ETRE", "data") <- ETRE
   }
-
-  r_idx <- match(x = names(x = ls_array), table = coeff_extract[["header"]])
-  ls_array <- purrr::map2(
-    .x = ls_array,
-    .y = r_idx,
-    .f = function(h, id) {
-      if (!is.na(x = id)) {
-        coeff_name <- purrr::pluck(.x = coeff_extract, "coefficient", id)
-        purrr::pluck(.x = h, "coefficient") <- coeff_name
-      }
-      return(h)
-    }
-  )
 
   # CGDS to zcgds, lowercase
   ls_array <- lapply(

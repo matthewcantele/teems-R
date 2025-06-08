@@ -177,7 +177,7 @@
   for (h in names(headers)) {
     headers[[h]]$header <- trimws(rawToChar(headers[[h]]$records[[1]][1:4]))
     headers[[h]]$type <- rawToChar(headers[[h]]$records[[2]][5:10])
-    headers[[h]]$label <- trimws(rawToChar(headers[[h]]$records[[2]][11:80]))
+    #headers[[h]]$label <- trimws(rawToChar(headers[[h]]$records[[2]][11:80]))
     headers[[h]]$numberOfDimensions <- readBin(headers[[h]]$records[[2]][81:84], "integer",
       size =
         4
@@ -294,7 +294,7 @@
         size =
           4
       )
-      headers[[h]]$coefficient <- trimws(rawToChar(headers[[h]]$records[[3]][17:28]))
+      #headers[[h]]$coefficient <- trimws(rawToChar(headers[[h]]$records[[3]][17:28]))
 
       if (headers[[h]]$usedDimensions > 0) {
         m <- matrix(
@@ -409,7 +409,7 @@
     FUN = function(h) {
       h <- h[is.element(
         el = names(x = h),
-        set = c("header", "label", "coefficient", "data")
+        set = c("header", "data")
       )]
       return(h)
     }
