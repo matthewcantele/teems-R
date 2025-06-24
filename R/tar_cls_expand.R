@@ -13,19 +13,6 @@
                       })
   }
 
-  # check that all variable names from closure are present within the var extract
-  if (!all(is.element(el = tolower(x = closure[["var_name"]]), set = tolower(x = var_extract[["name"]])))) {
-    var_discrepany <- tolower(x = closure[["var_name"]])[!is.element(
-      el = tolower(x = closure[["var_name"]]),
-      set = tolower(x = var_extract[["name"]])
-    )]
-    stop(paste(
-      "The variable(s)",
-      var_discrepany,
-      "was/were not been located within the variable extract."
-    ))
-  }
-
   # structured data, overspecified control flow for now - revise
   closure[["struct"]] <- purrr::pmap(
     .l = with(

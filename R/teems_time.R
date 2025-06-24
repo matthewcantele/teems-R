@@ -5,8 +5,8 @@ teems_time <- function(tab_file,
                        set_input = NULL,
                        time_steps,
                        time_format,
-                       timestep_coeff = "YEAR",
-                       n_timestep_coeff = "NTIMESTEPS",
+                       timestep_header = "YEAR",
+                       n_timestep_header = "NTSP",
                        ...,
                        quiet = FALSE) {
 
@@ -50,8 +50,8 @@ teems_time <- function(tab_file,
     t0 = metadata[["reference_year"]],
     time_steps = time_steps,
     time_format = time_format,
-    timestep_coeff = timestep_coeff,
-    n_timestep_coeff = n_timestep_coeff,
+    timestep_header = timestep_header,
+    n_timestep_header = n_timestep_header,
     quiet = quiet,
     call = call
   )
@@ -71,7 +71,7 @@ teems_time <- function(tab_file,
     .x = time_comp,
     .y = names(x = time_comp),
     .f = function(comp, nme) {
-      r_idx <- match(x = nme, table = coeff_extract[["coefficient"]])
+      r_idx <- match(x = nme, table = coeff_extract[["header"]])
       coeff_sets <- coeff_extract[["ls_upper_idx"]][[r_idx]]
       if (any(!is.element(el = coeff_sets, set = c("ALLTIME", "null_set")))) {
         retrieve_sets <- coeff_sets[!is.element(el = coeff_sets, set = c("ALLTIME", "null_set"))]
@@ -94,16 +94,17 @@ teems_time <- function(tab_file,
       }
 
       load_comp <- list(
-        header = coeff_extract[["header"]][r_idx],
+        header = nme,
         label = coeff_extract[["label"]][r_idx],
-        coefficient = nme,
+        coefficient = coeff_extract[["coefficient"]][r_idx],
         data = data
       )
       return(load_comp)
     }
   )
 
-  attr(x = aux_input[[n_timestep_coeff]], which = "n_timestep_coeff") <- n_timestep_coeff
+  attr(x = aux_input, which = "n_timestep_header") <- n_timestep_header
+  attr(x = aux_input, which = "timestep_header") <- timestep_header
   attr(x = aux_input, which = "metadata") <- metadata
   names(x = aux_input) <- sapply(X = aux_input, FUN = function(c){c[["header"]]})
   return(aux_input)

@@ -8,6 +8,7 @@
                               var_name,
                               idx,
                               write_path) {
+  browser()
   # format values
   dt[, Value := format(
     round(Value, ndigits),
@@ -21,10 +22,13 @@
   # column names for the algo
   if (!identical(x = colnames(x = dt), y = "Value")) {
     mixed_names <- setdiff(x = colnames(x = dt), y = "Value")
-    std_names <- substr(
-      x = mixed_names,
-      start = 1,
-      stop = nchar(x = mixed_names) - 1
+    std_names <- ifelse(test = grepl(pattern = "\"", x = mixed_names),
+      yes = mixed_names,
+      no = substr(
+        x = mixed_names,
+        start = 1,
+        stop = nchar(x = mixed_names) - 1
+      )
     )
   } else {
     std_names <- "Value"
@@ -32,6 +36,7 @@
 
   # partial var condition
   if (!attr(x = var_name, which = "full_var")) {
+    browser()
     shock_ele <- dt[, lapply(.SD, function(r) {
       paste0("\"", r, "\"")
     }), .SDcols = mixed_names]
@@ -59,39 +64,25 @@
                that a shock type 'uniform' is appropriate.")
     } else if (identical(x = idx, y = 1L)) {
       # lead
-      if (attr(x = var_name, which = "full_var")) {
-        lead <- paste("Shock", paste0(var_name, "(", std_names, ")"), "=")
+      lead <- paste("Shock", paste0(var_name, "(", std_names, ")"), "=")
 
-        cat(lead,
-          "\n",
-          file = write_path,
-          append = TRUE
-        )
-        # vector
-        arr <- as.array(dt[[2]])
-        cat(arr,
-          file = write_path,
-          sep = " ",
-          append = TRUE
-        )
-        cat("\n", ";", "\n",
-          file = write_path,
-          sep = "",
-          append = TRUE
-        )
-      } else {
-        writeout <- paste(
-          "Shock",
-          paste0(var_name, "(\"", dt[[1]], "\")"),
-          "=",
-          paste0(dt[[2]], ";\n")
-        )
-        cat(writeout,
-          file = write_path,
-          sep = "",
-          append = TRUE
-        )
-      }
+      cat(lead,
+        "\n",
+        file = write_path,
+        append = TRUE
+      )
+      # vector
+      arr <- as.array(dt[[2]])
+      cat(arr,
+        file = write_path,
+        sep = " ",
+        append = TRUE
+      )
+      cat("\n", ";", "\n",
+        file = write_path,
+        sep = "",
+        append = TRUE
+      )
     } else if (identical(x = idx, y = 2L)) {
       lead <- paste(
         "Shock",

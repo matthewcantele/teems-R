@@ -83,7 +83,7 @@
                           "The {.arg cmf_path} path to use as a value within 
                           {.fun teems::teems_parse} is {.path {cmf_path}}."))
     #clipr::write_clip(content = cmd)
-    return()
+    return(terminal_run)
   }
   cmd <- list(exec = exec_cmd,
               sol_parse = sol_parse_cmd)

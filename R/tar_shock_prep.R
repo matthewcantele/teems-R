@@ -2,62 +2,34 @@
 #' @noRd
 .shock_prep <- function(shocks,
                         var_extract) {
-
+browser()
   # length 0 will be returned for at least one element on an unwrapped list
-  if (any(is.element(el = 0, set = sapply(X = shocks, FUN = length)))) {
-    shocks <- list(shocks)
-  }
+  # if (any(is.element(el = 0, set = sapply(X = shocks, FUN = length)))) {
+  #   shocks <- list(shocks)
+  # }
 
   # reconstruct shocks
-  shock_list <- lapply(
-    X = shocks,
-    FUN = function(shock_arg) {
-      shock_names <- shock_arg[length(shock_arg)][[1]]
-      shock_arg <- head(x = shock_arg, -1)
-      names(x = shock_arg) <- shock_names
-      optional_sets <- c("shock_ele", "shock_set")
-      if (any(is.element(el = optional_sets, set = shock_names))) {
-        shock_ele <- shock_arg[["shock_ele"]][[1]]
-        names(x = shock_ele) <- shock_arg[["shock_set"]][[1]]
-
-        shock_arg <- shock_arg[!is.element(
-          el = names(x = shock_arg),
-          set = optional_sets
-        )]
-
-        shock_arg <- c(shock_arg, shock_ele)
-      }
-      return(shock_arg)
-    }
-  )
-
-  # check that chosen shock variables exists within model
-  lapply(X = shock_list,
-         FUN = function(shk) {
-           if (!is.element(
-             el = tolower(x = shk[["var"]]),
-             set = tolower(x = var_extract[["name"]])
-           )) {
-             shock_var <- shk[["var"]]
-             error_fun <- substitute(expr = .cli_action(msg = "The provided 
-             shock variable {.val {shock_var}} was not found within the model 
-                                                        Tablo file.",
-                                                        action = "abort",
-                                                        call = shock_call))
-             
-             error_var <- substitute(variables <- list(
-               shock_var = shock_var))
-             
-             error_inputs <- .package_error(
-               error_var = error_var,
-               error_fun = error_fun
-             )
-             
-             stop(message = error_inputs)
-           }
-
-         })
-
+  # shock_list <- lapply(
+  #   X = shocks,
+  #   FUN = function(shock_arg) {
+  #     shock_names <- shock_arg[length(shock_arg)][[1]]
+  #     shock_arg <- head(x = shock_arg, -1)
+  #     names(x = shock_arg) <- shock_names
+  #     optional_sets <- c("shock_ele", "shock_set")
+  #     if (any(is.element(el = optional_sets, set = shock_names))) {
+  #       shock_ele <- shock_arg[["shock_ele"]][[1]]
+  #       names(x = shock_ele) <- shock_arg[["shock_set"]][[1]]
+  # 
+  #       shock_arg <- shock_arg[!is.element(
+  #         el = names(x = shock_arg),
+  #         set = optional_sets
+  #       )]
+  # 
+  #       shock_arg <- c(shock_arg, shock_ele)
+  #     }
+  #     return(shock_arg)
+  #   }
+  # )
 
   # multiple element condition
   multi_ele <- sapply(

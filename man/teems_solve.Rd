@@ -102,9 +102,9 @@ model files can be viewed with ().}
 \item{closure_file}{A character of length 1 (default is \code{NULL}). File name in
 working directory or path to a ".cls" closure file.}
 
-\item{shock_file}{Character of length 1, file name in working
-directory or path to a csv representing the final shock file. No
-checks or modifications will be conducted on this file.}
+\item{shock_file}{Character of length 1, file name in working directory or
+path to a csv representing the final shock file. No checks or modifications
+will be conducted on this file.}
 
 \item{quiet}{Logical of length 1 (default is \code{FALSE}). If \code{TRUE},
 function-specific diagnostics are silenced.}
@@ -179,5 +179,5 @@ teems_solve(cmf_path = v6.2_cmf_path,
 }
 }
 \seealso{
-\code{\link[=teems_parse]{teems_parse()}} for retrieving model results.
+\code{\link[=teems_compose]{teems_compose()}} for retrieving model results.
 }

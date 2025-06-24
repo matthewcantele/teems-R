@@ -52,8 +52,7 @@
 
       error_inputs <- .package_error(
         error_var = error_var,
-        error_fun = error_fun,
-        call = call
+        error_fun = error_fun
       )
       stop(message = error_inputs)
     }

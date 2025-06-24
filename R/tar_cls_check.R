@@ -6,6 +6,7 @@
 .check_closure <- function(closure,
                            sets,
                            tab_file) {
+  # change name to classify_closure
   # expand standard closure to possible set and element combinations
   exogenous <- tibble::tibble(orig_closure = closure)
 

@@ -11,7 +11,7 @@
                             shock_call,
                             model_name,
                             set_map_files,
-                            n_timestep,
+                            int_data,
                             metadata,
                             teems_paths) {
 
@@ -21,7 +21,7 @@
    
   set_targets <- .set_control(config = set_config,
                               set_map_files = set_map_files,
-                              n_timestep = n_timestep,
+                              int_data = int_data,
                               data_type = "set",
                               full_exclude = model_config[["full_exclude"]],
                               write_dir = teems_paths[["launchpad"]])

@@ -5,7 +5,7 @@
 #' @noRd
 .set_control <- function(config,
                          set_map_files,
-                         n_timestep,
+                         int_data,
                          data_type,
                          full_exclude,
                          write_dir) {
@@ -68,12 +68,29 @@
       command = quote(expr = NULL)
     ))
   }
+  
+  if (!isTRUE(x = is.na(x = int_data))) {
+  t_int_sets <- rlang::expr(targets::tar_target_raw(
+    name = "int_sets",
+    command = expression(.build_int_sets(
+      set_extract = tab_comp[["set_extract"]][["sets"]],
+      int_data = !!int_data,
+      reference_year = metadata[["reference_year"]]
+    ))
+  ))
+  } else {
+    t_int_sets <- rlang::expr(targets::tar_target_raw(
+      name = "int_sets",
+      command = quote(NA)
+      ))
+  }
 
   t_set_mod.set_array <- rlang::expr(targets::tar_target_raw(
     name = "mod.set_array",
     command = expression(.modify_sets(
       set_array = set_array,
       append = aux_set_array,
+      set_extract = tab_comp[["set_extract"]][["sets"]],
       full_exclude = !!full_exclude,
       call = set_call
     ))
@@ -102,7 +119,8 @@
     command = expression(.build_tibble(
       ls_array = mod.set_array,
       is_set_array = TRUE,
-      set_extract = tab_comp[["set_extract"]][["sets"]]
+      set_extract = tab_comp[["set_extract"]][["sets"]],
+      int_sets = int_sets
     ))
   ))
 
@@ -113,7 +131,7 @@
     name = "expanded.set_tib",
     command = expression(.expand_sets(
       sets = init.set_tib,
-      n_timestep = !!n_timestep,
+      int_sets = int_sets,
       set_extract = tab_comp[["set_extract"]][["sets"]]
     ))
   ))

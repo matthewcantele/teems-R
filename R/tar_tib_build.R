@@ -6,18 +6,16 @@
 .build_tibble <- function(ls_array,
                           is_set_array = FALSE,
                           set_extract,
+                          int_sets,
                           unaggregated_input = NULL,
                           coeff_extract = NULL) {
-
-  # create list of data.tables from arrays
-  if (any(set_extract[["intertemporal"]])) {
-    int_sets <- subset(x = set_extract,
-                       subset = intertemporal,
-                       select = name)[[1]]
+  if (!isTRUE(x = is.na(x = int_sets))) {
+    int_set_names <- int_sets[["header"]]
+    intertemporal <- TRUE
   } else {
-    int_sets <- NA
+    intertemporal <- FALSE
   }
-  
+
   ls_array <- lapply(X = ls_array, FUN = function(header) {
     dim_length <- length(x = dimnames(x = header[["data"]]))
     # set file
@@ -31,9 +29,9 @@
     } else {
       header[["dt"]] <- array2DF(x = header[["data"]])
       stnd_col <- substr(x = colnames(header[["dt"]]), start = 1, stop = nchar(colnames(header[["dt"]])) - 1)
-      if (!isTRUE(x = is.na(x = int_sets))) {
-      if (any(is.element(el = stnd_col, set = int_sets))) {
-        int_col <- colnames(header[["dt"]])[is.element(el = stnd_col, set = int_sets)]
+      if (intertemporal) {
+      if (any(is.element(el = stnd_col, set = int_set_names))) {
+        int_col <- colnames(header[["dt"]])[is.element(el = stnd_col, set = int_set_names)]
         header[["dt"]][[int_col]] <- as.integer(x = header[["dt"]][[int_col]])
       }
       }

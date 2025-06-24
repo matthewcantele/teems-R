@@ -4,12 +4,15 @@
 teems_data <- function(dat_input,
                        par_input,
                        aux_input = NULL,
-                       aggregated_input = NULL,
-                       unaggregated_input = NULL,
+                       aggregated_data = NULL,
+                       unaggregated_data = NULL,
                        quiet = FALSE)
 {
 call <- match.call()
 args_list <- mget(x = names(x = formals()))
+args_list <- .validate_data_args(args_list = args_list,
+                                 call = call,
+                                 quiet = quiet)
 args_list[["dat_input"]] <- .check_input(file = dat_input,
                                          valid_ext = c("har", "qs2"),
                                          call = call)

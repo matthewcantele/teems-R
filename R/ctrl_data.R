@@ -124,6 +124,7 @@
     command = expression(.build_tibble(
       ls_array = final.data_array,
       set_extract = tab_comp[["set_extract"]][["sets"]],
+      int_sets = int_sets,
       unaggregated_input = !!config[["unaggregated_input"]],
       coeff_extract = tab_comp[["coeff_extract"]]
     ))

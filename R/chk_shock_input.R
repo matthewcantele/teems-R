@@ -4,30 +4,46 @@
 #' @noRd
 .check_shock_input <- function(var,
                                type,
+                               value,
                                file,
+                               set,
+                               ele,
                                call) {
-  if (!is.element(el = "type", set = names(x = call))) {
-    .cli_action(action = "abort",
-                msg = "{.arg type} must be provided for all shocks.",
+
+  if (missing(x = var)) {
+    .cli_action(msg = "{.arg var} must be provided for all shocks.",
+                action = "abort",
+                call = call)
+  }
+  
+  if (missing(x = type)) {
+    .cli_action(msg = "{.arg type} must be provided for all shocks.",
+                action = "abort",
                 call = call)
   } else {
     rlang::arg_match(arg = type,
-                     values = c("uniform","custom", "scenario"),
+                     values = c("uniform", "custom", "scenario"),
                      error_call = call)
   }
-  if (missing(x = var)) {
-    .cli_action(action = "abort",
-                msg = "{.arg var} must be provided for all shocks.",
-                call = call)
+  
+  if (identical(x = type, y = "uniform")) {
+    if (missing(x = value) || !is.numeric(x = value)) {
+      .cli_action(msg = "{.arg value} must be provided a numeric value for all 
+                  {.arg uniform} shocks.",
+                  action = "abort",
+                  call = call)
+    }
   }
+
+  # data.frame here
   if (is.element(el = type, set = c("custom", "scenario"))) {
     if (is.null(x = file)) {
-      .cli_action(action = "abort",
-                  msg = "{.arg file} must be provided for for shock types {.val custom} and {.val scenario}.",
+      .cli_action(msg = "{.arg file} must be provided for for shock types {.val custom} and {.val scenario}.",
+                  action = "abort",
                   call = call)
     } else if (!file.exists(file)) {
-      .cli_action(action = "abort",
-                  msg = "{.arg file} does not exist.",
+      .cli_action(msg = "{.arg file} does not exist.",
+                  action = "abort",
                   call = call)
     }
   }

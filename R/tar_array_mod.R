@@ -27,6 +27,9 @@
         label <- purrr::pluck(.x = coeff_extract, "label", id)
         purrr::pluck(.x = h, "coefficient") <- coeff_name
         purrr::pluck(.x = h, "label") <- label
+      } else {
+        purrr::pluck(.x = h, "coefficient") <- h[["header"]]
+        purrr::pluck(.x = h, "label") <- NA
       }
       return(h)
     }

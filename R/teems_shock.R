@@ -140,34 +140,34 @@
 #'
 #' @export
 teems_shock <- function(var,
-                        type = c("uniform","custom", "scenario"),
+                        type,
                         value = NULL,
                         file = NULL,
-                        ...)
+                        ...,
+                        check_status = TRUE)
 {
 call <- match.call()
-.check_shock_input(var = var,
-                   type = type,
-                   file = file,
-                   call = call)
-
 if (!missing(x = ...)) {
 args_list <- list(var = var,
-     type = type,
-     value = value,
-     file = file,
-     shock_set = list(names(x = list(...))),
-     shock_ele = list(list(...)))
-
+                  type = type,
+                  value = value,
+                  file = file,
+                  set = names(x = list(...)),
+                  ele = list(...),
+                  check_status = check_status)
 } else {
 args_list <- list(var = var,
                   type = type,
                   value = value,
-                  file = file)
+                  file = file,
+                  set = NULL,
+                  ele = NULL,
+                  check_status = check_status)
 }
-ls_names <- names(x = args_list)
-args_list <- c(args_list, list(ls_names))
+args_list <- .validate_shock_args(args_list = args_list,
+                                  call = call)
+args_list[["check_status"]] <- check_status
+class(x = args_list) <- "shock"
+args_list <- list(args_list)
 args_list
-#config <- c(call = call, args_list)
-#config
 }

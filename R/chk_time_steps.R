@@ -2,8 +2,8 @@
 #' @noRd
 .check_time_steps <- function(t0,
                               time_steps,
-                              timestep_coeff,
-                              n_timestep_coeff,
+                              timestep_header,
+                              n_timestep_header,
                               time_format,
                               quiet,
                               call) {
@@ -78,6 +78,6 @@
   }
   
   f_timesteps <- list(f_timesteps, length(x = f_timesteps))
-  names(x = f_timesteps) <- c(timestep_coeff, n_timestep_coeff)
+  names(x = f_timesteps) <- c(timestep_header, n_timestep_header)
   return(f_timesteps)
 }

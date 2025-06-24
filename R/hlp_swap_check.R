@@ -5,59 +5,40 @@
 .check_swap <- function(swap,
                         var_extract,
                         sets) {
-  var_name <- swap[["var"]]
+
   if (!isTRUE(is.na(x = swap[["swap_sets"]]))) {
-    components <- swap[["swap_ele"]]
-    ls_mixed_names <- purrr::pluck(.x = var_extract, "ls_mixed_idx", var_name)
-    ls_upper_names <- purrr::pluck(.x = var_extract, "ls_upper_idx", var_name)
-    # check that the names provided are correct
-    if (!all(is.element(
-      el = names(x = components),
-      set = ls_mixed_names
-    ))) {
-      stop("One or more set names (LHS) in the 'swap_in' argument are
-                             not found within the current set list")
-    }
-
-    # reorder and add uniform components if necessary
-    if (!identical(x = names(x = components), y = ls_mixed_names)) {
-      # omitted uniform components (ALLTIMEt = ALLTIMEt)
-      missing_sets <- setdiff(x = ls_mixed_names, y = names(x = components))
-      if (!identical(
-        x = missing_sets,
-        y = character(0)
-      )) {
-        ls_missing_sets <- as.list(x = missing_sets)
-        names(x = ls_missing_sets) <- missing_sets
-        components <- c(components, ls_missing_sets)
-      }
-
-      # ordering
-      r_idx <- match(x = ls_mixed_names, table = names(x = components))
-      components <- components[r_idx]
-      set_names <- names(x = components)
-    }
-
+    ls_upper_names <- purrr::pluck(.x = var_extract, "ls_upper_idx", swap[["var"]])
     # check that any individual elements provided exist in sets
     components <- purrr::pmap(
-      .l = list(components, ls_upper_names, names(x = components)),
+      .l = list(swap[["swap_sets"]],
+                ls_upper_names,
+                names(x = swap[["swap_sets"]])),
       .f = function(ele, set, mixed_set) {
         if (!identical(x = ele, y = mixed_set)) {
-          set_elements <- with(
-            data = sets[["mapped_ele"]],
-            expr = get(x = set)
-          )
-
+          set_elements <- with(data = sets[["mapped_ele"]], expr = get(x = set))
           if (any(!is.element(el = ele, set = set_elements))) {
             errant_ele <- ele[!is.element(el = ele, set = set_elements)]
-            stop(paste(
-              "One or more individual elements specified in the closure:",
-              errant_ele,
-              "is(are) not found in the associated set:",
-              set
+            depurrr_mixed_set <- mixed_set
+            
+            error_fun <- substitute(expr = .cli_action(
+              msg = "The set {.val {depurrr_mixed_set}} does not include the 
+              specified element-specific swap on: {.val {errant_ele}}.",
+              action = "abort",
+              call = model_call
             ))
-          }
 
+            error_var <- substitute(variables <- list(
+              depurrr_mixed_set = depurrr_mixed_set,
+              errant_ele = errant_ele
+            ))
+            
+            error_inputs <- .package_error(
+              error_var = error_var,
+              error_fun = error_fun
+            )
+            stop(message = error_inputs)
+          }
+          
           # add quotes for elements
           ele <- paste0("\"", ele, "\"")
           return(ele)
@@ -66,6 +47,7 @@
         }
       }
     )
+
     if (any(lapply(X = components, FUN = length) > 1)) {
       exp_components <- expand.grid(components, stringsAsFactors = FALSE)
       # apply the concatenation function to each combination
@@ -73,15 +55,15 @@
         X = exp_components,
         MARGIN = 1,
         FUN = function(row) {
-          paste0(var_name, "(", paste(row, collapse = ","), ")")
+          paste0(swap[["var"]], "(", paste(row, collapse = ","), ")")
         }
       )
     } else {
-      concat_swap <- paste0(var_name, "(", paste(components, collapse = ","), ")")
+      concat_swap <- paste0(swap[["var"]], "(", paste(components, collapse = ","), ")")
     }
     checked_swap <- concat_swap
   } else {
-    checked_swap <- var_name
+    checked_swap <- swap[["var"]]
   }
   return(checked_swap)
 }

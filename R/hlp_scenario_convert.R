@@ -2,47 +2,46 @@
 #' 
 #' @keywords internal
 #' @noRd
-.convert_scenario <- function(input,
+.convert_scenario <- function(raw_shock,
                               reference_year,
                               sets,
+                              var_extract,
                               YEAR) {
-
-  # convert CYRS to ALLTIMEt
-  # t0 timestep to remain unshocked
-  # function for this snippet below
-  chron_yrs <- YEAR[["Value"]] + reference_year
-  # check that chronological years are provied
-  if (!is.element(el = "Year", set = colnames(x = input))) {
-    stop(
-      paste(
-        dQuote(x = "scenario"),
-        "type shocks must contain a column Year representing chronological years."
-      )
-    )
-  } else if (!all(is.element(el = chron_yrs, set = input[["Year"]]))) {
-
-    missing_yrs <- chron_yrs[["Value"]][!is.element(
-      el = chron_yrs[["Value"]],
-      set = input[["Year"]]
-    )]
-    stop(
-      paste(
-        "The scenario file provided does not contain the following years:",
-        missing_yrs
-      )
-    )
-  }
+browser()
+  value <- data.table::fread(raw_shock[["file"]])
+  
+    if (!all(is.element(el = YEAR, set = value[["Year"]]))) {
+      missing_yrs <- setdiff(x = YEAR, value[["Year"]])
+      .cli_action(msg = "The scenario shock provided does not contain time steps 
+                  associated with {.val {missing_yrs}}.",
+                  action = "abort",
+                  call = call)
+    }
 
   # grab the requiste chronological years from the trajectory and convert to timesteps
-  input <- subset(
-    x = input,
+  value <- subset(
+    x = value,
     subset = {
       is.element(
         el = Year,
-        set = chron_yrs
+        set = YEAR
       )
     }
   )
+  
+  ls_mixed <- purrr::pluck(.x = var_extract, "ls_mixed_idx", raw_shock[["var"]])
+  time_set <- setdiff(x = ls_mixed, y = raw_shock[["set"]])
+  time_set_stnd <- substr(x = time_set, start = 1, stop = nchar(x = time_set) - 1)
+  time_set_ele <- purrr::pluck(.x = sets, "mapped_ele", time_set_stnd)
+  CYRS <- tibble::tibble(YEAR = YEAR,
+                         time_set_ele)
+  colnames(x = CYRS)[2] <- time_set
+  r_idx <- match(x = value[["Year"]], table = CYRS[["YEAR"]])
+  value[["Year"]] <- CYRS[[time_set]][r_idx]
+  data.table::setnames(x = value, old = "Year", new = time_set)
+  #here
+  raw_shock[["set"]] <- sub(pattern = "Year", replacement = time_set, x = raw_shock[["set"]])
+  names(x = raw_shock[["ele"]]) <- raw_shock[["set"]]
   
   YEAR[["Year"]] <- chron_yrs
   r_idx <- match(x = input[["Year"]], table = YEAR[["Year"]])

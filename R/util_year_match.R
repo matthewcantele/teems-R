@@ -3,6 +3,7 @@
 .match_year <- function(data,
                         sets,
                         chron_yrs) {
+
   int_sets <- toupper(x = unlist(x = subset(
     x = sets,
     subset = {
@@ -19,8 +20,7 @@
     # convert time sets to numeric
     data[, (TIMEt) := as.integer(x = get(x = TIMEt))]
     # bring over chronological years
-    r_idx <- match(x = data[[TIMEt]], table = chron_yrs[["ALLTIMEt"]])
-    data[["Year"]] <- chron_yrs[["Value"]][r_idx]
+    data[, Year := chron_yrs[get(x = TIMEt) + 1]]
     return(data)
   } else {
     return(data)

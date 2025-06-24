@@ -7,12 +7,7 @@
                            shock_file,
                            ndigits,
                            write_dir) {
-  if (!is.null(x = call)) {
-    t_shock_call <- rlang::expr(targets::tar_target_raw(
-      name = "shock_call",
-      command = rlang::expr(quote(expr = !!call))
-    ))
-  }
+
   if (!is.null(x = shock_file)) {
     t_shock_file <- rlang::expr(targets::tar_target_raw(
       name = "shock_file",
@@ -24,30 +19,18 @@
   if (!is.null(x = shock)) {
     # shock files need to be tracked via targets
     t_shocks <- rlang::expr(targets::tar_target_raw(
-      name = "shocks",
+      name = "raw_shocks",
       command = quote(expr = !!shock),
-      cue = targets::tar_cue(mode = "always")
-    ))
-
-    # run series of checks on specified variables, sets, and elements
-    # currently only functional for sets defined in model config, see set expansion
-    t_prepped.shocks <- rlang::expr(targets::tar_target_raw(
-      name = "prepped.shocks",
-      command = expression(.shock_prep(
-        shocks = shocks,
-        var_extract = tab_comp[["var_extract"]]
-      )),
       cue = targets::tar_cue(mode = "always")
     ))
 
     t_constructed.shocks <- rlang::expr(targets::tar_target_raw(
       name = "constructed.shocks",
       command = expression(.shock_construct(
-        shock_list = prepped.shocks,
+        shocks = raw_shocks,
         closure = swapped.out.cls,
         var_extract = tab_comp[["var_extract"]],
         sets = final.set_tib,
-        data = final.data_tib,
         reference_year = metadata[["reference_year"]]
       )),
       cue = targets::tar_cue(mode = "always")

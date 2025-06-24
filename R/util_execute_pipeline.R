@@ -24,6 +24,11 @@
                              perl = TRUE)
       error_inputs <- trimws(x = substring(text = raw_error,
                                            first = first_colon + 1))
+      
+      # drop purrr baggage
+      if (grepl(pattern = ": ! ", x = error_inputs)) {
+        error_inputs <- strsplit(x = error_inputs, split = ": ! ")[[1]][2]
+      }
       expr <- parse(text = error_inputs)
       eval(expr = expr)
     }

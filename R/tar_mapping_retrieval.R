@@ -11,6 +11,7 @@
                                margin_sectors = c("atp", "otp", "wtp"),
                                cgds_sector = "zcgds",
                                data_format) {
+
   names(x = set_map_file_inputs) <- set_map_file_input_names
   # merge all set mappings here (file inputs plus any manual entries - future ext)
   set_mappings <- set_map_file_inputs

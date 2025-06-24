@@ -184,6 +184,7 @@ cmd <- .construct_cmd(paths = paths,
                       n_timesteps = mod_arg[["n_timesteps"]],
                       nesteddbbd = mod_arg[["nesteddbbd"]],
                       enable_time = mod_arg[["enable_time"]])
+if (identical(x = cmd, y = terminal_run)) {return(invisible(NULL))}
 .solve_model(exec_cmd = cmd[["exec"]],
              sol_parse_cmd = cmd[["sol_parse"]],
              paths = paths,

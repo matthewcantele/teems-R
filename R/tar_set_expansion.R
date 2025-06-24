@@ -3,15 +3,11 @@
 #' @keywords internal
 #' @noRd
 .expand_sets <- function(sets,
-                         n_timestep,
+                         int_sets,
                          set_extract) {
-  if (!is.na(x = n_timestep)) {
-    int_sets <- subset(x = set_extract, subset = intertemporal)
-    n_timestep_coeff <- attr(x = n_timestep, which = "n_timestep_coeff")
-    int_sets <- .fill_time_sets(n_timestep = n_timestep,
-                                n_timestep_coeff = n_timestep_coeff,
-                                int_sets = int_sets)
+  if (!isTRUE(x = is.na(x = int_sets))) {
     sets <- rbind(sets, int_sets)
+    attr(x = set_extract, which = "CYRS") <- attr(x = int_sets, which = "CYRS")
   }
 
   r_idx <- ifelse(test = is.element(el = set_extract[["header"]],
