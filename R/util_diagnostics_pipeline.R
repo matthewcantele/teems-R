@@ -21,11 +21,8 @@
   closure <- head(tail(closure, -1), -3)
   shocks <- targets::tar_read(name = constructed.shocks, store = store_dir)[[1]]
   if (!is.null(x = shocks)) {
-  shock_var <- paste0(unique(x = substring(
-    text = names(x = shocks),
-    first = 1,
-    last = nchar(x = names(x = shocks)) - 1
-  )), collapse = ", ")
+  shocks <- purrr::map_chr(.x = shocks, .f = "var_name")
+  shock_var <- paste0(unique(x = shocks), collapse = ", ")
   } else {
     shocks <- NULL
     shock_var <- NULL

@@ -28,9 +28,7 @@
       int_sets <- unlist(x = subset(x = sets,
                                     subset = intertemporal,
                                     select = name))
-      stnd_names <- substring(text = colnames(x = dt),
-                              first = 1,
-                              last = nchar(x = colnames(x = dt)) - 1)
+      stnd_names <- .dock_tail(string = colnames(x = dt))
       if (any(is.element(el = int_sets, set = stnd_names))) {
         int_set <- colnames(x = dt)[is.element(el = stnd_names, set = int_sets)]
         dt <- dt[get(x = int_set) == 0]

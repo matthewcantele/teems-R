@@ -1,3 +1,5 @@
+#' @importFrom cli cli_verbatim
+#' 
 #' @keywords internal
 #' @noRd
 .validate_model_args <- function(args_list,
@@ -35,11 +37,9 @@
                              call = call,
                              quiet = quiet)
   
-  args_list[["intertemporal"]] <- .inform_temp_dyn(
-    tab_file = args_list[["tab_file"]],
-    quiet = quiet
-  )
-  
+  args_list[["intertemporal"]] <-  any(grepl(pattern = "(intertemporal)",
+                                             x = readLines(con = args_list[["tab_file"]])))
+
   if (args_list[["intertemporal"]]) {
     int_sets <- unlist(x = subset(x = tab_comp[["set_extract"]][["sets"]],
                            subset = intertemporal,
@@ -76,5 +76,13 @@
 
   args_list[["shock"]] <- do.call(what = c, args = args_list[["shock"]])
 
+  if (!quiet) {
+    cli::cli_verbatim(tab_comp[["summary"]])
+    temporal_dynamics <- if (args_list[["intertemporal"]]) {"intertemporal"} else {"static/recursive"}
+    .cli_action(action = "inform",
+                msg = "Temporal dynamics have been determined as: {.field {temporal_dynamics}}"
+    )
+  }
+  
   return(args_list)
 }

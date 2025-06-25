@@ -34,27 +34,10 @@
   
   tib_data[["ls_upper_idx"]] <- coeff_extract[["ls_upper_idx"]][r_idx]
   tib_data[["ls_mixed_idx"]] <- coeff_extract[["ls_mixed_idx"]][r_idx]
-  
+
   # mappings
   tib_data[["dt"]] <- lapply(X = tib_data[["dt"]],
-                             FUN = function(dt) {
-
-                               ls_mixed_idx <- colnames(x = dt)[sapply(X = dt, FUN = is.character)]
-                               for (c in seq_along(ls_mixed_idx)) {
-                                 set_col <- ls_mixed_idx[c]
-                                 set_map <- substr(
-                                   x = set_col,
-                                   start = 1,
-                                   stop = nchar(x = set_col) - 1
-                                 )
-                                 table <- purrr::pluck(.x = sets, "mapping", set_map)
-                                 r_idx <- match(x = dt[[set_col]], table = table[["origin"]])
-                                 dt[, (set_col) := lapply(.SD, function(r) {
-                                   table[["mapping"]][r_idx]
-                                 }), .SDcols = set_col]
-                               }
-                               return(dt)
-                             })
-
+                             FUN = .preagg_map,
+                             sets = sets)
   return(tib_data)
 }

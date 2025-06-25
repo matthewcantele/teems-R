@@ -88,7 +88,7 @@
       dim_length <- length(x = dimen)
 
       if (!identical(x = col_nmes, y = "null_set")) {
-        plain_col <- tolower(x = substring(text = col_nmes, 1, nchar(x = col_nmes) - 1))
+        plain_col <- tolower(x = .dock_tail(string = col_nmes))
         r_idx <- match(x = plain_col, table = sets[["setname"]])
         setele <- sets[["mapped_ele"]][r_idx]
         if (is.null(x = setele)) {

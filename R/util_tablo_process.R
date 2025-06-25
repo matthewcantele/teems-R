@@ -1,6 +1,6 @@
 #' @importFrom tibble tibble
 #' @importFrom purrr map_chr
-#' @importFrom cli cli_h1 cli_dl
+#' @importFrom cli cli_h1 cli_dl cli_fmt
 #' 
 #' @keywords internal
 #' @noRd
@@ -51,6 +51,7 @@
     n_coeff <- nrow(x = coeff_extract)
     n_sets <- nrow(x = set_extract[["sets"]])
     n_subsets <- nrow(x = set_extract[["subsets"]])
+    summary <- cli::cli_fmt(expr = {
     cli::cli_h1(text = "Tablo file summary statistics:")
     cli::cli_dl(items = c("Variables" = n_var,
                           "Equations" = n_eq,
@@ -58,6 +59,9 @@
                           "Formulas" = n_form,
                           "Sets" = n_sets,
                           "Subsets" = n_subsets))
+    })
+  } else {
+    summary <- NA
   }
   
   # no check for whether var_omit existed
@@ -69,7 +73,8 @@
                    var_extract = var_extract,
                    coeff_extract = coeff_extract,
                    set_extract = set_extract,
-                   math_extract = math_extract)
+                   math_extract = math_extract,
+                   summary = summary)
   } else {
     fun_call <- switch(EXPR = type,
                        "variable" = ".tablo_variables",

@@ -1,5 +1,5 @@
 #' @importFrom purrr pluck list_flatten map2_chr
-#' @importFrom data.table fread CJ rbindlist setnames setkeyv setkey fsetdiff
+#' @importFrom data.table fread CJ rbindlist setnames fsetdiff fsetequal
 #' 
 #' @keywords internal
 .custom_shock <- function(raw_shock,
@@ -9,6 +9,7 @@
   # user files are not being cached and so tracking is difficult
   # it could be possible to make modifications and targets won't know
   # hence tar_cue always on shock targets
+  # set ele checks
   ls_upper <- purrr::pluck(.x = var_extract, "ls_upper_idx", raw_shock[["var"]])
   ls_mixed <- purrr::pluck(.x = var_extract, "ls_mixed_idx", raw_shock[["var"]])
   set_ele <- with(
@@ -17,8 +18,10 @@
   )
 
   # not sure why this would be NULL, data.frames to be written to file
-  if (!is.null(x = raw_shock[["file"]])) {
+  if (is.null(x = raw_shock[["value"]])) {
     value <- data.table::fread(raw_shock[["file"]])
+  } else {
+    value <- raw_shock[["value"]]
   }
 
   template_shk <- do.call(
@@ -27,10 +30,8 @@
   )
 
   data.table::setnames(x = template_shk, new = ls_mixed)
-  data.table::setkeyv(x = value, cols = head(x = names(x = value), -1))
-  data.table::setkey(x = template_shk)
 
-  if (all(is.element(el = template_shk, set = value))) {
+  if (data.table::fsetequal(x = template_shk, y = value[,!"Value"])) {
     attr(x = raw_shock[["var"]], which = "full_var") <- TRUE
 
     # redundant code (used in uniform_shk)
@@ -52,7 +53,20 @@
       type = raw_shock[["type"]]
     )
     
+    shock <- list(shock)
+    
   } else {
+    if (!identical(x = nrow(x = data.table::fsetdiff(x = value[, !"Value"],
+                                                     y = template_shk)),
+                   y = 0L)) {
+      errant_tuples <- data.table::fsetdiff(value[, !"Value"], template_shk)
+      errant_tuples <- capture.output(print(x = errant_tuples))
+      errant_tuples <- errant_tuples[-c(1, 2, 3)]
+      .cli_action(msg = "Some tuples provided to a {.arg custom} shock indicate 
+                  elements used that do not belong to their respective sets: 
+                  {.field {errant_tuples}}.",
+                  action = "abort")
+    }
     attr(x = raw_shock[["var"]], which = "full_var") <- FALSE
     # Year to time conversion here
     if (raw_shock[["check_status"]]) {
@@ -72,16 +86,15 @@
         
         key_names <- names(x = value[, !"Value"])
         data.table::setnames(x = all_exo_parts, new = key_names)
-        data.table::setkeyv(x = all_exo_parts, cols = key_names)
-        data.table::setkeyv(x = value, cols = head(x = names(x = value), -1))
-
-        if (!all(is.element(el = value[, !"Value"], set = all_exo_parts))) {
+        if (!identical(x = nrow(x = data.table::fsetdiff(x = value[, !"Value"],
+                                                         y = all_exo_parts)),
+                       y = 0L)) {
           x_exo_parts <- data.table::fsetdiff(x = value[, ..key_names],
                                               y = all_exo_parts)
           x_exo_parts <- trimws(x = capture.output(print(x = x_exo_parts)))
           x_exo_parts <- x_exo_parts[-c(1, 2, 3, length(x = x_exo_parts))]
           .cli_action(msg = "Some tuples designated for a shock do not have 
-                      exogenous status: {.val {x_exo_parts}}.",
+                      exogenous status: {.field {x_exo_parts}}.",
                       action = "abort")
         }
       }

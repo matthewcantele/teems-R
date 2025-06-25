@@ -8,7 +8,6 @@
                               var_name,
                               idx,
                               write_path) {
-  browser()
   # format values
   dt[, Value := format(
     round(Value, ndigits),
@@ -24,11 +23,7 @@
     mixed_names <- setdiff(x = colnames(x = dt), y = "Value")
     std_names <- ifelse(test = grepl(pattern = "\"", x = mixed_names),
       yes = mixed_names,
-      no = substr(
-        x = mixed_names,
-        start = 1,
-        stop = nchar(x = mixed_names) - 1
-      )
+      no = .dock_tail(string = mixed_names)
     )
   } else {
     std_names <- "Value"
@@ -36,7 +31,6 @@
 
   # partial var condition
   if (!attr(x = var_name, which = "full_var")) {
-    browser()
     shock_ele <- dt[, lapply(.SD, function(r) {
       paste0("\"", r, "\"")
     }), .SDcols = mixed_names]

@@ -17,12 +17,11 @@
                                                      sets = sets)
                            } else if (is.element(el = shk[["type"]], set = c("custom", "scenario"))) {
                              if (identical(x = shk[["type"]], y = "scenario")) {
-                               browser()
-                               .convert_scenario(raw_shock = shk,
-                                                 reference_year = reference_year,
-                                                 sets = sets,
-                                                 var_extract = var_extract,
-                                                 YEAR = attr(x = sets, which =  "CYRS")) 
+                               shk <- .convert_scenario(raw_shock = shk,
+                                                        reference_year = reference_year,
+                                                        sets = sets,
+                                                        var_extract = var_extract,
+                                                        YEAR = attr(x = sets, which =  "CYRS")) 
                              }
                              f_shk <- .custom_shock(raw_shock = shk,
                                                     closure = closure,
@@ -31,7 +30,7 @@
                            } 
                            return(f_shk)
                          })
-  browser()
+
   final_shocks <- unlist(x = final_shocks, recursive = F)
   # note to swap purrr map functions for all sapplys and some lapplys eventually
   # get name for shock input

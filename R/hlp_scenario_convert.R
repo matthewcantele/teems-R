@@ -7,7 +7,7 @@
                               sets,
                               var_extract,
                               YEAR) {
-browser()
+
   value <- data.table::fread(raw_shock[["file"]])
   
     if (!all(is.element(el = YEAR, set = value[["Year"]]))) {
@@ -31,7 +31,7 @@ browser()
   
   ls_mixed <- purrr::pluck(.x = var_extract, "ls_mixed_idx", raw_shock[["var"]])
   time_set <- setdiff(x = ls_mixed, y = raw_shock[["set"]])
-  time_set_stnd <- substr(x = time_set, start = 1, stop = nchar(x = time_set) - 1)
+  time_set_stnd <- .dock_tail(string = time_set)
   time_set_ele <- purrr::pluck(.x = sets, "mapped_ele", time_set_stnd)
   CYRS <- tibble::tibble(YEAR = YEAR,
                          time_set_ele)
@@ -39,56 +39,46 @@ browser()
   r_idx <- match(x = value[["Year"]], table = CYRS[["YEAR"]])
   value[["Year"]] <- CYRS[[time_set]][r_idx]
   data.table::setnames(x = value, old = "Year", new = time_set)
-  #here
   raw_shock[["set"]] <- sub(pattern = "Year", replacement = time_set, x = raw_shock[["set"]])
-  names(x = raw_shock[["ele"]]) <- raw_shock[["set"]]
+  #here
+  ls_upper <- purrr::pluck(.x = var_extract, "ls_upper_idx", raw_shock[["var"]])
   
-  YEAR[["Year"]] <- chron_yrs
-  r_idx <- match(x = input[["Year"]], table = YEAR[["Year"]])
-  input[["ALLTIMEt"]] <- YEAR[["ALLTIMEt"]][r_idx]
-  input[, Year := NULL]
-
-  set_maps <- subset(
-    x = sets,
-    subset = {
-      !is.na(x = names(x = sets[["mapping"]]))
-    },
-    select = mapping
+  set_ele <- with(
+    data = sets[["full_ele"]],
+    expr = mget(x = ls_upper)
   )
+  
+  template_shk <- do.call(
+    what = data.table::CJ,
+    args = c(set_ele, sorted = FALSE)
+  )
+  
+  data.table::setnames(x = template_shk, new = ls_mixed)
+  data.table::setkeyv(x = value, cols = head(x = names(x = value), -1))
+  data.table::setkey(x = template_shk)
+  
+  if (!all(is.element(el = template_shk, set = value))) {
+    missing_tuples <- data.table::fsetdiff(x = template_shk, y = value[, !"Value"])
+    missing_tuples <- capture.output(print(x = missing_tuples))
+    missing_tuples <- missing_tuples[-c(1, 2, 3)]
+    .cli_action(msg = c("Some tuples designated for a {.arg scenario} shock are 
+    missing: {.field {missing_tuples}}.",
+                        "{.arg scenario} shocks must contain all 
+                        database-specific preaggregation elements for 
+                        associated sets."),
+                action = c("abort", "inform"))
+  }
+  
+  value <- .preagg_map(dt = value,
+                       sets = sets)
 
-  set_maps <- data.table::rbindlist(l = set_maps[["mapping"]], use.names = FALSE)
-  data.table::setnames(x = set_maps, new = c("origin", "map"))
+  mapped_sets <- setdiff(x = colnames(x = value), y = "Value")
+  value <- value[, .(Value = sum(Value)), by = mapped_sets]
 
-  # this can eventually be made into a function
-  input <- input[, lapply(.SD, FUN = function(char_col) {
-    if (is.character(x = char_col)) {
-      r_idx <- match(x = char_col, table = set_maps[["origin"]])
-      char_col <- set_maps[["map"]][r_idx]
-    }
-    return(char_col)
-  })]
-
-  # aggregate
-  user_sets <- setdiff(x = colnames(x = input), y = "Value")
-  input <- input[, .(Value = sum(Value)), by = user_sets]
-
-  data.table::setorder(x = input)
-
-# it's either all ALLTIMEt or not
-  # non-Value, non-int columns
-  # write function to go between REG to REGr for all sets
-
-  non_int_sets <- toupper(x = unlist(x = subset(x = sets, subset = !intertemporal, select = name)))
-  int_sets <- toupper(x = unlist(x = subset(x = sets, subset = intertemporal, select = name)))
-  non_int_value_col <- colnames(x = input)[is.element(
-    el = sub(pattern = ".{1}$", replacement = "", x = colnames(x = input)),
-    set = non_int_sets
-  )]
-
-  int_value_col <- colnames(x = input)[is.element(
-    el = sub(pattern = ".{1}$", replacement = "", x = colnames(x = input)),
-    set = int_sets
-  )]
+  int_col <- setdiff(x = colnames(x = value)[unlist(x = value[, lapply(.SD, is.integer)])],
+                     y = "Value")
+  non_int_col <- setdiff(x = colnames(x = value),
+                         y = c(int_col, "Value"))
 
   # calculate the percentage change
   # recursive approach
@@ -96,7 +86,13 @@ browser()
   # NAs to 0
   # value[is.na(Value), Value := 0]
   # intertemporal
-  input[, Value := (Value - Value[get(x = int_value_col) == 0]) / Value[get(x = int_value_col) == 0] * 100, by = non_int_value_col]
 
-  return(input)
+  value[, Value := {
+    baseline <- Value[get(x = int_col) == 0]
+    (Value - baseline) / baseline * 100
+  }, by = non_int_col]
+  
+  raw_shock[["value"]] <- value
+  raw_shock[["type"]] <- "custom"
+  return(raw_shock)
 }

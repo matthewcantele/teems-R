@@ -25,6 +25,7 @@
         valid_ext = valid_ext,
         file_ext = file_ext,
         arg = arg,
+        cache = cache,
         call = call
       )
     } else if (internal) {
@@ -35,6 +36,7 @@
       )
     }
   } else {
+    # fix this
     if (cache) {
       file <- .teems_cache(
         input = file,
@@ -50,6 +52,7 @@
                             valid_ext,
                             file_ext,
                             arg = arg,
+                            cache = cache,
                             call) {
   if (!file.exists(file)) {
     .cli_action(msg = "Cannot open file {.file {file}}: No such file.",
@@ -61,9 +64,14 @@
                 action = "abort",
                 call = call)
   }
+
   file <- normalizePath(path = file)
-  attr(x = file, which = "file_ext") <- file_ext
-  return(file)
+  dir <- paste(file_ext, "files", sep = "_")
+  file_path <- .teems_cache(file = file,
+                            ext = file_ext,
+                            dir = dir)
+  attr(x = file_path, which = "file_ext") <- file_ext
+  return(file_path)
 }
 
 .check_internal_file <- function(file,

@@ -28,7 +28,7 @@
       }
     } else {
       header[["dt"]] <- array2DF(x = header[["data"]])
-      stnd_col <- substr(x = colnames(header[["dt"]]), start = 1, stop = nchar(colnames(header[["dt"]])) - 1)
+      stnd_col <- .dock_tail(string = colnames(x = header[["dt"]]))
       if (intertemporal) {
       if (any(is.element(el = stnd_col, set = int_set_names))) {
         int_col <- colnames(header[["dt"]])[is.element(el = stnd_col, set = int_set_names)]

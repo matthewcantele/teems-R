@@ -4,6 +4,7 @@
 .check_shock <- function(shock,
                          var_extract,
                          int_sets = NULL,
+                         value_mod = FALSE,
                          call) {
   if (!is.shock(x = shock)) {
     if (!is.list(x = shock) || !is.shock(x = shock[[1]])) {
@@ -95,15 +96,16 @@
           call = call
         )
       }
-      # check this check
+
       if (!identical(x = ls_mixed, y = shock[["set"]])) {
         data.table::setcolorder(x = value, neworder = c(ls_mixed, "Value"))
+        value_mod <- TRUE
       }
       
       if (identical(x = shock[["type"]], y = "scenario")) {
         if (is.null(x = int_sets)) {
           .cli_action(msg = "Shock type {.arg scenario} is only valid for 
-                      temporally dynamica models.",
+                      temporally dynamic models.",
                       action = "abort",
                       call = call)
         }
@@ -117,6 +119,14 @@
       }
     }
   }
+  
+  # modified shock from file/data.frame cached
+  if (!is.null(x = shock[["file"]]) && value_mod) {
+    data.table::fwrite(x = value,
+                       file = shock[["file"]])
+  }
+
+  
 
   if (any(lengths(x = shock[["ele"]]) > 1)) {
     ele_comb <- expand.grid(shock[["ele"]], stringsAsFactors = FALSE)
