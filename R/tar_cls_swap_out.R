@@ -142,12 +142,13 @@
           # )]
 
           # swap-wise diff (note previous remaining_exo_var is var-specific, this is swap-specific)
-          standard_var_sets <- .get_sets(
-            var = out_var,
-            var_extract = var_extract,
-            type = "upper"
-          )
+          # standard_var_sets <- .get_sets(
+          #   var = out_var,
+          #   var_extract = var_extract,
+          #   type = "upper"
+          # )
 
+          standard_var_sets <- purrr::pluck(.x = var_extract, "ls_upper", out_var)
           colnames(x = remaining_exo_var) <- standard_var_sets
 
           # algo to pull out largest complete sets by element as possible

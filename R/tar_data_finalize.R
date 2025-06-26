@@ -7,7 +7,7 @@
 .finalize_data <- function(tib_data,
                            aggregated_input,
                            sets) {
-
+browser()
   # check and swap in any user-provided headers
   if (!is.null(x = aggregated_input)) {
     for (header in names(x = aggregated_input)) {

@@ -29,20 +29,20 @@
     )
   }
 
-  if (!is.null(x = shock[["file"]])) {
-    value <- read.csv(file = shock[["file"]])
-    value_colnames <- colnames(x = value)
-    if (!is.element(el = "Value", set = value_colnames)) {
-      file <- shock[["file"]]
-      .cli_action(
-        msg = "No {.field Value} column was found in the loaded
-                  file {.file {file}}.",
-        action = "abort",
-        call = call
-      )
-    }
-    shock[["set"]] <- setdiff(x = value_colnames, y = "Value")
-  }
+  # if (!is.null(x = shock[["file"]])) {
+  #   value <- read.csv(file = shock[["file"]])
+  #   value_colnames <- colnames(x = value)
+  #   if (!is.element(el = "Value", set = value_colnames)) {
+  #     file <- shock[["file"]]
+  #     .cli_action(
+  #       msg = "No {.field Value} column was found in the loaded
+  #                 file {.file {file}}.",
+  #       action = "abort",
+  #       call = call
+  #     )
+  #   }
+  #   shock[["set"]] <- setdiff(x = value_colnames, y = "Value")
+  # }
 
   if (!is.null(x = shock[["set"]])) {
     ls_mixed <- purrr::pluck(.x = var_extract, "ls_mixed_idx", shock[["var"]])
@@ -81,6 +81,7 @@
         call = call
       )
     }
+    
     if (is.element(el = shock[["type"]], set = c("custom", "scenario"))) {
       if (!all(is.element(el = ls_mixed, set = shock[["set"]]))) {
         missing_sets <- setdiff(x = ls_mixed, y = shock[["set"]])
