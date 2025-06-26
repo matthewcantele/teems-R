@@ -15,7 +15,7 @@
   } else {
     intertemporal <- FALSE
   }
-
+browser()
   ls_array <- lapply(X = ls_array, FUN = function(header) {
     dim_length <- length(x = dimnames(x = header[["data"]]))
     # set file
