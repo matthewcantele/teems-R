@@ -41,7 +41,7 @@
 #' @seealso [`teems_swap()`] for changing the standard model closure.
 #' 
 #' @examples
-#' # uniform shock
+#' # S3 method for type 'uniform'
 #' # fully uniform: all variable elements receive the same shock value
 #' afeall_full <- teems_shock(var = "afeall",
 #'                            type = "uniform",
@@ -65,7 +65,7 @@
 #'                                PROD_COMMj = c("livestock", "crops"),
 #'                                TRAD_COMMi = "food")
 #'
-#' # custom shock
+#' # S3 method for type 'custom'
 #' df <- expand.grid(ENDW_COMMi = c("labor", "capital", "natlres", "land"),
 #'                   PROD_COMMj = c("svces", "food", "crops", "mnfcs", 
 #'                   "livestock", "frs", "zcgds"),
@@ -76,7 +76,7 @@
 #'                            type = "custom",
 #'                            input = df)
 #'                            
-#' # scenario shock
+#' # S3 method for type 'scenario'
 #' df <- expand.grid(REGr = c("row", "chn", "usa"),
 #'                   Year = seq(2015, 2030, 5))
 #' df <- df[order(df$REGr),]
