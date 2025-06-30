@@ -6,8 +6,9 @@
                          int_sets = NULL,
                          value_mod = FALSE,
                          call) {
-  if (!is.shock(x = shock)) {
-    if (!is.list(x = shock) || !is.shock(x = shock[[1]])) {
+  browser()
+  if (!.is_shock(x = shock)) {
+    if (!.is_shock(x = shock) || !.is_shock(x = shock[[1]])) {
       .cli_action(
         msg = "The value provided to {.arg shock} is not an object
             created with {.fun teems::teems_shock}.",
@@ -28,21 +29,6 @@
       call = call
     )
   }
-
-  # if (!is.null(x = shock[["file"]])) {
-  #   value <- read.csv(file = shock[["file"]])
-  #   value_colnames <- colnames(x = value)
-  #   if (!is.element(el = "Value", set = value_colnames)) {
-  #     file <- shock[["file"]]
-  #     .cli_action(
-  #       msg = "No {.field Value} column was found in the loaded
-  #                 file {.file {file}}.",
-  #       action = "abort",
-  #       call = call
-  #     )
-  #   }
-  #   shock[["set"]] <- setdiff(x = value_colnames, y = "Value")
-  # }
 
   if (!is.null(x = shock[["set"]])) {
     ls_mixed <- purrr::pluck(.x = var_extract, "ls_mixed_idx", shock[["var"]])
@@ -99,6 +85,7 @@
       }
 
       if (!identical(x = ls_mixed, y = shock[["set"]])) {
+        value <- data.table::fread(input = shock[["value"]])
         data.table::setcolorder(x = value, neworder = c(ls_mixed, "Value"))
         value_mod <- TRUE
       }
@@ -127,8 +114,7 @@
                        file = shock[["file"]])
   }
 
-  
-
+  # better to keep this here rather than chk_shocK_input due to list shenanigans
   if (any(lengths(x = shock[["ele"]]) > 1)) {
     ele_comb <- expand.grid(shock[["ele"]], stringsAsFactors = FALSE)
 
@@ -136,8 +122,8 @@
       .x = seq_len(nrow(ele_comb)),
       .f = function(c) {
         new_list <- shock
-        for (set_name in shock$set) {
-          new_list$ele[[set_name]] <- ele_comb[[set_name]][c]
+        for (set_name in shock[["set"]]) {
+          new_list[["ele"]][[set_name]] <- ele_comb[[set_name]][c]
         }
         return(new_list)
       }

@@ -8,6 +8,9 @@
                          ext,
                          dir) {
   teems_cache <- tools::R_user_dir(package = "teems", which = "cache")
+  if (missing(dir)) {
+    dir <- paste(ext, "files", collapse = "_")
+  }
   object_cache <- file.path(teems_cache, dir)
   if (!dir.exists(paths = object_cache)) {
     dir.create(path = object_cache, recursive = TRUE)

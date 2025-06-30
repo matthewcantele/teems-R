@@ -1,5 +1,6 @@
 #' @importFrom stats setNames
-#' @importFrom rlang caller_env fn_env
+#' @importFrom rlang caller_env fn_env trace_back
+#' @importFrom purrr map2
 #' @importFrom utils URLencode
 #' @importFrom cli cli_abort cli_inform cli_warn
 #' 
@@ -14,25 +15,28 @@
 
   caller_env <- rlang::caller_env()
 
-  formatted_msg <- purrr::map2(.x = msg,
-              .y = action,
-              .f = function(m, a) {
-                cli_sym <- switch(EXPR = a,
-                                  "abort" = "x",
-                                  "inform" = "i",
-                                  "warn" = "!")
-                cli_msg <- c(stats::setNames(object = m, nm = cli_sym))
-              })
+  formatted_msg <- purrr::map2(msg,
+                               action,
+                               .f = function(m, a) {
+                                  cli_sym <- switch(a,
+                                                    "abort" = "x",
+                                                    "inform" = "i",
+                                                    "warn" = "!")
+                                  cli_msg <- c(stats::setNames(m, cli_sym))
+                                })
   
   formatted_msg <- unlist(x = formatted_msg)
 
   if (!is.null(x = url)) {
-    url <- utils::URLencode(URL = url)
-    url_msg <- c("i" = "For additional information see: {.href [{hyperlink}]({url})}")
-    formatted_msg <- c(formatted_msg, url_msg)
     cli_env <- new.env(parent = caller_env)
-    # we could add a no hyperlink option but hyperlinks are preferred 
+    url <- utils::URLencode(URL = url)
+    if (!is.null(x = hyperlink)) {
+    url_msg <- c("i" = "For additional information see: {.href [{hyperlink}]({url})}")
     cli_env[["hyperlink"]] <- hyperlink
+    } else {
+      url_msg <- c("i" = "For additional information see: {.href {url}}")
+    }
+    formatted_msg <- c(formatted_msg, url_msg)
     cli_env[["url"]] <- url
   } else {
     cli_env <- caller_env
@@ -51,4 +55,12 @@
   } else {
     stop("invalid .cli_action action")
   }
+}
+
+.cli_missing <- function(arg) {
+  arg <- deparse(substitute(arg))
+  call <- rlang::trace_back()[["call"]][[1]]
+  .cli_action("argument {.arg {arg}} is missing, with no default",
+              action = "abort",
+              call = call)
 }

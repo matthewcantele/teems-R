@@ -18,6 +18,7 @@
           .cli_action(
             msg = "Check missing from checklist",
             action = "abort",
+            .internal = TRUE,
             call = call
           )
         }

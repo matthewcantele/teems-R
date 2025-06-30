@@ -4,13 +4,7 @@
 \alias{teems_shock}
 \title{Load shocks}
 \usage{
-teems_shock(
-  var,
-  type = c("uniform", "custom", "scenario"),
-  value = NULL,
-  file = NULL,
-  ...
-)
+teems_shock(var, type = c("uniform", "custom", "scenario"), input, ...)
 }
 \arguments{
 \item{var}{Character of length 1, the variable to be shocked.}
@@ -34,14 +28,14 @@ equivalents according to the specified set mappings.
 (pre-aggregation) for a given variable.
 }}
 
+\item{...}{One or more key-value pairs separated by commas. These
+correspond to element-specific shocks}
+
 \item{value}{Numeric length 1, the value of shocks type
 \code{"uniform"}.}
 
 \item{file}{Character of length 1, file name in working
 directory or path to a csv with shock data.}
-
-\item{...}{One or more key-value pairs separated by commas. These
-correspond to element-specific shocks}
 }
 \value{
 A list of shock configuration options.

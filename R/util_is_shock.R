@@ -1,4 +1,4 @@
 #' @keywords internal
-is.shock <- function(x) {
-  inherits(x, "shock")
+.is_shock <- function(x) {
+  attr(x, "shock")
 }

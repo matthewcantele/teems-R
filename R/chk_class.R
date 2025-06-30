@@ -25,16 +25,14 @@
     if (is.null(x = sub_arg_name)) {
       error_msg <- cli::cli_fmt(
       .cli_action(
-        msg = "{.arg {arg_name}} must be of type {.or {.val
-                              {accepted_class}}}, not {.val {provided_class}}.",
+        msg = gen_err[["class"]],
         action = "abort",
         call = call
       )
       )
     } else {
       .cli_action(
-        msg = "{.field {sub_arg_name}} listed within {.arg {arg_name}} must be of
-        type {.or {.val {accepted_class}}}, not {.val {provided_class}}.",
+        msg = gen_err[["nested_class"]],
         action = "abort",
         call = call
       )

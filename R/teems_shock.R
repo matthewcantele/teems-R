@@ -1,5 +1,6 @@
 #' Load shocks
-#'
+#' @importFrom rlang arg_match
+#' 
 #' @description `teems_shock()` loads one or more shocks for
 #'   processing as well as conducts a series of compatibility checks.
 #'   If a shock is specified, the output of this function is a
@@ -140,34 +141,13 @@
 #'
 #' @export
 teems_shock <- function(var,
-                        type,
-                        value = NULL,
-                        file = NULL,
-                        ...,
-                        check_status = TRUE)
+                        type = c("uniform", "custom", "scenario"),
+                        input,
+                        ...)
 {
-call <- match.call()
-if (!missing(x = ...)) {
-args_list <- list(var = var,
-                  type = type,
-                  value = value,
-                  file = file,
-                  set = names(x = list(...)),
-                  ele = list(...),
-                  check_status = check_status)
-} else {
-args_list <- list(var = var,
-                  type = type,
-                  value = value,
-                  file = file,
-                  set = NULL,
-                  ele = NULL,
-                  check_status = check_status)
-}
-args_list <- .validate_shock_args(args_list = args_list,
-                                  call = call)
-args_list[["check_status"]] <- check_status
-class(x = args_list) <- "shock"
-args_list <- list(args_list)
-args_list
+  if (missing(var)) {.cli_missing(var)}
+  if (missing(type)) {.cli_missing(type)}
+  if (missing(input)) {.cli_missing(input)}
+  class(type) <- rlang::arg_match(type)
+  UseMethod("teems_shock", type)
 }
