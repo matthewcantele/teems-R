@@ -307,50 +307,6 @@ list(
     command = read.csv(endw_labagg_file)
   ),
 
-  # teems_shock()
-  tar_target(
-    name = afeall_v6.2,
-    command = {
-      afeall <- expand.grid(
-        ENDW_COMMi = unique(endw_labagg[["mapping"]]),
-        PROD_COMMj = c(unique(sector_macro[["mapping"]]), "zcgds"),
-        REGr = unique(reg_big3[["mapping"]])
-      )
-
-      afeall[["Value"]] <- runif(n = nrow(x = afeall), max = 2)
-      return(afeall)
-    }
-  ),
-  tar_target(
-    name = custom_shk,
-    command = {
-      fwrite(afeall_v6.2, "./inst/extdata/custom_shk.csv")
-    },
-    format = "file"
-  ),
-  tar_target(
-    name = targeted_shk,
-    command = {
-      afeall <- afeall_v6.2[afeall_v6.2$REGr == "usa", ]
-      afeall <- afeall[, !(names(afeall) %in% "REGr")]
-      fwrite(afeall, "./inst/extdata/targeted_shk.csv")
-    },
-    format = "file"
-  ),
-  tar_target(
-    name = scenario_shk_file,
-    command = "./data-raw/examples/pop_trajectory.csv",
-    format = "file"
-  ),
-  tar_target(
-    name = scenario_shk,
-    command = {
-      ssp2 <- read.csv(scenario_shk_file)
-      fwrite(ssp2, "./inst/extdata/pop_SSP2.csv")
-    },
-    format = "file"
-  ),
-
   # teems_closure()
   tar_target(
     name = GTAPv6.2_cls_file,

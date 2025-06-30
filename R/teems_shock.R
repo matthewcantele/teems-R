@@ -1,143 +1,93 @@
-#' Load shocks
-#' @importFrom rlang arg_match
+#' Specificy shocks
 #' 
-#' @description `teems_shock()` loads one or more shocks for
-#'   processing as well as conducts a series of compatibility checks.
-#'   If a shock is specified, the output of this function is a
-#'   required input to the `"shock"` argument within the
-#'   [`teems_closure()`] function.
+#' @importFrom rlang arg_match
+#'
+#' @description `teems_shock()` is a generic function that loads shocks for
+#'   processing as well as conducts a series of compatibility checks. The
+#'   accepted values for `"input"` depend on the shock `"type"` specified. If a
+#'   shock is to be carried out, the output of this function is a required input
+#'   to the `"shock"` argument within the [`teems_model()`] function.
 #'
 #' @param var Character of length 1, the variable to be shocked.
 #' @param type Character of length 1, the type of shock. Choices:
 #'   * `"uniform"`: a homogenous shock applied to the specified
-#'     variable `"var"` or variable elements (using `...`) at the
-#'     specified `"value"`.
-#'   * `"custom"`: a user-specified granular shock applied to the
-#'     specified variable `"var"` or variable elements (using `...`)
-#'     according to percentage change values specified in `"file"`.
-#'     The interaction of `...` and explicitly defined values in
-#'     `"file"` determines the degree of homogeniety in the final
-#'     shock.
-#'   * `"scenario"`: identical to `"custom"` with the exception that
-#'     shock values are provided in absolute terms and constitute a
-#'     trajectory that is transformed into percentage change
-#'     equivalents according to the specified set mappings.
-#'     `"scenario"` shocks must contain all database-specific tuples
-#'     (pre-aggregation) for a given variable.
-#' @param value Numeric length 1, the value of shocks type
-#'   `"uniform"`.
-#' @param file Character of length 1, file name in working
-#'   directory or path to a csv with shock data.
-#' @param ... One or more key-value pairs separated by commas. These
-#'   correspond to element-specific shocks
+#'   variable `"var"` or variable elements (using `...`) at the specified
+#'   `"value"`.
+#'   * `"custom"`: a user-specified granular shock applied to
+#'   variable `"var"` and aggregated set-specific variable tuples according to
+#'   percentage-change values specified in `"input"`.
+#'   * `"scenario"`: a user-specified granular shock for temporally dynamic
+#'   models applied to variable `"var"` and unaggregated tuples according to
+#'   values specified in `"input"`. `"scenario"` shocks must encompass all
+#'   values associated with tuples corresponding to unaggregated set elements.
+#'   Values in `"input"` must be actual values and will be converted into
+#'   percentage-change format.
+#' @param input Format contingent on shock `"type"`.
+#'   * `"uniform"`: numeric length 1.
+#'   * `"custom"`: character length 1, path to a csv file or data.frame. Must
+#'   contain one column "Value".
+#'   * `"scenario"`: character length 1, path to a csv file or data.frame. Must
+#'   contain one column "Value" and one column "Year".
+#' @param ... One or more key-value pairs separated by commas corresponding to
+#'   element-specific shocks
 #'
 #' @return A list of shock configuration options.
 #'
-#' @details `teems_shock()` return values have no purpose used in
-#'   isolation and are rather combined in [`teems_closure()`] with
-#'   user inputs from [`teems_swap()`]. If no shock is specified, a
-#'   null shock will be passed resulting in no change to the
-#'   underlying base data.
+#' @details `teems_shock()` return values have no purpose used in isolation and
+#'   are rather loaded in [`teems_model()`]. If no shock is specified, a null
+#'   shock will be passed resulting in no change to the underlying base data.
 #'
-#' @seealso [`teems_closure()`] for loading the output of this
-#'   function.
+#' @seealso [`teems_model()`] for loading the output of this function.
 #' @seealso [`teems_swap()`] for changing the standard model closure.
-#' @seealso [`teems_query()`] for model variable information.
-#'
+#' 
 #' @examples
-#' # See `vignette("something")` for examples and explanation
-#'
-#' temp_dir <- tools::R_user_dir(package = "teems", "cache")
-#' if (!dir.exists(temp_dir)) {
-#'   dir.create(temp_dir)
-#' }
-#' file.copy(from = c(teems_example(path = "gdset.har"),
-#'                    teems_example(path = "custom_shk.csv"),
-#'                    teems_example(path = "targeted_shk.csv"),
-#'                    teems_example(path = "pop_SSP2.csv")),
-#'           to = temp_dir)
-#' path_to_har <- file.path(temp_dir, "gdset.har")
-#'
-#' # Shocks can span the full range from completely heterogenous with
-#' # each variable element explicitly assigned a value
-#' # (type "custom"), to completely homogenous with a single shock
-#' # value applied across an entire variable (type "uniform").
-#'
-#' # Where specified, set names must conform to the
-#' # "mixed_format" style outputted here:
-#' teems_query(component = "var",
-#'             model = "GTAPv6.2",
-#'             name = "afeall")
-#'
-#' invisible(teems_sets(set_har = path_to_har,
-#'                      region_mapping = "big3",
-#'                      sector_mapping = "macro_sector",
-#'                      endowment_mapping = "labor_agg",
-#'                      verbose = TRUE))
-#'
-#' ###################################################################
-#' # uniform shocks
-#'
+#' # uniform shock
 #' # fully uniform: all variable elements receive the same shock value
 #' afeall_full <- teems_shock(var = "afeall",
 #'                            type = "uniform",
-#'                            value = 2)
+#'                            input = 2)
 #'
-#' # partially uniform: applied only to the "chn" region set
+#' # partially uniform: applied only to the "chn" element in set REGr (REG)
+#' # Note that set designations must consiste of the concatenation of the
+#' # standard set (e.g., REG) and variable-specific index (e.g., r).
 #' afeall_chn <- teems_shock(var = "afeall",
 #'                           type = "uniform",
-#'                           value = 2,
+#'                           input = 2,
 #'                           REGr = "chn")
 #'
-#' # uniform over select elements: note that multiple elements can be
-#' # selected for each set
+#' # partially uniform over multiple sets and applied to multiple elements: 
+#' # applied to the "chn" element in set REGr, "livestock" and "crops" elements 
+#' # in PROD_COMMj and "food" element in TRAD_COMMi.
 #' afeall_chn_agri <- teems_shock(var = "afeall",
 #'                                type = "uniform",
-#'                                value = 2,
+#'                                input = 2,
 #'                                REGr = "chn",
 #'                                PROD_COMMj = c("livestock", "crops"),
 #'                                TRAD_COMMi = "food")
 #'
-#' ###################################################################
-#' # custom shocks
-#'
-#' # fully custom: all variable elements receive the specified shock
-#' custom_shk <- read.csv(file.path(temp_dir, "custom_shk.csv"))
-#' custom_shk
-#'
+#' # custom shock
+#' df <- expand.grid(ENDW_COMMi = c("labor", "capital", "natlres", "land"),
+#'                   PROD_COMMj = c("svces", "food", "crops", "mnfcs", 
+#'                   "livestock", "frs", "zcgds"),
+#'                   REGr = c("row", "chn", "usa"))
+#' df$Value <- runif(nrow(df))
+#' head(df)
 #' afeall_full <- teems_shock(var = "afeall",
 #'                            type = "custom",
-#'                            file = file.path(temp_dir, "custom_shk.csv"))
-#'
-#' # fully custom, targeted: a set element receives the specified
-#' # shock. Other elements within this set are not shocked. The
-#' # targeted set is not present in the loaded shock file.
-#' targeted_shk <- read.csv(file.path(temp_dir, "targeted_shk.csv"))
-#' targeted_shk
-#'
-#' # all tuples containing element "usa" within set REGr are shocked
-#' afeall_targeted <- teems_shock(var = "afeall",
-#'                                type = "custom",
-#'                                file = file.path(temp_dir, "targeted_shk.csv"),
-#'                                REGr = "usa")
-#'
-#' # If sets are not present in the data file and are also not
-#' # specified in the function, shock values will be uniformly
-#' # allocated across all elements in the missing set(s).
-#'
-#' # all elements in set REGr are uniformly shocked with unique values
-#' # from ENDW_COMMi and PROD_COMMj
-#' afeall_uni_REGr <- teems_shock(var = "afeall",
-#'                                type = "custom",
-#'                                file = file.path(temp_dir, "targeted_shk.csv"))
-#'
-#' ###################################################################
-#' # scenario shocks
-#' scenario_shk <- read.csv(file.path(temp_dir, "pop_SSP2.csv"))
-#' head(scenario_shk)
-#' pop_SSP2 <- teems_shock(var = "pop",
-#'                         type = "scenario",
-#'                         file = file.path(temp_dir, "pop_SSP2.csv"))
+#'                            input = df)
+#'                            
+#' # scenario shock
+#' df <- expand.grid(REGr = c("row", "chn", "usa"),
+#'                   Year = seq(2015, 2030, 5))
+#' df <- df[order(df$REGr),]
+#' row_pop <- 5667 + (1:4) * 1.5
+#' chn_pop <- 1390 + (1:4) * 0.1
+#' usa_pop <- 323 + (1:4) * 0.6
+#' df$Value <- c(row_pop, chn_pop, usa_pop)
+#' head(df)
+#' pop_shk <- teems_shock(var = "pop",
+#'                        type = "scenario",
+#'                        input = df)
 #'
 #' @export
 teems_shock <- function(var,
