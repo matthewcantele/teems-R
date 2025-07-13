@@ -1,5 +1,3 @@
-#' @importFrom rlang current_env
-#' 
 #' @keywords internal
 #' @noRd
 .val_scen_shk <- function(args_list,

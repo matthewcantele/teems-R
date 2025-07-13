@@ -1,3 +1,6 @@
+#' `r lifecycle::badge("experimental")`
+#' Helper function to load timestep associated specifications 
+#' 
 #' @importFrom rlang arg_match
 #'
 #' @export
@@ -7,8 +10,10 @@ teems_time <- function(tab_file,
                        time_format,
                        timestep_header = "YEAR",
                        n_timestep_header = "NTSP",
-                       ...,
-                       quiet = FALSE) {
+                       quiet = F,
+                       ...)
+{
+if (missing(tab_file)) {.cli_missing(tab_file)}
 
   call <- match.call()
   tab_file <- .check_input(

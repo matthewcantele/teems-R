@@ -1,14 +1,43 @@
+#' @importFrom rlang current_env
+#' @importFrom data.table setorder uniqueN data.table fwrite
 #' @importFrom purrr map2
-#' @importFrom data.table data.table fwrite setorder uniqueN
 #' 
+#' @noRd  
 #' @keywords internal
-#' @noRd
-.write_custom_shk <- function(dt,
-                              ndigits,
-                              var_name,
-                              idx,
+.write_shock <- function(shock,
+                         write_path) {
+  UseMethod(".write_shock")
+}
+
+#' @export
+.write_shock.uniform <- function(shock,
+                                 write_path) {
+  cat(shock$shock,
+    file = write_path,
+    sep = "\n",
+    append = TRUE
+  )
+  return(write_path)
+}
+
+#' @export
+.write_shock.user <- function(shock,
                               write_path) {
-  # format values
+
+  writeLines(
+    shock,
+    write_path
+  )
+
+  return(write_path)
+}
+
+#' @export
+.write_shock.custom <- function(shock,
+                                write_path) {
+  ndigits <- .o_ndigits()
+  list2env(shock, rlang::current_env())
+
   dt[, Value := format(
     round(Value, ndigits),
     trim = TRUE,
@@ -16,21 +45,21 @@
     scientific = FALSE
   )]
 
-  data.table::setorder(x = dt)
+  data.table::setorder(dt)
 
   # column names for the algo
-  if (!identical(x = colnames(x = dt), y = "Value")) {
-    mixed_names <- setdiff(x = colnames(x = dt), y = "Value")
-    std_names <- ifelse(test = grepl(pattern = "\"", x = mixed_names),
-      yes = mixed_names,
-      no = .dock_tail(string = mixed_names)
+  if (!colnames(dt) %=% "Value") {
+    mixed_names <- setdiff(colnames(dt), "Value")
+    std_names <- ifelse(grepl("\"", mixed_names),
+      mixed_names,
+      .dock_tail(string = mixed_names)
     )
   } else {
     std_names <- "Value"
   }
 
   # partial var condition
-  if (!attr(x = var_name, which = "full_var")) {
+  if (!attr(shock, "full_var")) {
     shock_ele <- dt[, lapply(.SD, function(r) {
       paste0("\"", r, "\"")
     }), .SDcols = mixed_names]
@@ -39,7 +68,7 @@
       var_name,
       "(",
       apply(
-        X = shock_ele,
+        shock_ele,
         MARGIN = 1,
         paste0,
         collapse = ","
@@ -52,11 +81,11 @@
       sep = "",
       append = TRUE
     )
-  } else if (attr(x = var_name, which = "full_var")) {
-    if (identical(x = idx, y = 0L)) {
+  } else if (attr(shock, "full_var")) {
+    if (idx %=% 0L) {
       stop("No column names other than Value detected. This would indicate
                that a shock type 'uniform' is appropriate.")
-    } else if (identical(x = idx, y = 1L)) {
+    } else if (idx %=% 1L) {
       # lead
       lead <- paste("Shock", paste0(var_name, "(", std_names, ")"), "=")
 
@@ -77,7 +106,7 @@
         sep = "",
         append = TRUE
       )
-    } else if (identical(x = idx, y = 2L)) {
+    } else if (idx %=% 2L) {
       lead <- paste(
         "Shock",
         paste0(var_name, "(", paste0(std_names, collapse = ","), ")"),
@@ -107,26 +136,26 @@
         append = TRUE
       )
     } else {
-      dim_sizes <- rev(x = sapply(
+      dim_sizes <- rev(sapply(
         X = 1:(idx),
         FUN = function(i) {
           data.table::uniqueN(dt[[i]])
         }
       ))
-      arr <- array(data = dt[[idx + 1]], dim = dim_sizes)
-      ele_table <- unique(x = dt[, seq_len(length.out = idx - 2), with = FALSE])
+      arr <- array(dt[[idx + 1]], dim_sizes)
+      ele_table <- unique(dt[, seq_len(length.out = idx - 2), with = FALSE])
       ele_table <- ele_table[, lapply(.SD, function(r) {
         paste0("\"", r, "\"")
       })]
       full_sets <- std_names[c(idx - 1, idx)]
       full_sets <- data.table::data.table(rep(full_sets[1], nrow(ele_table)), rep(full_sets[2], nrow(ele_table)))
       lead_table <- cbind(ele_table, full_sets)
-      var_name <- strsplit(x = var_name, split = "\\(")[[1]][1]
+      var_name <- strsplit(var_name, "\\(")[[1]][1]
       leads <- paste("Shock", paste0(
         var_name,
         "(",
         apply(
-          X = lead_table,
+          lead_table,
           MARGIN = 1,
           paste0,
           collapse = ","
@@ -151,7 +180,7 @@
           )
 
           data.table::fwrite(
-            x = d,
+            d,
             file = write_path,
             sep = " ",
             col.names = FALSE,

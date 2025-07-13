@@ -5,8 +5,7 @@ targets::tar_config_set(store = "./data-raw/_targets")
 # Set target options:
 targets::tar_option_set(
   packages = c("data.table", "usethis", "purrr", "tabulapdf", "dplyr"),
-  format = "qs",
-  cue = tar_cue("always")
+  format = "qs"
 )
 
 
@@ -16,17 +15,17 @@ targets::tar_source("./data-raw/R")
 
 list(
   tar_target(
-    name = db_version,
-    command = c("v9", "v10", "v11")
+    db_version,
+    c("v9", "v10", "v11")
   ),
   tar_target(
-    name = data_format,
-    command = c("v6.2", "v7.0")
+    data_format,
+    c("v6.2", "v7.0")
   ),
   # mapping related --------------------------------------------------
   tar_target(
-    name = mapping_files,
-    command = {
+    mapping_files,
+    {
       package_mappings <- "../teems-mappings"
       file.copy(
         from = package_mappings,
@@ -42,8 +41,8 @@ list(
     format = "file"
   ),
   tar_target(
-    name = mappings,
-    command = process_mappings(
+    mappings,
+    process_mappings(
       path = mapping_files,
       db_version = db_version,
       data_format = data_format
@@ -51,8 +50,8 @@ list(
   ),
   # tab related ------------------------------------------------------
   tar_target(
-    name = tab_repo,
-    command = list.files(
+    tab_repo,
+    list.files(
       pattern = "\\.tab",
       path = file.path("../teems-tabs"),
       full.names = TRUE
@@ -60,8 +59,8 @@ list(
     format = "file"
   ),
   tar_target(
-    name = tab_files,
-    command = {
+    tab_files,
+    {
       package_tabs <- file.path("data-raw", "tab_files")
       file.copy(
         from = tab_repo,
@@ -75,16 +74,16 @@ list(
     format = "file"
   ),
   tar_target(
-    name = tab_names,
-    command = {
+    tab_names,
+    {
       lapply(tab_files, function(tab) {
         tools::file_path_sans_ext(x = basename(path = tab))
       })
     }
   ),
   tar_target(
-    name = internal_tab,
-    command = {
+    internal_tab,
+    {
       tabs <- lapply(
         X = tab_files,
         FUN = function(tab) {
@@ -103,8 +102,8 @@ list(
   # parameter related ------------------------------------------------
   # static ===========================================================
   tar_target(
-    name = v6.2_weights,
-    command = {
+    v6.2_weights,
+    {
       list(
         ESBD = c("VDPA", "VIPA", "VDGA", "VIGA", "VDFA", "VIFA"),
         ESBM = c("VIPA", "VIGA", "VIFA"),
@@ -116,8 +115,8 @@ list(
     }
   ),
   tar_target(
-    name = v7.0_weights,
-    command = {
+    v7.0_weights,
+    {
       list(
         ESBD = c("VDPP", "VMPP", "VMGP", "VDGP", "VDFP", "VMFP"),
         ESBM = c("VMPP", "VMGP", "VMFP"),
@@ -129,16 +128,16 @@ list(
     }
   ),
   tar_target(
-    name = param_weights,
-    command = {
+    param_weights,
+    {
       list(v6.2 = v6.2_weights, v7.0 = v7.0_weights)
     }
   ),
 
   # closures ---------------------------------------------------------
   tar_target(
-    name = closure_repo,
-    command = {
+    closure_repo,
+    {
       list.files(
         path = file.path("../teems-closures/"),
         full.names = TRUE
@@ -146,8 +145,8 @@ list(
     }
   ),
   tar_target(
-    name = closure_files,
-    command = {
+    closure_files,
+    {
       package_closures <- file.path("data-raw", "closures")
       file.copy(
         from = closure_repo,
@@ -163,8 +162,8 @@ list(
     format = "file"
   ),
   tar_target(
-    name = internal_cls,
-    command = {
+    internal_cls,
+    {
       cls <- lapply(
         X = closure_files,
         FUN = function(closure) {
@@ -184,21 +183,21 @@ list(
   # inst/ext data -------------------------------------------------------------
   # teems_dat()
   tar_target(
-    name = SAVE_file,
-    command = "./data-raw/examples/SAVE.csv",
+    SAVE_file,
+    "./data-raw/examples/SAVE.csv",
     format = "file"
   ),
   tar_target(
-    name = SAVE_data,
-    command = {
+    SAVE_data,
+    {
       SAVE <- read.csv(file = SAVE_file)
       fwrite(SAVE, file = "./inst/extdata/SAVE.csv")
     },
     format = "file"
   ),
   tar_target(
-    name = SAVE_preagg,
-    command = {
+    SAVE_preagg,
+    {
       SAVE <- read.csv(file = SAVE_file)
       set.seed(seed = 1789)
       SAVE[["Value"]] <- runif(
@@ -212,19 +211,19 @@ list(
     format = "file"
   ),
   tar_target(
-    name = reg_big3_file,
-    command = "./data-raw/teems-mappings/v9/v6.2/REG/big3.csv",
+    reg_big3_file,
+    "./data-raw/teems-mappings/v9/v6.2/REG/big3.csv",
     format = "file"
   ),
   tar_target(
-    name = reg_big3,
-    command = {
+    reg_big3,
+    {
       read.csv(file = reg_big3_file)
     }
   ),
   tar_target(
-    name = SAVE_postagg,
-    command = {
+    SAVE_postagg,
+    {
       SAVE <- read.csv(file = SAVE_file)
       r_idx <- match(x = SAVE[["REGr"]], table = reg_big3[["H1"]])
       SAVE[["REGr"]] <- reg_big3[["mapping"]][r_idx]
@@ -237,21 +236,21 @@ list(
 
   # teems_param()
   tar_target(
-    name = SUBP_file,
-    command = "./data-raw/examples/SUBP.csv",
+    SUBP_file,
+    "./data-raw/examples/SUBP.csv",
     format = "file"
   ),
   tar_target(
-    name = SUBP_data,
-    command = {
+    SUBP_data,
+    {
       SUBP <- read.csv(file = SUBP_file)
       fwrite(SUBP, file = "./inst/extdata/SUBP.csv")
     },
     format = "file"
   ),
   tar_target(
-    name = SUBP_preagg,
-    command = {
+    SUBP_preagg,
+    {
       SUBP <- read.csv(file = SUBP_file)
       set.seed(seed = 1859)
       SUBP[["Value"]] <- runif(
@@ -265,17 +264,17 @@ list(
     format = "file"
   ),
   tar_target(
-    name = sector_macro_file,
-    command = "./data-raw/teems-mappings/v9/v6.2/TRAD_COMM/macro_sector.csv",
+    sector_macro_file,
+    "./data-raw/teems-mappings/v9/v6.2/TRAD_COMM/macro_sector.csv",
     format = "file"
   ),
   tar_target(
-    name = sector_macro,
-    command = read.csv(sector_macro_file)
+    sector_macro,
+    read.csv(sector_macro_file)
   ),
   tar_target(
-    name = SUBP_postagg,
-    command = {
+    SUBP_postagg,
+    {
       SUBP <- read.csv(file = SUBP_file)
       r_idx <- match(x = SUBP[["REGr"]], table = reg_big3[["H1"]])
       SUBP[["REGr"]] <- reg_big3[["mapping"]][r_idx]
@@ -289,8 +288,8 @@ list(
     format = "file"
   ),
   tar_target(
-    name = usr_macro,
-    command = {
+    usr_macro,
+    {
       usr_mapping <- read.csv(file = sector_macro_file)
       colnames(usr_mapping) <- c("original_elements", "new_mapping")
       fwrite(usr_mapping, file = "./inst/extdata/user_mapping.csv")
@@ -298,32 +297,32 @@ list(
     format = "file"
   ),
   tar_target(
-    name = endw_labagg_file,
-    command = "./data-raw/teems-mappings/v9/v6.2/ENDW_COMM/labor_agg.csv",
+    endw_labagg_file,
+    "./data-raw/teems-mappings/v9/v6.2/ENDW_COMM/labor_agg.csv",
     format = "file"
   ),
   tar_target(
-    name = endw_labagg,
-    command = read.csv(endw_labagg_file)
+    endw_labagg,
+    read.csv(endw_labagg_file)
   ),
 
   # teems_closure()
   tar_target(
-    name = GTAPv6.2_cls_file,
-    command = {
+    GTAPv6.2_cls_file,
+    {
       closure_files[grepl(pattern = "v6.2", x = closure_files)]
     },
     format = "file"
   ),
   tar_target(
-    name = GTAPv6.2_cls,
-    command = {
+    GTAPv6.2_cls,
+    {
       readLines(GTAPv6.2_cls_file)
     }
   ),
   tar_target(
-    name = user_cls,
-    command = {
+    user_cls,
+    {
       user_cls <- sub(
         pattern = "incomeslack",
         replacement = "y",
@@ -336,8 +335,8 @@ list(
 
   # teems_time()
   tar_target(
-    name = user_CPHI,
-    command = {
+    user_CPHI,
+    {
       set.seed(seed = 2025)
       user_CPHI <- expand.grid(
         REGr = unique(reg_big3[["mapping"]]),
@@ -353,8 +352,8 @@ list(
     format = "file"
   ),
   tar_target(
-    name = user_LRORG,
-    command = {
+    user_LRORG,
+    {
       set.seed(seed = 2100)
       user_LRORG <- data.frame(
         ALLTIMEt = 0:3,
@@ -367,13 +366,13 @@ list(
 
   # v6.2 <> v7 conversion
   tar_target(
-    name = GTAPv7_manual,
-    command = "./data-raw/aux/Corong and Tsigas - 2017 - The Standard GTAP Model, Version 7.pdf",
+    GTAPv7_manual,
+    "./data-raw/aux/Corong and Tsigas - 2017 - The Standard GTAP Model, Version 7.pdf",
     format = "file"
   ),
   tar_target(
-    name = set_table,
-    command = {
+    set_table,
+    {
       tibble::tibble(
         v6.2_upper = c("TRAD_COMM", "PROD_COMM", "ENDW_COMM", "MARG_COMM", "ALLTIME"),
         v6.2_mixed = c("TRAD_COMMi", "PROD_COMMj", "ENDW_COMMi", "MARG_COMMm", "ALLTIMEt"),
@@ -385,8 +384,8 @@ list(
 
   # tables here are not even concordance, just semi related lists
   tar_target(
-    name = set_conversion,
-    command = {
+    set_conversion,
+    {
       set_table <- tabulapdf::extract_tables(
         file = GTAPv7_manual,
         pages = 83
@@ -410,8 +409,8 @@ list(
     }
   ),
   tar_target(
-    name = param_conversion,
-    command = {
+    param_conversion,
+    {
       param_table <- tabulapdf::extract_tables(
         file = GTAPv7_manual,
         pages = 84
@@ -460,8 +459,8 @@ list(
     }
   ),
   tar_target(
-    name = dat_conversion,
-    command = {
+    dat_conversion,
+    {
       coeff_table <- tabulapdf::extract_tables(
         file = GTAPv7_manual,
         pages = 85:86
@@ -509,41 +508,116 @@ list(
   ),
 
   tar_target(
-    name = coeff_conversion,
-    command = {
+    coeff_conversion,
+    {
       rbind(dat_conversion, param_conversion)
     }
   ),
   
   # messages
   tar_target(
-    name = gen_err,
-    command = {
-      list(class = "{.arg {arg_name}} must be of class type {.or {.val {accepted_class}}}, not {.val {provided_class}}.",
-           nested_class = "{.field {sub_arg_name}} listed within {.arg {arg_name}} must be of type {.or {.val {accepted_class}}}, not {.val {provided_class}}.")
+    gen_err,
+    {
+      list(class = "{.arg {arg_name}} must be a {.or {accepted_class}}, not {.obj_type_friendly {provided_class}}.",
+           dir_not_file = "A filepath is expected, not the directory {.file {file}}.",
+           no_file = "Cannot open file {.file {file}}: No such file.",
+           invalid_file = "{.arg {arg}} must be a {.or {.val {valid_ext}}} file, not {?a/an} {.val {file_ext}} file.",
+           invalid_internal = c("The specified internal {file_type} file: {.val {file}} is not supported.",
+                                "Currently supported {file_type} files include: {.val {file_names}}.",
+                                "Alternatively, path to a user-provided {file_type} file is supported (e.g., \"/my/{file_type}/path.{ext}\")",
+                                "Note that user-provided {file_type} files may need to be modified for compatibility with various {.pkg teems} functions."))
     }
   ),
   
   tar_target(
-    name = shk_err,
-    command = {
-      list(cst_scen_val = "No {.field Value} column was found in the loaded file {.file {input}}.",
-           cst_scen_val_class = "The {.arg value} provided for a {.val type} shock must be a {.obj_type_friendly data.frame}.",
-           scen_year = "No {.field Year} column was found in the loaded file {.file {input}}.",
-           uni_named_lst = "{.arg ...} must consist of named pairs in the format {.code SETi = set_element}")
+    gen_wrn,
+    {
+      list(db_version = c("{.pkg teems} version: {teems_version} has only been vetted on GTAP Data Base versions: {vetted}.",
+                          "The {.fn teems::teems_solve} function can bypass the pipeline and be called on solver-ready input files."))
     }
   ),
   
   tar_target(
-    name = shk_infm,
-    command = {
+    gen_info,
+    {
+      list(dat = c("GTAP Data Base version: {.field {full_database_version}}",
+                   "Reference year: {.field {reference_year}}",
+                   "Data format: {.field {data_format}}"))
+    }
+  ),
+  
+  tar_target(
+    gen_url,
+    {
+      list(internal_files = NULL)
+    }
+  ),
+
+  tar_target(
+    dat_err,
+    {
+      list(nested_class = "Input data must be provided as a {.or {data_class}}, not {.obj_type_friendly {errant_class}}.",
+           invalid_input = "The input header provided {.field {nme}} is not among loaded data headers: {.field {existing_headers}}.",
+           no_val_col = "Input data for the header {.field {nme}} does contain {.val Value} as the final column.",
+           unagg_missing_tup = "{n_missing_tuples} tuple{?s} in the provided input file for {.val {nme}} were missing: {.field {missing_tuples}}.",
+           unagg_missing_col = c("Input data for the header {.field {nme}} does not contain all required columns (sets).",
+                                 "The required columns are {.field {req_col}}."))
+    }
+  ),
+  
+  tar_target(
+    cls_err,
+    {
+      list(invalid_internal = c("The closure file inferred from the provided {.arg tab_file}: {.val {file}} does not exist.",
+                                "Currently supported internal {file_type} files are available for: {.val {file_names}}.",
+                                "Alternatively, path to a user-provided {file_type} file is supported (e.g., \"/my/{file_type}/path.{ext}\")",
+                                "Note that user-provided {file_type} files may need to be modified for compatibility with various {.pkg teems} functions."),
+           no_var = "{l_var} variable{?s} from the closure file not present in the Tablo file: {.val {var_discrepancy}}.")
+    }
+  ),
+  
+  tar_target(
+    shk_err,
+    {
+      list(cst_scen_val_file = "The last column in the loaded file {.file {input}} must be a {.field Value} column.",
+           cst_scen_val_df = "{.obj_type_friendly {input}} supplied as a shock must have {.field Value} as the last column.",
+           scen_year_file = "No {.field Year} column was found in the loaded file {.file {input}}.",
+           scen_year_df = "{.obj_type_friendly {input}} supplied as a scenario shock must have {.field Year} as the last column.",
+           uni_named_lst = "{.arg ...} must consist of named pairs in the format {.code SETi = set_element}",
+           unneeded_dots = "{.arg ...} are only utilized for shock type {.val uniform}.",
+           not_a_shk = "The value provided to {.arg shock} is not an object created with {.fun teems::teems_shock}.",
+           not_a_var = "The variable designated for a shock: {.val {var_name}}  was not found within the model Tablo file.",
+           extra_col = "If {.field Year} is provided in lieu of the intertemporal set, the intertemporal set {.field {supplied_int_set}} is not necessary.",
+           invalid_set = c("{l_errant_set} set{?s} designated for an element-specific uniform shock: {.field {errant_set}} not applicable to the variable {.val {var_name}}.",
+                           "Set designations within {.pkg teems} comprise the variable-specific uppercase set name and lowercase index.",
+                           "For {.val {var_name}} these include: {.field {ls_mixed}}.",
+                           "In intertemporal models, {.field Year} may be provided in lieu of an intertemporal set."),
+           x_full_exo = "The variable {.val {var_name}} was assigned a shock over the entire variable yet is not fully exogenous.",
+           uni_invalid_year = "The Year provided for a shock {.val {Year}} is not among years consistent with provided time steps {.field {CYRS}}.",
+           uni_invalid_ele = c("The element: {.val {depurred.ele}} is not found within the associated set: {.field {depurred.ele_set}}",
+                               "Valid elements with the current mapping include: {.val {recognized_ele}}."),
+           x_part_exo = "The following tuples have been allocated a shock but are not exogenous: {.field {errant_tup}}.",
+           cust_invalid_year = "{n_errant_year_tuples} tuple{?s} in the provided custom shock file contain invalid {.field Year} specifications: {.field {errant_year_typles}}.",
+           cust_invalid_tup = "Some tuples provided to a {.arg custom} shock indicate elements used that do not belong to their respective sets: {.field {errant_tuples}}.",
+           cust_endo_tup = "Some tuples designated for a shock do not have exogenous status: {.field {x_exo_parts}}.",
+           scen_dynamic = "Shock type {.arg scenario} is only valid for temporally dynamic models.",
+           scen_missing_tup = c("{n_missing_tuples} tuple{?s} in the provided scenario shock file were missing: {.field {missing_tuples}}.",
+                                "Note that scenario shocks are subject to aggregation and must contain all unaggregated database- and variable-specific elements for associated sets."),
+           shk_file_shocks = "No additional shocks are accepted if a shock file is provided."
+      )
+    }
+  ),
+  
+  tar_target(
+    shk_infm,
+    {
       list(uni_named_lst = "Note that set names consist of the concatenation of the set name and variable-specific lowercase index.")
     }
   ),
   
   tar_target(
-    name = shk_url,
-    command = {
+    shk_url,
+    {
       list(custom = NULL,
            scenario = NULL,
            uniform = NULL)
@@ -551,18 +625,20 @@ list(
   ),
   
   tar_target(
-    name = shk_hyper,
-    command = {
-      list(custom = NULL,
-           scenario = NULL,
-           uniform = NULL)
+    swap_err,
+    {
+      list(invalid_swap = "Invalid list object supplied as swap.",
+           no_var = "The variable {.val {var_name}} designed for a swap {direction} is not found within the model Tablo file provided.",
+           invalid_set = c("The swap-{direction} set {.val {non_exist_set}} is not associated with the variable {.val {var_name}}.",
+                           "Note that set designations within {.pkg teems} are comprised of the variable-specific uppercase set name and lowercase index.",
+                           "For {.val {var_name}} these include: {.field {ls_mixed}}."))
     }
   ),
   
   # internal data ====================================================
   tar_target(
-    name = internal_data,
-    command = {
+    internal_data,
+    {
       usethis::use_data(mappings,
         internal_tab,
         param_weights,
@@ -570,11 +646,16 @@ list(
         set_table,
         set_conversion,
         coeff_conversion,
+        gen_info,
+        gen_wrn,
         gen_err,
+        gen_url,
+        dat_err,
         shk_err,
+        swap_err,
+        cls_err,
         shk_infm,
         shk_url,
-        shk_hyper,
         overwrite = TRUE,
         internal = TRUE
       )
@@ -586,8 +667,8 @@ list(
 
   # tab files
   # readLines used instead of readChar for readability (user-facing)
-  # tar_target(name = external_tab,
-  #            command = {
+  # tar_target(external_tab,
+  #            {
   #              tabs <- lapply(X = tab_files,
   #                             FUN = readLines)
   #
@@ -595,8 +676,8 @@ list(
   #              return(tabs)
   #            }),
   #
-  # tar_target(name = external_data,
-  #            command = {
+  # tar_target(external_data,
+  #            {
   #              purrr::map2(.x = external_tab,
   #                          .y = names(external_tab),
   #                          .f = function(t, n) {

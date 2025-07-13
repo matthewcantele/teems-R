@@ -21,6 +21,7 @@ Imports:
     cli,
     data.table,
     dplyr,
+    lifecycle,
     purrr,
     qs2,
     rlang,

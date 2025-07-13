@@ -119,10 +119,10 @@
 
   cmf_file <- paste0(model_name, ".cmf")
 
+  class(cmf) <- "cmf"
   cmf_path <- .TEEMS_write(
     input = cmf,
     file = cmf_file,
-    write_object = "cmf",
     write_dir = launchpad_dir
   )
 

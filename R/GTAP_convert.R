@@ -125,7 +125,14 @@ GTAP_convert <- function(...,
       }
     )
   }
-
-  names(x = ls_array) <- data_type
+  
+  if (length(ls_array) %=% 1L) {
+    metadata <- attr(ls_array[[1]], "metadata")
+    ls_array <- unlist(ls_array, recursive = FALSE)
+    attr(ls_array, "metadata") <- metadata
+  } else {
+    names(x = ls_array) <- data_type
+  }
+  
   return(ls_array)
 }

@@ -2,10 +2,9 @@
 #' @noRd
 .check_tab_file <- function(tab_file,
                             #model_version,
-                            call,
-                            quiet) {
-  tab <- readChar(con = tab_file,
-                  nchars = file.info(tab_file)[["size"]])
+                            call) {
+  tab <- readChar(tab_file,
+                  file.info(tab_file)[["size"]])
   
   statements <- .check_statements(tab = tab,
                                   ok_state = c("File", "Coefficient", "Read", "Update", "Set", "Subset",

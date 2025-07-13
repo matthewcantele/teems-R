@@ -3,7 +3,7 @@ teems_shock.custom <- function(var,
                                type,
                                input,
                                ...) {
-  call <- rlang::trace_back()[["call"]][[1]]
+  call <- rlang::trace_back()$call[[1]]
   if (!missing(...)) {
     .cli_action("{.arg ...} are only utilized for shock type {.val uniform}.",
                 action = "abort",
@@ -11,7 +11,6 @@ teems_shock.custom <- function(var,
   }
   args_list <- mget(names(formals()))
   args_list["..."] <- NULL
-  args_list <- .val_cust_shk(args_list = args_list,
-                             call = call)
-  args_list
+  config <- .val_cust_shk(args_list = args_list, call = call)
+  config
 }

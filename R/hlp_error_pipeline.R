@@ -2,8 +2,9 @@
 #' 
 #' @keywords internal
 #' @noRd
-.package_error <- function(error_var = NULL,
-                           error_fun) {
+.pipeline_error <- function(error_var = NULL,
+                            error_fun,
+                            call_id) {
   # add backtrace
   if (!is.null(x = error_var)) {
     var_nchar <- nchar(
@@ -20,6 +21,6 @@
   fun_package <- deparse(expr = error_fun, width.cutoff = fun_nchar)
 
   var2env <- deparse(expr = substitute(expr = list2env(x = variables, envir = rlang::current_env())))
-  error_inputs <- paste(c(error_var, var2env, error_fun), collapse = ";")
+  error_inputs <- paste(c(error_var, var2env, error_fun, call_id), collapse = ";")
   return(error_inputs)
 }

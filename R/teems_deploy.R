@@ -1,3 +1,4 @@
+#' `r lifecycle::badge("experimental")`
 #' Loads all specifications executes a model-specifc `targets`
 #' pipeline
 #'
@@ -184,24 +185,18 @@ teems_paths <- .path_ledger(base_dir = base_dir,
 int_data <- .get_int_data(aux_data = data_specs[["aux_input"]],
                           intertemporal = model_specs[["intertemporal"]])
 set_map_files <- .get_setmap_info(config = set_specs)
-shock_config <- model_config["shock"]
-shock_call <- purrr::pluck(.x = shock_config, "shock", "call")
-shock_config[["shock"]][["call"]] <- NULL
+call_hash_tbl <- .hash_table(model_config = model_config,
+                             data_config = data_config)
 targets <- .write_pipeline(model_config = model_config,
                            data_config = data_config,
                            set_config = set_config,
-                           shock_config = shock_config,
-                           shock_call = shock_call,
                            model_name = model_name,
                            int_data = int_data,
                            set_map_files = set_map_files,
                            metadata = data_specs[["metadata"]],
                            teems_paths = teems_paths)
 .execute_pipeline(teems_paths = teems_paths,
-                  model_call = model_config[["call"]],
-                  data_call = data_config[["call"]],
-                  set_call = set_config[["call"]],
-                  shock_call = shock_call,
+                  call_hash_tbl = call_hash_tbl,
                   tar_load_everything = tar_load_everything,
                   .testing = .testing)
 if (tar_load_everything) {

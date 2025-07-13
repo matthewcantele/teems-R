@@ -1,3 +1,5 @@
+#' @noRd
+#' @keywords internal
 options_class <- R6::R6Class(
   classname = "teems_option",
   class = FALSE,
@@ -6,27 +8,37 @@ options_class <- R6::R6Class(
   public = list(
     # Option fields (start as NULL)
     verbose = NULL,
+    ndigits = NULL,
+    check_shock_status = NULL,
 
     # Initialize method
-    initialize = function(verbose = NULL) {
+    initialize = function(verbose = NULL, ndigits = NULL, check_shock_status = NULL) {
       self$verbose <- verbose
+      self$ndigits <- ndigits
+      self$check_shock_status <- check_shock_status
     },
     
     # Export all options as a list
     export = function() {
       list(
-        verbose = self$get_verbose()
+        verbose = self$get_verbose(),
+        ndigits = self$get_ndigits(),
+        check_shock_status = self$get_check_shock_status()
       )
     },
     
     # Import options from a list
     import = function(list) {
       self$set_verbose(list$verbose)
+      self$set_ndigits(list$ndigits)
+      self$set_check_shock_status(list$check_shock_status)
     },
     
     # Reset all options to NULL
     reset = function() {
       self$verbose <- NULL
+      self$ndigits <- NULL
+      self$check_shock_status <- NULL
     },
     
     # Getter methods with defaults (using %|||% operator)
@@ -34,13 +46,34 @@ options_class <- R6::R6Class(
       self$verbose %|||% TRUE
     },
     
-
+    get_ndigits = function() {
+      self$ndigits %|||% 6L
+    },
+    
+    get_check_shock_status = function() {
+      self$check_shock_status %|||% TRUE
+    },
+    
     # Setter methods with validation
     set_verbose = function(verbose) {
       if (!is.null(verbose)) {
         self$validate_verbose(verbose)
       }
       self$verbose <- verbose
+    },
+    
+    set_ndigits = function(ndigits) {
+      if (!is.null(ndigits)) {
+        self$validate_ndigits(ndigits)
+      }
+      self$ndigits <- ndigits
+    },
+    
+    set_check_shock_status = function(check_shock_status) {
+      if (!is.null(check_shock_status)) {
+        self$validate_check_shock_status(check_shock_status)
+      }
+      self$check_shock_status <- check_shock_status
     },
 
     # Validation methods
@@ -49,10 +82,24 @@ options_class <- R6::R6Class(
         stop("verbose must be TRUE or FALSE")
       }
     },
+    
+    validate_ndigits = function(ndigits) {
+      if (!is.numeric(ndigits)) {
+        stop("verbose must be numeric")
+      }
+    },
+    
+    validate_check_shock_status = function(check_shock_status) {
+      if (!is.logical(check_shock_status) || length(check_shock_status) != 1 || is.na(check_shock_status)) {
+        stop("check_shock_status must be TRUE or FALSE")
+      }
+    },
 
     # Validate all current options
     validate = function() {
       self$validate_verbose(self$get_verbose())
+      self$validate_ndigits(self$get_ndigits())
+      self$validate_check_shock_status(self$get_check_shock_status())
     }
   )
 )
@@ -63,15 +110,19 @@ options_class <- R6::R6Class(
 }
 
 # Create constructor functions
-options_new <- function(verbose = NULL) {
+options_new <- function(verbose = NULL, ndigits = NULL, check_shock_status = NULL) {
   options_class$new(
-    verbose = verbose
+    verbose = verbose,
+    ndigits = ndigits,
+    check_shock_status = check_shock_status
   )
 }
 
-options_init <- function(verbose = NULL) {
+options_init <- function(verbose = NULL, ndigits = NULL, check_shock_status = NULL) {
   options_new(
-    verbose = verbose
+    verbose = verbose,
+    ndigits = ndigits,
+    check_shock_status = check_shock_status
   )
 }
 
@@ -89,7 +140,7 @@ teems_option_set <- function(...) {
   }
   
   # Validate argument names
-  valid_names <- c("method", "digits", "verbose", "output_dir")
+  valid_names <- c("verbose", "ndigits", "check_shock_status")
   invalid_names <- setdiff(names(dots), valid_names)
   if (length(invalid_names) > 0) {
     stop("Invalid option names: ", paste(invalid_names, collapse = ", "))
@@ -100,6 +151,14 @@ teems_option_set <- function(...) {
     teems_options$set_verbose(dots$verbose)
   }
 
+  if ("ndigits" %in% names(dots)) {
+    teems_options$set_ndigits(dots$ndigits)
+  }
+  
+  if ("check_shock_status" %in% names(dots)) {
+    teems_options$set_check_shock_status(dots$check_shock_status)
+  }
+  
     # Validate all options after setting
   teems_options$validate()
   
@@ -117,6 +176,8 @@ teems_option_get <- function(name = NULL) {
   # Return specific option
   switch(name,
          verbose = teems_options$get_verbose(),
+         ndigits = teems_options$get_ndigits(),
+         check_shock_status = teems_options$get_check_shock_status(),
          stop("Unknown option: ", name)
   )
 }
@@ -127,47 +188,3 @@ teems_option_reset <- function() {
   teems_options$reset()
   invisible(NULL)
 }
-
-# # Functions that use the options
-# my_process_data <- function(data, method = NULL, digits = NULL, verbose = NULL) {
-#   # Use provided arguments or fall back to global options
-#   method <- method %|||% my_options$get_method()
-#   digits <- digits %|||% my_options$get_digits()
-#   verbose <- verbose %|||% my_options$get_verbose()
-#   
-#   if (verbose) {
-#     cat("Processing data with method:", method, "and digits:", digits, "\n")
-#   }
-#   
-#   # Your processing logic here
-#   result <- switch(method,
-#                    "default" = round(mean(data), digits),
-#                    "robust" = round(median(data), digits),
-#                    "simple" = round(sum(data), digits),
-#                    "advanced" = round(var(data), digits)
-#   )
-#   
-#   return(result)
-# }
-# 
-# # Example usage:
-# cat("=== Example Usage ===\n")
-# 
-# # Set global options
-# my_option_set(method = "robust", digits = 4, verbose = TRUE)
-# 
-# # View current options
-# print(my_option_get())
-# 
-# # Use a function that respects the global options
-# data <- c(1.23456, 2.34567, 3.45678)
-# result1 <- my_process_data(data)
-# cat("Result 1:", result1, "\n")
-# 
-# # Override specific options
-# result2 <- my_process_data(data, method = "simple", digits = 1)
-# cat("Result 2:", result2, "\n")
-# 
-# # Reset options
-# my_option_reset()
-# cat("After reset:", toString(my_option_get()), "\n")

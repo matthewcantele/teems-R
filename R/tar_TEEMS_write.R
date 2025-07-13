@@ -13,57 +13,74 @@
 #' @noRd
 .TEEMS_write <- function(input,
                          file,
-                         prepend_file = NULL,
-                         ndigits,
-                         write_object,
-                         write_dir) {
+                         write_dir,
+                         ...) {
 
-  if (!is.null(x = prepend_file)) {
-    file <- basename(path = file)
-    file <- paste(prepend_file, file, sep = "_")
-  }
-  
-  # full write path
+  UseMethod(".TEEMS_write")
+}
+
+#' @export
+.TEEMS_write.tabfile <- function(input,
+                                 file,
+                                 write_dir,
+                                 prepend_file) {
+  file <- basename(path = file)
+  file <- paste(prepend_file, file, sep = "_")
   write_path <- file.path(write_dir, file)
-  if (is.element(el = write_object, set = c("cmf"))) {
-    # write
-    cat(input,
-      file = write_path,
-      sep = "\n")
-    } else if (identical(x = write_object, y = "shock")) {
-      if (!is.null(x = input)) {
-        for (shk in input) {
-          if (identical(x = shk[["type"]], y = "uniform")) {
-            cat(shk[["shock"]],
-                file = write_path,
-                sep = "\n",
-                append = TRUE)
-          } else if (identical(x = shk[["type"]], y = "custom")) {
-            .write_custom_shk(
-              dt = shk[["dt"]],
-              ndigits = ndigits,
-              var_name = shk[["var_name"]],
-              idx = shk[["idx"]],
-              write_path = write_path
-            )
-          } else if (identical(x = shk[["type"]], y = "user")) {
-            write_path <- file.path(write_dir, basename(path = file))
-            writeLines(text = shk[["shock"]],
-                       con = write_path)
-          }
-        }
-      } else {
-        cat("Shock ;",
-            file = write_path,
-            sep = "\n",
-            append = FALSE)
-      }
-  } else if (is.element(el = write_object, set = c("closure", "tabfile"))) {
-    writeLines(
-      text = input,
-      con = write_path
-    )
-  }
-  names(x = write_path) <- write_object
+  writeLines(
+    text = input,
+    con = write_path
+  )
+
+  names(write_path) <- class(input)
   return(write_path)
 }
+
+#' @export
+.TEEMS_write.closure <- function(input,
+                                 file,
+                                 write_dir) {
+  write_path <- file.path(write_dir, file)
+  writeLines(
+    text = input,
+    con = write_path
+  )
+  names(write_path) <- class(input)
+  return(write_path)
+}
+
+#' @export
+.TEEMS_write.cmf <- function(input,
+                             file,
+                             write_dir) {
+  write_path <- file.path(write_dir, file)
+  cat(input,
+    file = write_path,
+    sep = "\n"
+  )
+  names(write_path) <- class(input)
+  return(write_path)
+}
+
+#' @export
+.TEEMS_write.shock <- function(input,
+                               file,
+                               write_dir,
+                               ndigits) {
+  write_path <- file.path(write_dir, file)
+
+  if (!is.na(input)) {
+    for (shk in input) {
+      .write_shock(shock = shk,
+                   write_path = write_path)
+    }
+  } else {
+    cat("Shock ;",
+        file = write_path,
+        sep = "\n",
+        append = FALSE)
+  }
+  names(write_path) <- class(input)
+  return(write_path)
+}
+

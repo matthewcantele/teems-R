@@ -149,6 +149,7 @@ teems_solve <- function(cmf_path = NULL,
 call <- match.call()
 .check_docker(image_name = "teems",
               call = call)
+if (!missing(x = ...)) {
 cmf_path <- .execute_in_situ(... = ...,
                              tab_file = tab_file,
                              closure_file = closure_file,
@@ -157,6 +158,7 @@ cmf_path <- .execute_in_situ(... = ...,
                              in_situ_writeout = in_situ_writeout,
                              call = call,
                              quiet = quiet)
+}
 timeID <- format(x = Sys.time(), "%H%M")
 paths <- .get_solver_paths(cmf_path = cmf_path,
                            timeID = timeID,
@@ -184,6 +186,7 @@ cmd <- .construct_cmd(paths = paths,
                       n_timesteps = mod_arg[["n_timesteps"]],
                       nesteddbbd = mod_arg[["nesteddbbd"]],
                       enable_time = mod_arg[["enable_time"]])
+# need a process running in parallel, grepping output for error and then kill appropriate PID
 if (identical(x = cmd, y = terminal_run)) {return(invisible(NULL))}
 .solve_model(exec_cmd = cmd[["exec"]],
              sol_parse_cmd = cmd[["sol_parse"]],

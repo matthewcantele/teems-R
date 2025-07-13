@@ -7,80 +7,72 @@
 .model_control <- function(config,
                            metadata,
                            launchpad_dir) {
-
   t_model_call <- rlang::expr(targets::tar_target_raw(
-    name = "model_call",
-    command = rlang::expr(quote(expr = !!config[["call"]]))
+    "model_call",
+    rlang::expr(quote(!!config$call))
   ))
 
   t_model_metadata <- rlang::expr(targets::tar_target_raw(
-    name = "metadata",
-    command = quote(expr = !!metadata)
+    "metadata",
+    quote(!!metadata)
   ))
-  
-  # Tablo file identification and tracking
+
   t_tab_path <- rlang::expr(targets::tar_target_raw(
-    name = "tab_path",
-    command = quote(expr = !!config[["tab_file"]])
+    "tab_path",
+    quote(!!config$tab_file)
   ))
-  
+
   t_tab_components <- rlang::expr(targets::tar_target_raw(
-    name = "tab_comp",
-    command = expression(.process_tablo(
+    "tab_comp",
+    expression(.process_tablo(
       tab_file = tab_path,
-      var_omit = !!config[["var_omit"]],
-      call = model_call,
-      quiet = TRUE
+      var_omit = !!config$var_omit,
+      call = model_call
     ))
   ))
-  
-  # track any changes to Tablo file
+
   t_tab_file <- rlang::expr(targets::tar_target_raw(
-    name = "tracked_tab_file",
-    command = quote(expr = tab_path),
+    "tracked_tab_file",
+    quote(tab_path),
     format = "file"
   ))
 
-  # Append "Write" statements
   t_final.tablo <- rlang::expr(targets::tar_target_raw(
-    name = "final.tablo",
-    command = expression(.append_tablo(
-      tab = tab_comp[["conden_tab"]],
-      coeff_extract = tab_comp[["coeff_extract"]],
+    "final.tablo",
+    expression(.append_tablo(
+      tab = tab_comp$conden_tab,
+      coeff_extract = tab_comp$coeff_extract,
       sets = final.set_tib
     )),
-    cue = targets::tar_cue(mode = "always")
+    cue = targets::tar_cue("always")
   ))
 
-  # Write tab file
   t_write.tablo_mod <- rlang::expr(targets::tar_target_raw(
-    name = "write.tablo_mod",
-    command = expression(.TEEMS_write(
+    "write.tablo_mod",
+    expression(.TEEMS_write(
       input = final.tablo,
       file = tab_path,
-      prepend_file = "modified",
-      write_object = "tabfile",
-      write_dir = !!launchpad_dir
+      write_dir = !!launchpad_dir,
+      prepend_file = "modified"
     )),
-    cue = targets::tar_cue(mode = "always")
-  ))
-  
-  t_write.tablo_orig <- rlang::expr(targets::tar_target_raw(
-    name = "write.tablo_orig",
-    command = expression(.TEEMS_write(
-      input = tab_comp[["orig_tab"]],
-      file = tab_path,
-      prepend_file = "original",
-      write_object = "tabfile",
-      write_dir = !!launchpad_dir
-    )),
-    cue = targets::tar_cue(mode = "always")
+    cue = targets::tar_cue("always")
   ))
 
-  ##############################################################################
-  # gather and check all generated targets
+  t_write.tablo_orig <- rlang::expr(targets::tar_target_raw(
+    "write.tablo_orig",
+    expression(.TEEMS_write(
+      input = tab_comp$orig_tab,
+      file = tab_path,
+      write_dir = !!launchpad_dir,
+      prepend_file = "original"
+    )),
+    cue = targets::tar_cue("always")
+  ))
+
   envir <- rlang::current_env()
-  targets <- .gather_targets(criteria = "t_",
-                             envir = envir)
+  targets <- .gather_targets(
+    criteria = "t_",
+    envir = envir
+  )
   return(targets)
 }

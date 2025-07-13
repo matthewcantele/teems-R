@@ -15,7 +15,8 @@
     ),
     .f = function(dt, lead, idx, file) {
       write_path <- file.path(out_dir, paste0(file, ".txt"))
-
+      ndigits <- .o_ndigits()
+      
       # column names for the algo
       if (!identical(x = colnames(x = dt), y = "Value")) {
         dtColnames <- setdiff(x = colnames(x = dt), y = "Value")

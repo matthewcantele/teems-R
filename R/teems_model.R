@@ -98,15 +98,13 @@ teems_model <- function(tab_file,
                         swap_out = NULL,
                         shock_file = NULL,
                         shock = NULL,
-                        ndigits = 6L,
                         full_exclude = c("DREL", "DVER", "XXCR", "XXCD", "XXCP", "SLUG", "EFLG"),
-                        notes = NULL,
-                        quiet = FALSE)
+                        notes = NULL)
 {
+if (missing(tab_file)) {.cli_missing(tab_file)}
+args_list <- mget(names(formals()))
 call <- match.call()
-args_list <- mget(x = names(x = formals()))
-args_list <- .validate_model_args(args_list = args_list,
-                                  call = call,
-                                  quiet = quiet)
-config <- c(call = call, args_list)
+config <- .validate_model_args(args_list = args_list,
+                               call = call)
+config
 }

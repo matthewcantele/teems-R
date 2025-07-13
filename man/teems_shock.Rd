@@ -2,7 +2,8 @@
 % Please edit documentation in R/teems_shock.R
 \name{teems_shock}
 \alias{teems_shock}
-\title{Load shocks}
+\title{\ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#experimental}{\figure{lifecycle-experimental.svg}{options: alt='[Experimental]'}}}{\strong{[Experimental]}}
+Specificy shocks}
 \usage{
 teems_shock(var, type = c("uniform", "custom", "scenario"), input, ...)
 }
@@ -19,23 +20,27 @@ variable \code{"var"} and aggregated set-specific variable tuples according to
 percentage-change values specified in \code{"input"}.
 \item \code{"scenario"}: a user-specified granular shock for temporally dynamic
 models applied to variable \code{"var"} and unaggregated tuples according to
-values specified in \code{"input"}. \code{"scenario"} shocks must encompass all
-values associated with tuples corresponding to unaggregated set elements.
-Values in \code{"input"} must be actual values and will be converted into
-percentage-change format.
+values specified in \code{"input"}. \code{"scenario"} shocks must encompass all values
+associated with tuples corresponding to unaggregated set elements. Values in
+\code{"input"} must be actual values and will be converted into percentage-change
+format.
 }}
 
 \item{input}{Format contingent on shock \code{"type"}.
 \itemize{
-\item \code{"uniform"}: numeric length 1.
-\item \code{"custom"}: character length 1, path to a csv file or data.frame. Must
-contain one column "Value".
-\item \code{"scenario"}: character length 1, path to a csv file or data.frame. Must
-contain one column "Value" and one column "Year".
+\item \code{"uniform"}: numeric length 1, value of uniform shock.
+\item \code{"custom"}: character length 1, path to a csv file; a data frame or data
+frame extension (e.g., tibble, data table. Must contain "Value" as last
+column representing percentage-change shocks to each respective tuple.
+\item \code{"scenario"}: character length 1, path to a csv file; a data frame or
+data frame extension (e.g., tibble, data table. Must contain a column
+"Year" corresponding to selected time steps and "Value" as last column
+representing an actual value that will be converted into a
+percentage-change shock based on set and time step selection.
 }}
 
 \item{...}{One or more key-value pairs separated by commas corresponding to
-element-specific shocks}
+element-specific uniform shocks.}
 }
 \value{
 A list of shock configuration options.
@@ -53,7 +58,7 @@ are rather loaded in \code{\link[=teems_model]{teems_model()}}. If no shock is s
 shock will be passed resulting in no change to the underlying base data.
 }
 \examples{
-# uniform shock
+# S3 method for type 'uniform'
 # fully uniform: all variable elements receive the same shock value
 afeall_full <- teems_shock(var = "afeall",
                            type = "uniform",
@@ -67,8 +72,8 @@ afeall_chn <- teems_shock(var = "afeall",
                           input = 2,
                           REGr = "chn")
 
-# partially uniform over multiple sets and applied to multiple elements: 
-# applied to the "chn" element in set REGr, "livestock" and "crops" elements 
+# partially uniform over multiple sets and applied to multiple elements:
+# applied to the "chn" element in set REGr, "livestock" and "crops" elements
 # in PROD_COMMj and "food" element in TRAD_COMMi.
 afeall_chn_agri <- teems_shock(var = "afeall",
                                type = "uniform",
@@ -77,22 +82,20 @@ afeall_chn_agri <- teems_shock(var = "afeall",
                                PROD_COMMj = c("livestock", "crops"),
                                TRAD_COMMi = "food")
 
-# custom shock
+# S3 method for type 'custom'
 df <- expand.grid(ENDW_COMMi = c("labor", "capital", "natlres", "land"),
                   PROD_COMMj = c("svces", "food", "crops", "mnfcs", 
                   "livestock", "frs", "zcgds"),
                   REGr = c("row", "chn", "usa"))
 df$Value <- runif(nrow(df))
-row.names(df) <- NULL
 head(df)
 afeall_full <- teems_shock(var = "afeall",
                            type = "custom",
                            input = df)
                            
-# scenario shock
+# S3 method for type 'scenario'
 df <- expand.grid(REGr = c("row", "chn", "usa"),
                   Year = seq(2015, 2030, 5))
-row.names(df) <- NULL                 
 df <- df[order(df$REGr),]
 row_pop <- 5667 + (1:4) * 1.5
 chn_pop <- 1390 + (1:4) * 0.1

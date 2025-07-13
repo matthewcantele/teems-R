@@ -30,6 +30,7 @@
     }
     final_closure <- modified_vector
   }
-
+  
+  class(final_closure) <- "closure"
   return(final_closure)
 }

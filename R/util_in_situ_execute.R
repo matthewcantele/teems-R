@@ -9,7 +9,7 @@
                              in_situ_writeout,
                              call,
                              quiet) {
-  if (!missing(x = ...)) {
+
     io_files <- list(...)
 
     tab_file <- .check_input(
@@ -137,7 +137,6 @@
       in_situ_writeout = in_situ_writeout,
       in_situ = TRUE
     )[["cmf_path"]]
-  }
 
   return(cmf_path)
 }

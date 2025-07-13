@@ -36,7 +36,7 @@
     "DBBD" = 2,
     "NDBBD" = 3
   )
-  
+
   tab <- .cmf_retrieve(file = "tabfile",
                        cmf_path = paths[["cmf"]],
                        run_dir = paths[["run"]])

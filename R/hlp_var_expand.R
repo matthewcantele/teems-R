@@ -15,9 +15,11 @@
         if (!grepl(pattern = "\\(", x = var) &&
           !grepl(pattern = "\"", x = var)) {
           # get full var sets
-          var_sets <- .get_sets(var = var,
-                                var_extract = var_extract,
-                                type = "upper")
+
+          # clean this up
+          var_extract$name <- tolower(var_extract$name)
+          names(var_extract$ls_upper_idx) <- var_extract$name
+          var_sets <- purrr::pluck(var_extract, "ls_upper_idx", tolower(var))
 
           if (!identical(x = var_sets, y = "null_set")) {
             # "" to "null_set" for pfactwld et al in static

@@ -8,18 +8,18 @@
                          cache = TRUE,
                          internal = TRUE) {
   # file to object
-  if (!is.list(x = file)) {
-    arg <- as.character(x = substitute(expr = file))
-    file_ext <- tolower(x = tools::file_ext(x = basename(path = file)))
+  if (!is.list(file)) {
+    arg <- as.character(substitute(file))
+    file_ext <- tolower(tools::file_ext(basename(file)))
     numeric_ext <- !is.na(suppressWarnings(as.numeric(file_ext)))
-    if (dir.exists(paths = file)) {
+    if (dir.exists(file)) {
       .cli_action(
-        msg = "A filepath is expected, not the directory {.file {file}}.",
+        gen_err$dir_not_file,
         action = "abort",
         call = call
       )
     }
-    if (!identical(x = file_ext, y = "") && !numeric_ext) {
+    if (!identical(file_ext, "") && !numeric_ext) {
       file <- .check_usr_file(
         file = file,
         valid_ext = valid_ext,
@@ -36,11 +36,11 @@
       )
     }
   } else {
-    # fix this
     if (cache) {
+      file_name <- strsplit(deparse(substitute(file)), "\\$")[[1]][2]
       file <- .teems_cache(
         input = file,
-        file = deparse(substitute(file)),
+        file = file_name,
         ext = "qs2",
         dir = "inputdata"
       )
@@ -55,69 +55,62 @@
                             cache = cache,
                             call) {
   if (!file.exists(file)) {
-    .cli_action(msg = "Cannot open file {.file {file}}: No such file.",
-                action = "abort",
-                call = call)
-  } else if (!is.element(el = file_ext, set = valid_ext)) {
-    .cli_action(msg = "{.arg {arg}} must be a {.or {.val {valid_ext}}} file, 
-                not {?a/an} {.val {file_ext}} file.",
-                action = "abort",
-                call = call)
+    .cli_action(gen_err$no_file,
+      action = "abort",
+      call = call
+    )
+  } else if (!file_ext %in% valid_ext) {
+    .cli_action(gen_err$invalid_file,
+      action = "abort",
+      call = call
+    )
   }
 
-  file <- normalizePath(path = file)
+  file <- normalizePath(file)
   dir <- paste(file_ext, "files", sep = "_")
-  file_path <- .teems_cache(file = file,
-                            ext = file_ext,
-                            dir = dir)
-  attr(x = file_path, which = "file_ext") <- file_ext
+  file_path <- .teems_cache(
+    file = file,
+    ext = file_ext,
+    dir = dir
+  )
+  attr(file_path, which = "file_ext") <- file_ext
   return(file_path)
 }
 
 .check_internal_file <- function(file,
                                  call,
                                  ext) {
-
-  valid_internal_files <- get(x = paste("internal", ext, sep = "_"))
-  file_names <- names(x = valid_internal_files)
-  if (!is.element(el = file, set = file_names)) {
-    file_type <- switch(
-      EXPR = ext,
+  valid_internal_files <- get(paste("internal", ext, sep = "_"))
+  file_names <- names(valid_internal_files)
+  if (!file %in% file_names) {
+    file_type <- switch(ext,
       "tab" = "Tablo",
       "cls" = "closure"
     )
-    if (!identical(x = ext, y = "cls")) {
-    .cli_action(msg = c("The specified internal {file_type} file: {.val {file}} 
-                        is not supported.",
-                        "Currently supported {file_type} files include: 
-                        {.val {file_names}}.",
-                        "Alternatively, path to a user-provided {file_type} 
-                        file is supported (e.g., \"/my/{file_type}/path.{ext}\")",
-                        "Note that user-provided {file_type} files may need to 
-                        be modified for compatibility with various {.pkg teems} 
-                        functions (link here)."),
-                action = c("abort", rep(x = "inform", 3)),
-                call = call)
+    if (!identical(ext, "cls")) {
+      .cli_action(gen_err$invalid_internal,
+        action = c("abort", rep("inform", 3)),
+        url = gen_url$internal_files,
+        hyperlink = NULL,
+        call = call
+      )
     } else {
-      .cli_action(msg = c("The closure file inferred from the provided 
-      {.arg tab_file}: {.val {file}} does not exist.",
-                          "Currently supported internal {file_type} files are available for: 
-                        {.val {file_names}}.",
-                          "Alternatively, path to a user-provided {file_type} 
-                        file is supported (e.g., \"/my/{file_type}/path.{ext}\")",
-                          "Note that user-provided {file_type} files may need to 
-                        be modified for compatibility with various {.pkg teems} 
-                        functions (link here)."),
-                  action = c("abort", rep(x = "inform", 3)),
-                  call = call)
+      .cli_action(cls_err$invalid_internal,
+        action = c("abort", rep("inform", 3)),
+        url = cls_url$internal_files,
+        hyperlink = NULL,
+        call = call
+      )
     }
   } else {
     input <- valid_internal_files[[file]]
     dir <- paste(ext, "files", sep = "_")
-    file_path <- .teems_cache(input = input,
-                              file = file,
-                              ext = ext,
-                              dir = dir)
+    file_path <- .teems_cache(
+      input = input,
+      file = file,
+      ext = ext,
+      dir = dir
+    )
   }
   return(file_path)
 }

@@ -1,4 +1,4 @@
 #' @keywords internal
-is.swap <- function(x) {
-  inherits(x, "swap")
+.is_swap <- function(x) {
+  isTRUE(attr(x, "swap"))
 }

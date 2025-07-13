@@ -1,5 +1,6 @@
+#' `r lifecycle::badge("experimental")`
 #' Specificy shocks
-#' 
+#'
 #' @importFrom rlang arg_match
 #'
 #' @description `teems_shock()` is a generic function that loads shocks for
@@ -11,25 +12,29 @@
 #' @param var Character of length 1, the variable to be shocked.
 #' @param type Character of length 1, the type of shock. Choices:
 #'   * `"uniform"`: a homogenous shock applied to the specified
-#'   variable `"var"` or variable elements (using `...`) at the specified
-#'   `"value"`.
+#' variable `"var"` or variable elements (using `...`) at the specified
+#' `"value"`.
 #'   * `"custom"`: a user-specified granular shock applied to
-#'   variable `"var"` and aggregated set-specific variable tuples according to
-#'   percentage-change values specified in `"input"`.
+#' variable `"var"` and aggregated set-specific variable tuples according to
+#' percentage-change values specified in `"input"`.
 #'   * `"scenario"`: a user-specified granular shock for temporally dynamic
-#'   models applied to variable `"var"` and unaggregated tuples according to
-#'   values specified in `"input"`. `"scenario"` shocks must encompass all
-#'   values associated with tuples corresponding to unaggregated set elements.
-#'   Values in `"input"` must be actual values and will be converted into
-#'   percentage-change format.
+#' models applied to variable `"var"` and unaggregated tuples according to
+#' values specified in `"input"`. `"scenario"` shocks must encompass all values
+#' associated with tuples corresponding to unaggregated set elements. Values in
+#' `"input"` must be actual values and will be converted into percentage-change
+#' format.
 #' @param input Format contingent on shock `"type"`.
-#'   * `"uniform"`: numeric length 1.
-#'   * `"custom"`: character length 1, path to a csv file or data.frame. Must
-#'   contain one column "Value".
-#'   * `"scenario"`: character length 1, path to a csv file or data.frame. Must
-#'   contain one column "Value" and one column "Year".
+#'   * `"uniform"`: numeric length 1, value of uniform shock.
+#'   * `"custom"`: character length 1, path to a csv file; a data frame or data
+#'   frame extension (e.g., tibble, data table. Must contain "Value" as last
+#'   column representing percentage-change shocks to each respective tuple.
+#'   * `"scenario"`: character length 1, path to a csv file; a data frame or
+#'   data frame extension (e.g., tibble, data table. Must contain a column
+#'   "Year" corresponding to selected time steps and "Value" as last column
+#'   representing an actual value that will be converted into a
+#'   percentage-change shock based on set and time step selection.
 #' @param ... One or more key-value pairs separated by commas corresponding to
-#'   element-specific shocks
+#'   element-specific uniform shocks.
 #'
 #' @return A list of shock configuration options.
 #'
@@ -39,7 +44,7 @@
 #'
 #' @seealso [`teems_model()`] for loading the output of this function.
 #' @seealso [`teems_swap()`] for changing the standard model closure.
-#' 
+#'
 #' @examples
 #' # S3 method for type 'uniform'
 #' # fully uniform: all variable elements receive the same shock value
@@ -55,8 +60,8 @@
 #'                           input = 2,
 #'                           REGr = "chn")
 #'
-#' # partially uniform over multiple sets and applied to multiple elements: 
-#' # applied to the "chn" element in set REGr, "livestock" and "crops" elements 
+#' # partially uniform over multiple sets and applied to multiple elements:
+#' # applied to the "chn" element in set REGr, "livestock" and "crops" elements
 #' # in PROD_COMMj and "food" element in TRAD_COMMi.
 #' afeall_chn_agri <- teems_shock(var = "afeall",
 #'                                type = "uniform",

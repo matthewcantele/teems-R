@@ -2,7 +2,8 @@
 % Please edit documentation in R/teems_deploy.R
 \name{teems_deploy}
 \alias{teems_deploy}
-\title{Loads all specifications executes a model-specifc \code{targets}
+\title{\ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#experimental}{\figure{lifecycle-experimental.svg}{options: alt='[Experimental]'}}}{\strong{[Experimental]}}
+Loads all specifications executes a model-specifc \code{targets}
 pipeline}
 \usage{
 teems_deploy(
