@@ -4,6 +4,22 @@
 [![Version](https://img.shields.io/badge/version-0.9-green.svg)](https://github.com/username/repo/releases)
 
 
+Currently under development!
+## Installation
+Install R if it is not yet on your system and an IDE like RStudio for interactive code execution
+```bash
+sudo apt intall r-base
+```
+
+Install the R package {remotes} and any dependencies flagged
+```R
+install.packages("remotes")
+```
+
+Install the latest release "v0.0.0.94" using {remotes}
+```R
+remotes::install_github("matthewcantele/teems-R@v0.0.0.94")
+```
 
 Clone the repository to a local directory
 For Tom:
