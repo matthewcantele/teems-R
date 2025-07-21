@@ -5,11 +5,9 @@
 #' @keywords internal
 #' @noRd
 .write_pipeline <- function(model_config,
-                            data_config,
-                            set_config,
+                            load_config,
                             model_name,
                             set_map_files,
-                            int_data,
                             metadata,
                             teems_paths) {
   model_targets <- .model_control(
@@ -18,21 +16,38 @@
     launchpad_dir = teems_paths$launchpad
   )
 
+  set_map_files <- .get_setmap_info(config = load_config$set_mappings)
   set_targets <- .set_control(
-    config = set_config,
+    set_input = load_config$set_input,
     set_map_files = set_map_files,
-    int_data = int_data,
     data_type = "set",
-    full_exclude = model_config$full_exclude,
     write_dir = teems_paths$launchpad
   )
 
   data_targets <- .data_control(
-    config = data_config,
-    full_exclude = model_config$full_exclude,
+    dat_input = load_config$dat_input,
+    par_input = load_config$par_input,
+    aux_input = load_config$aux_input,
+    unaggregated_input = load_config$unaggregated_input,
+    aggregated_input = load_config$aggregated_input,
     write_dir = teems_paths$launchpad
   )
 
+  # we could move the hash table up and remove in parent env
+  if (!is.null(model_config$swap_in)) {
+    model_config$swap_in <- purrr::map(model_config$swap_in, function(x) {
+      attr(x, "call") <- NULL
+      return(x)
+    })
+  }
+  
+  if (!is.null(model_config$swap_out)) {
+    model_config$swap_out <- purrr::map(model_config$swap_out, function(x) {
+      attr(x, "call") <- NULL
+      return(x)
+    })
+  }
+  
   closure_targets <- .closure_control(
     closure_file = model_config$closure_file,
     swap_in = model_config$swap_in,

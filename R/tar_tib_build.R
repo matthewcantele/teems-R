@@ -1,119 +1,118 @@
-#' @importFrom tibble as_tibble
-#' @importFrom data.table as.data.table setnames setDT rbindlist setkey
+#' @importFrom tibble tibble
+#' @importFrom data.table as.data.table setnames setDT setkey
+#' @importFrom purrr list_rbind map discard map2
 #' 
 #' @keywords internal
 #' @noRd
-.build_tibble <- function(ls_array,
-                          is_set_array = FALSE,
-                          set_extract,
-                          int_sets,
-                          unaggregated_input = NULL,
-                          coeff_extract = NULL) {
-  if (!isTRUE(is.na(int_sets))) {
-    int_set_names <- int_sets$header
-    intertemporal <- TRUE
-  } else {
-    intertemporal <- FALSE
-  }
+.build_tibble <- function(ls_,
+                          sets,
+                          ...) {
+  UseMethod(".build_tibble")
+}
 
-  ls_array <- lapply(ls_array, function(header) {
+#' @export
+.build_tibble.coefficient <- function(ls_,
+                                      sets,
+                                      unaggregated_input = NULL,
+                                      coeff_extract) {
+  # could strip time sets to speed up dt creation then add
+  int_sets <- subset(sets, intertemporal, name)[[1]]
+  ls_ <- lapply(ls_, function(header) {
     dim_length <- length(dimnames(header$data))
     # set file
     if (dim_length %=% 0L) {
       header$dt <- data.table::as.data.table(as.matrix(header$data))
-      if (!is_set_array) {
-        data.table::setnames(header$dt, new = "Value")
-      } else {
-        data.table::setnames(header$dt, new = header$header)
-      }
+      data.table::setnames(header$dt, new = "Value")
+    # } else if (dim_length %=% 1L) {
+    #   header$dt <- data.table::as.data.table(array2DF(header$data),
+    #                                          value.name = "Value")
     } else {
       header$dt <- array2DF(header$data)
-      stnd_col <- .dock_tail(string = colnames(header$dt))
-      if (intertemporal) {
-        if (any(stnd_col %in% int_set_names)) {
-          int_col <- colnames(header$dt)[stnd_col %in% int_set_names]
-          header[["dt"]][[int_col]] <- as.integer(header[["dt"]][[int_col]])
-        }
+      header$dt <- data.table::as.data.table(header$dt)
+      col <- colnames(header$dt)
+      int_col <- match(int_sets, .dock_tail(col))
+      if (any(!is.na(int_col))) {
+        int_col <- purrr::discard(int_col, is.na)
+        header$dt[, (int_col) := lapply(.SD, as.integer), .SDcols = int_col]
       }
-      data.table::setDT(header$dt)
     }
     return(header)
   })
 
-
   if (!is.null(unaggregated_input)) {
-    ls_array <- .inject_unagg_input(
-      ls_data = ls_array,
+    ls_ <- .inject_unagg_input(
+      ls_data = ls_,
       unaggregated_input = unaggregated_input
     )
   }
 
-  # create and write out metadata file
-  # if arrays are desired this is where they enter
-  metadata <- data.table::rbindlist(lapply(ls_array, function(header) {
-    list(
-      header = header$header,
-      label = header$label,
-      coefficient = header$coefficient
+  l_idx <- match(names(ls_), coeff_extract$header)
+  ls_ <- purrr::map2(ls_, l_idx, function(h, id) {
+    h$file <- coeff_extract$file[id]
+    h$data_type <- coeff_extract$data_type[id]
+    if (grepl("integer", coeff_extract$qualifier_list[id])) {
+      h$type <- "integer"
+    } else if (!is.na(id)) {
+      h$type <- "real"
+    } else {
+      h$type <- NA
+    }
+    return(h)
+  })
+
+  tib_data <- purrr::list_rbind(purrr::map(ls_, function(x) {
+    tibble::tibble(
+      header = x$header,
+      label = x$label,
+      coefficient = x$coefficient,
+      file = x$file,
+      data_type = x$data_type,
+      type = x$type,
+      dt = list(x$dt)
     )
   }))
 
-  # convert to tibble
-  tib_data <- tibble::as_tibble(metadata)
-
-  # add write to file here
-  if (!is_set_array) {
-    r_idx <- match(tib_data$header, coeff_extract$header)
-    tib_data$file <- coeff_extract$file[r_idx]
-    tib_data$data_type <- ifelse(grepl(
-      "parameter",
-      coeff_extract$qualifier_list[r_idx]
-    ),
-    "par",
-    ifelse(tib_data$header %in% coeff_extract$header,
-      "dat",
-      NA
-    )
-    )
-    tib_data$type <- ifelse(grepl(
-      "integer",
-      coeff_extract$qualifier_list[r_idx]
-    ),
-    "integer",
-    ifelse(tib_data$header %in% coeff_extract$header,
-      "real",
-      NA
-    )
-    )
-  } else {
-    r_idx <- match(tib_data$header, set_extract$header)
-    tib_data$file <- set_extract$file[r_idx]
-    tib_data$data_type <- "set"
-    tib_data$type <- "character"
-  }
-  # join metadata with data (match unnecessary but to be safe...)
-  r_idx <- match(names(ls_array), tib_data$header)
-
-  # check metadata/data match
-  if (any(is.na(r_idx))) {
-    stop("NA found in match between metadata and data")
-  }
-
-  tib_data$dt <- lapply(ls_array, function(d) {
-    d$dt
-  })[r_idx]
-
-  # check for mismatches
-  if (!all(names(tib_data$dt) %in% tib_data$header)) {
-    stop("Name mismatch after metadata/data merge")
-  }
-
-  # names for later
   names(tib_data$label) <- tib_data$header
   names(tib_data$type) <- tib_data$header
-
-  # sort data
   lapply(tib_data$dt, data.table::setkey)
+  names(tib_data$dt) <- tib_data$header
 
+  return(tib_data)
+}
+
+#' @export
+.build_tibble.set <- function(ls_,
+                              sets) {
+
+  ls_ <- lapply(ls_, function(header) {
+    dim_length <- length(dimnames(header$data))
+    header$dt <- data.table::as.data.table(as.matrix(header$data))
+    data.table::setnames(header$dt, new = header$header)
+    return(header)
+  })
+
+  l_idx <- match(names(ls_), sets$header)
+  ls_ <- purrr::map2(ls_, l_idx, function(h, id) {
+    h$file <- sets$file[id]
+    return(h)
+  })
+
+  tib_data <- purrr::list_rbind(purrr::map(ls_, function(x) {
+    tibble::tibble(
+      header = x$header,
+      label = x$label,
+      coefficient = x$coefficient,
+      file = x$file,
+      data_type = "set",
+      type = "character",
+      dt = list(x$dt)
+    )
+  }))
+
+  names(tib_data$label) <- tib_data$header
+  names(tib_data$type) <- tib_data$header
+  lapply(tib_data$dt, data.table::setkey)
+  names(tib_data$dt) <- tib_data$header
+  
   return(tib_data)
 }

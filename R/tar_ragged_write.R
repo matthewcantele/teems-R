@@ -4,7 +4,6 @@
 #' @keywords internal
 #' @noRd
 .ragged_write <- function(dat,
-                          ndigits,
                           out_dir) {
   paths <- purrr::pmap(
     .l = list(

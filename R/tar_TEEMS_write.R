@@ -68,8 +68,7 @@
                                write_dir,
                                ndigits) {
   write_path <- file.path(write_dir, file)
-
-  if (!is.na(input)) {
+  if (!input %=% NA) {
     for (shk in input) {
       .write_shock(shock = shk,
                    write_path = write_path)

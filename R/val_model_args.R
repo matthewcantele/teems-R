@@ -12,7 +12,6 @@
     swap_out = c("is.null", "is.character", "is.list"),
     shock_file = c("is.null", "is.character"),
     shock = c("is.null", "is.list", "is.data.frame"),
-    full_exclude = c("is.character", "is.null"),
     notes = c("is.character", "is.null")
   )
 

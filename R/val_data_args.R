@@ -1,16 +1,17 @@
-#' @importFrom purrr pmap
-#' @importFrom uuid UUIDgenerate
+#' @importFrom purrr pluck
+#' @importFrom rlang arg_match
 #' 
+#' @noRd
 #' @keywords internal
 .validate_data_args <- function(args_list,
                                 call) {
-
   checklist <- list(
-    dat_input = c("is.character", "is.list"),
-    par_input = c("is.character", "is.list"),
-    aux_input = c("is.null", "is.character", "is.list"),
-    unaggregated_input =  c("is.null", "is.character", "is.list"),
-    aggregated_input =  c("is.null", "is.character", "is.list")
+    dat_input = "is.character",
+    par_input = "is.character",
+    set_input = "is.character",
+    tab_file = c("is.null", "is.character"),
+    target_format = c("is.null", "is.character"),
+    time_steps = "is.numeric"
   )
 
   .check_arg_class(
@@ -19,61 +20,98 @@
     call = call
   )
 
-  call_id <- uuid::UUIDgenerate()
-  if (!is.null(args_list$unaggregated_input)) {
-    args_list$unaggregated_input <- .prep_input_data(
-      data = args_list$unaggregated_input,
-      data_class = c("character", "data.frame"),
+  args_list$dat_input <- .check_input(args_list$dat_input,
+    valid_ext = "har",
+    cache = FALSE,
+    call = call
+  )
+
+  args_list$par_input <- .check_input(args_list$par_input,
+    valid_ext = "har",
+    cache = FALSE,
+    call = call
+  )
+
+  args_list$set_input <- .check_input(args_list$set_input,
+    valid_ext = "har",
+    cache = FALSE,
+    call = call
+  )
+
+  if (!is.null(args_list$target_format)) {
+    target_format <- args_list$target_format
+    args_list$target_format <- rlang::arg_match(
+      arg = target_format,
+      values = c("v6.2", "v7.0")
+    )
+    if (is.null(args_list$tab_file)) {
+      .cli_action(data_err$missing_tar,
+        action = "abort",
+        call = call
+      )
+    }
+  }
+
+  if (!is.null(args_list$time_steps) && is.null(args_list$tab_file)) {
+    .cli_action(data_err$missing_tab,
+      action = "abort",
       call = call
     )
-    attr(args_list$unaggregated_input, "call_id") <- call_id
   }
 
-  if (!is.null(args_list$aggregated_input)) {
-    args_list$aggregated_input <- .prep_input_data(
-      data = args_list$aggregated_input,
-      data_class = c("character", "data.frame", "numeric"),
-      call
-    )
-    attr(args_list$aggregated_input, "call_id") <- call_id
-  }
-
-  args_list$dat_input <- .check_input(
-    file = args_list$dat_input,
-    valid_ext = c("har", "qs2"),
-    call = call
-  )
-  
-  args_list$par_input <- .check_input(
-    file = args_list$par_input,
-    valid_ext = c("har", "qs2"),
-    call = call
-  )
-
-  if (!is.null(args_list$aux_input)) {
-    args_list[["aux_input"]] <- .check_input(
-      file = args_list$aux_input,
-      valid_ext = c("har", "qs2"),
+  if (!is.null(args_list$tab_file)) {
+    args_list$tab_file <- .check_input(
+      file = args_list$tab_file,
+      valid_ext = "tab",
+      cache = FALSE,
       call = call
     )
   }
-  
-  metadata <- .get_metadata(con = args_list$dat_input)
-  
-  .check_database_version(
-    vetted = c("v9A", "v10A", "v11c"),
-    provided = metadata$full_database_version,
-    call = call
-  )
-  
-  .inform_metadata(metadata = metadata)
-  
-  args_list <- c(args_list, metadata = list(metadata))
-  
-  config <- structure(args_list,
-    call_id = call_id,
-    call = call
-  )
 
-  return(config)
+  args_list$dat <- .read_har(con = args_list$dat_input)
+  args_list$par <- .read_har(con = args_list$par_input)
+  args_list$set <- .read_har(con = args_list$set_input)
+
+  if (!inherits(args_list$dat, "dat")) {
+    inferred_type <- attr(args_list$dat, "data_type")
+    .cli_action(data_err$invalid_dat_har,
+      action = "abort",
+      call = call
+    )
+  }
+  if (!inherits(args_list$par, "par")) {
+    inferred_type <- attr(args_list$par, "data_type")
+    .cli_action(data_err$invalid_par_har,
+      action = "abort",
+      call = call
+    )
+  }
+  if (!inherits(args_list$set, "set")) {
+    inferred_type <- attr(args_list$set, "data_type")
+    .cli_action(dat_err$invalid_set_har,
+      action = "abort",
+      call = call
+    )
+  }
+
+  args_list$metadata <- .get_metadata(args_list$dat_input)
+
+  if (!is.null(args_list$target_format)) {
+    if (purrr::pluck(args_list, "metadata", "data_format") %=% args_list$target_format) {
+      .cli_action(
+        data_err$invalid_convert,
+        action = "abort",
+        call = call
+      )
+    }
+  }
+  if (!is.null(args_list$time_steps)) {
+    args_list$time_steps <- .check_time_steps(
+      t0 = purrr::pluck(args_list, "metadata", "reference_year"),
+      time_steps = args_list$time_steps,
+      call = call
+    )
+  }
+
+  return(args_list)
 }

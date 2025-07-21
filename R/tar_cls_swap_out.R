@@ -148,7 +148,7 @@
           #   type = "upper"
           # )
 
-          standard_var_sets <- purrr::pluck(.x = var_extract, "ls_upper", out_var)
+          standard_var_sets <- purrr::pluck(.x = var_extract, "ls_upper_idx", out_var)
           colnames(x = remaining_exo_var) <- standard_var_sets
 
           # algo to pull out largest complete sets by element as possible
@@ -182,6 +182,7 @@
             if (identical(x = d, y = 1L)) {
               full_ss <- split(x = full_ss, by = set_name)
               ss <- split(x = remaining_exo_var, by = set_name)
+              ss <- ss[match(names(full_ss), names(ss))]
 
               # if set is completely missing
               if (!all(is.element(el = names(x = full_ss), set = names(x = ss)))) {
@@ -205,6 +206,7 @@
               .x = full_ss,
               .y = ss,
               .f = function(target, current) {
+                #incomplete <- data.table::fsetequal(target, current)
                 incomplete <- !isTRUE(
                   x = all.equal(
                     target,

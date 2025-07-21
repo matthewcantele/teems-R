@@ -1,10 +1,10 @@
 #' @importFrom rlang list2 trace_back
 #'
 #' @export
-teems_shock.uniform <- function(var,
-                                type,
-                                input,
-                                ...) {
+ems_shock.uniform <- function(var,
+                              type,
+                              input,
+                              ...) {
   call <- rlang::trace_back()$call[[1]]
   if (!missing(...)) {
     subset <- rlang::list2(...)

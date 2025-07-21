@@ -27,7 +27,7 @@
   } else {
     shocks <- NULL
     shock_var <- NULL
-    if (!quiet) {
+    if (.o_verbose()) {
       null_shk <- cli::cli_fmt({
         cli::cli_alert_warning("No shock has been provided so a
       {.val NULL} shock will be used. A null shock will return all model
@@ -88,7 +88,7 @@
     cli::cli_text("Input files written to:")
     cli::cli_ul(paste(names(io_files), io_files, sep = ": "))
   })
-  if (!quiet) {
+  if (.o_verbose()) {
     if (exists("null_shk")) {
       cli::cli_verbatim(diag_output, null_shk)
     } else {

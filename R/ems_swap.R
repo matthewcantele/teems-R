@@ -2,7 +2,7 @@
 #'
 #' @importFrom uuid UUIDgenerate
 #'
-#' @description `teems_swap()` is a helper function that loads swaps, allowing
+#' @description `ems_swap()` is a helper function that loads swaps, allowing
 #'   for a change of endogenous/exogenous variable status. If a swap is
 #'   specified using this function, the output is a required input to the
 #'   `"swap_in"` or `"swap_out"` arguments of the [`teems_model()`] function.
@@ -15,7 +15,7 @@
 #'
 #' @return A list with swap specifications.
 #'
-#' @details `teems_swap()` return values have no purpose used in isolation. The
+#' @details `ems_swap()` return values have no purpose used in isolation. The
 #'   standard model-specific closure will be used if no swaps are specified.
 #'   Note that full variable swaps can be directly inputted as a character
 #'   string in [`teems_model()`].
@@ -27,30 +27,30 @@
 #'
 #' @examples
 #' # Full variable swaps
-#' tfd_out <- teems_swap(var = "tfd")
-#' qfd_in <- teems_swap(var = "qfd")
+#' tfd_out <- ems_swap(var = "tfd")
+#' qfd_in <- ems_swap(var = "qfd")
 #'
 #' # Partial variable swaps (note distinction between "REGr" and "REGs")
-#' chn_food_tfd_out <- teems_swap(var = "tfd",
-#'                                TRAD_COMMi = "food",
-#'                                REGr = "chn")
+#' chn_food_tfd_out <- ems_swap(var = "tfd",
+#'                              TRAD_COMMi = "food",
+#'                              REGr = "chn")
 #'                                
-#' chn_food_qfd_in <- teems_swap(var = "qfd",
-#'                               TRAD_COMMi = "food",
-#'                               REGs = "chn")
+#' chn_food_qfd_in <- ems_swap(var = "qfd",
+#'                             TRAD_COMMi = "food",
+#'                             REGs = "chn")
 #'
 #' # Partial variable multiple element swaps
-#' usa_multi_tfd_out <- teems_swap(var = "tfd",
-#'                                 TRAD_COMMi = c("food", "crops"),
-#'                                 REGr = "usa")
+#' usa_multi_tfd_out <- ems_swap(var = "tfd",
+#'                               TRAD_COMMi = c("food", "crops"),
+#'                               REGr = "usa")
 #'                                
-#' usa_multi_qfd_in <- teems_swap(var = "qfd",
-#'                                TRAD_COMMi = c("food", "crops"),
-#'                                REGs = "usa")
+#' usa_multi_qfd_in <- ems_swap(var = "qfd",
+#'                              TRAD_COMMi = c("food", "crops"),
+#'                              REGs = "usa")
 #'                               
 #' @export
-teems_swap <- function(var,
-                       ...)
+ems_swap <- function(var,
+                     ...)
 {
 if (!missing(...)) {
   swap_ele <- list(...)

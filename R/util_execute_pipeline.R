@@ -5,7 +5,7 @@
 #' @noRd
 .execute_pipeline <- function(teems_paths,
                               call_hash_tbl,
-                              tar_load_everything,
+                              #tar_load_everything,
                               .testing) {
   if (!.testing) {
     output <- try({
@@ -14,10 +14,11 @@
         store = teems_paths[["store"]])
     }, silent = TRUE)
     if (inherits(x = output, what = "try-error")) {
+      browser()
       errored_tar <- targets::tar_errored(store = teems_paths[["store"]])
       raw_error <- targets::tar_meta(names = errored_tar,
                                      store = teems_paths[["store"]])[["error"]]
-      browser()
+
       call_id <- purrr::pluck(strsplit(raw_error, ";"), 1, 4)
       call <- purrr::pluck(call_hash_tbl, match(call_id, map_chr(call_hash_tbl, 1)), "call")
       error_call_body <- head(strsplit(raw_error, ";")[[1]], -1)

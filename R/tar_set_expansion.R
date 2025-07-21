@@ -3,12 +3,7 @@
 #' @keywords internal
 #' @noRd
 .expand_sets <- function(sets,
-                         int_sets,
                          set_extract) {
-  if (!isTRUE(x = is.na(x = int_sets))) {
-    sets <- rbind(sets, int_sets)
-    attr(x = set_extract, which = "CYRS") <- attr(x = int_sets, which = "CYRS")
-  }
 
   r_idx <- ifelse(test = is.element(el = set_extract[["header"]],
                                     set = sets[["header"]]),

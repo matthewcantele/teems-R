@@ -1,3 +1,4 @@
+#' @importFrom rlang current_env
 #' @importFrom purrr map2
 #' @importFrom data.table fread setnames
 #' @importFrom dplyr setdiff union intersect
@@ -7,11 +8,12 @@
 .retrieve_mappings <- function(set_map_file_inputs,
                                set_map_file_input_names,
                                sets,
-                               database_version,
                                margin_sectors = c("atp", "otp", "wtp"),
                                cgds_sector = "zcgds",
-                               data_format) {
+                               CYRS = NULL,
+                               metadata) {
 
+  list2env(metadata, rlang::current_env())
   names(x = set_map_file_inputs) <- set_map_file_input_names
   # merge all set mappings here (file inputs plus any manual entries - future ext)
   set_mappings <- set_map_file_inputs
@@ -217,5 +219,7 @@
   sets <- sets[, c("type", "name", "label", "file", "header", "intertemporal", "data_type", "full_ele", "mapped_ele", "mapping")]
   names(x = sets[["mapping"]]) <- sets[["name"]]
   names(sets[["mapped_ele"]]) <- sets[["name"]]
+  CYRS <- array2DF(CYRS$data + metadata$reference_year)
+  attr(sets, "CYRS") <- CYRS
   return(sets)
 }

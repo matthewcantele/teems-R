@@ -10,6 +10,7 @@
                         reference_year,
                         intertemporal,
                         call) {
+
   # use elaborated set names to match
   r_idx <- match(x = names(x = pre_coeff), table = coeff_extract[["header"]])
 
@@ -23,11 +24,9 @@
 
   # set "Year" to base year of reference data
   # set ALLTIME in premodel to -1
-  pre_coeff <- lapply(X = pre_coeff, FUN = function(dt) {
-    if (intertemporal) {
-      int_sets <- unlist(x = subset(x = sets,
-                                    subset = intertemporal,
-                                    select = name))
+  if (intertemporal) {
+    int_sets <- subset(sets, intertemporal, name)[[1]]
+    pre_coeff <- lapply(X = pre_coeff, FUN = function(dt) {
       stnd_names <- .dock_tail(string = colnames(x = dt))
       if (any(is.element(el = int_sets, set = stnd_names))) {
         int_set <- colnames(x = dt)[is.element(el = stnd_names, set = int_sets)]
@@ -35,9 +34,9 @@
         dt[[int_set]] <- -1
         dt[["Year"]] <- reference_year
       }
-    }
-    return(dt)
-  })
+      return(dt)
+    })
+  }
 
   # rename pre_coeff names from headers to actual names (e.g., VTWR from VTMFSD)
   r_idx <- match(x = names(x = pre_coeff), table = coeff_extract[["header"]])
@@ -78,7 +77,7 @@
       X = post_base[["dat"]],
       FUN = function(dt) {
         if (is.element(el = "Year", set = colnames(dt))) {
-          data.table::setcolorder(dt, "Year", after = ncol(x = dt) - 1)
+          data.table::setcolorder(dt, "Value", after = ncol(dt))
         }
         data.table::setkey(x = dt)
         return(dt)

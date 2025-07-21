@@ -6,7 +6,8 @@
                          valid_ext,
                          call,
                          cache = TRUE,
-                         internal = TRUE) {
+                         internal = TRUE,
+                         hash = NULL) {
   # file to object
   if (!is.list(file)) {
     arg <- as.character(substitute(file))
@@ -37,7 +38,7 @@
     }
   } else {
     if (cache) {
-      file_name <- strsplit(deparse(substitute(file)), "\\$")[[1]][2]
+      file_name <- paste0(attr(file, "data_type"), hash)
       file <- .teems_cache(
         input = file,
         file = file_name,
@@ -66,13 +67,16 @@
     )
   }
 
-  file <- normalizePath(file)
-  dir <- paste(file_ext, "files", sep = "_")
-  file_path <- .teems_cache(
-    file = file,
-    ext = file_ext,
-    dir = dir
-  )
+  file_path <- normalizePath(file)
+  if (cache) {
+    dir <- paste(file_ext, "files", sep = "_")
+    file_path <- .teems_cache(
+      file = file_path,
+      ext = file_ext,
+      dir = dir
+    )
+  }
+
   attr(file_path, which = "file_ext") <- file_ext
   return(file_path)
 }

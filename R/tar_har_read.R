@@ -6,7 +6,7 @@
 #' @noRd
 .read_har <- function(con,
                       data_type = NULL,
-                      call) {
+                      call = NULL) {
   # cut this down to essentials
   # Open the file
   if (is.character(x = con)) {
@@ -30,12 +30,12 @@
   # Close the file
   close(con)
 
-
   implied_data_type <- .har_match(con = full_har_path)
   har_file <- basename(path = full_har_path)
   
   if (!is.null(x = data_type)) {
     if (!identical(x = data_type, y = implied_data_type)) {
+      if (is.null(call)) {
       error_fun <- substitute(expr = .cli_action(
         action = "abort",
         msg = "The HAR file provided {.val {full_har_path}} has been
@@ -55,6 +55,7 @@
         error_fun = error_fun
       )
       stop(message = error_inputs)
+      }
     }
   }
   
@@ -415,9 +416,9 @@
   )
 
   if (is.null(x = data_type)) {
-    attr(x = headers, "data_type") <- implied_data_type
+    class(x = headers) <- implied_data_type
   } else {
-    attr(x = headers, "data_type") <- data_type
+    class(x = headers) <- data_type
   }
   return(headers)
 }

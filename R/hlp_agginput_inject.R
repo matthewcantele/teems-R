@@ -12,7 +12,7 @@
     if (!nme %in% tib_data$header) {
       existing_headers <- tib_data$header
       error_fun <- substitute(.cli_action(
-        dat_err$invalid_input,
+        load_err$invalid_input,
         action = "abort",
         call = call
       ))
@@ -33,7 +33,7 @@
     if (!all(colnames(existing_dat) %in% colnames(dat))) {
       req_col <- colnames(existing_dat)
       error_fun <- substitute(.cli_action(
-        dat_err$unagg_missing_col,
+        load_err$unagg_missing_col,
         action = c("abort", "inform"),
         call = call
       ))
@@ -63,7 +63,7 @@
         nme <- nme
         missing_tuples <- capture.output(print(missing_tuples))[-c(1, 2)]
         error_fun <- substitute(.cli_action(
-          dat_err$unagg_missing_tup,
+          load_err$unagg_missing_tup,
           action = "abort",
           call = call
         ))

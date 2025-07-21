@@ -1,11 +1,12 @@
 #' @importFrom purrr pluck map2
-#' @importFrom data.table copy rbindlist let
+#' @importFrom data.table copy rbindlist let key setkey
 #' @importFrom tibble tibble
 #' @return A data frame of parameters with adjusted weights.
 #' @keywords internal
 #' @noRd
 .weight_param <- function(tib_data,
-                          data_format) {
+                          data_format,
+                          sets) {
 
   # the chances of someone providing all parameter values is low so we will
   # do the weighted mappings and then swap out final dts for any user-specific
@@ -19,8 +20,22 @@
   weight_headers <- gsub(pattern = "-", "", unique(x = unlist(x = weight_map)))
 
   # get weight header data
-  weights <- subset(x = tib_data,
-                    subset = {is.element(el = header, set = weight_headers)})
+  weights <- data.table::copy(subset(x = tib_data,
+                    subset = {is.element(el = header, set = weight_headers)}))
+
+  int_sets <- subset(sets, intertemporal, name)[[1]]
+  
+  # strip time sets for weight calculations
+  weights$dt <- lapply(weights$dt,
+                    function(dt) {
+                      c_idx <- match(int_sets, .dock_tail(colnames(dt)))
+                      if (any(!is.na(c_idx))) {
+                        c_idx <- purrr::discard(c_idx, is.na)
+                        dt[, (c_idx) := NULL]
+                        dt <- unique(dt)
+                      }
+                      return(dt)
+                    })
 
   # merge weights into parameter tibble
   # no idea why setnames will not work here
@@ -69,9 +84,19 @@
   )
 
   # pull weighted parameters
-  par_weights <- subset(x = tib_data,
-                        subset = {is.element(el = header, set = weight_map[["header"]])})
+  par_weights <- data.table::copy(subset(x = tib_data,
+                        subset = {is.element(el = header, set = weight_map[["header"]])}))
 
+  par_weights$dt <- lapply(par_weights$dt,
+                       function(dt) {
+                         c_idx <- match(int_sets, .dock_tail(colnames(dt)))
+                         if (any(!is.na(c_idx))) {
+                           c_idx <- purrr::discard(c_idx, is.na)
+                           dt[, (c_idx) := NULL]
+                           dt <- unique(dt)
+                         }
+                         return(dt)
+                       })
   # combine all data in single object
   r_idx <- match(x = par_weights[["header"]], table = weight_map[["header"]])
   par_weights["weights"] <- weight_map[r_idx, "w_dt"]
@@ -109,8 +134,18 @@
   )
 
   # place elasticities ready for aggregation into main prm object
-  r_idx <- match(x = names(x = elasticities), table = tib_data[["header"]])
-  tib_data[["dt"]][r_idx] <- elasticities
-  
+  r_idx <- match(tib_data[["header"]], names(elasticities))
+  tib_data$dt <- purrr::map2(tib_data$dt,
+              r_idx,
+              function(dt, id) {
+                if (!is.na(id)) {
+                  e <- elasticities[[id]]
+                  new_key <- c(data.table::key(e), "Value")
+                  data.table::setkeyv(e, new_key)
+                  dt <- merge(dt, e)
+                }
+                return(dt)
+              })
+
   return(tib_data)
 }

@@ -213,6 +213,7 @@
                                  yes = strsplit(x = sets[["definition"]], split = ","),
                                  no = sets[["definition"]])
   sets[["definition"]] <- lapply(X = sets[["definition"]], FUN = trimws)
+  names(sets[["definition"]]) <- sets[["name"]]
   sets[["intertemporal"]] <- is.element(el = sets[["qualifier"]], set = "(intertemporal)")
   sets[["data_type"]] <- "set"
   # other checks should include

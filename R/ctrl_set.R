@@ -3,162 +3,140 @@
 #'
 #' @keywords internal
 #' @noRd
-.set_control <- function(config,
+.set_control <- function(set_input,
                          set_map_files,
-                         int_data,
                          data_type,
-                         full_exclude,
                          write_dir) {
-  t_set_call <- rlang::expr(targets::tar_target_raw(
-    name = "set_call",
-    command = rlang::expr(quote(expr = !!config[["call"]]))
-  ))
-  
   t_set_file <- rlang::expr(targets::tar_target_raw(
-    name = "set_file",
-    command = quote(expr = !!config[["set_input"]]),
+    "set_file",
+    quote(!!set_input),
     format = "file"
   ))
-  
-  set_file_type <- attr(x = config[["set_input"]], which = "file_ext")
-  
-  if (identical(x = set_file_type, y = "har")) {
-    # convert binary har files to a list of arrays
+
+  set_file_type <- attr(set_input, "file_ext")
+
+  if (set_file_type %=% "har") {
     t_set_array <- rlang::expr(targets::tar_target_raw(
-      name = "set_array",
-      command = expression(.read_har(
+      "set_array",
+      expression(.read_har(
         con = set_file,
-        data_type = "set",
-        call = set_call
+        data_type = "set"
       ))
     ))
-  } else if (identical(x = set_file_type, y = "qs2")) {
+  } else if (set_file_type %=% "qs2") {
     t_set_array <- rlang::expr(targets::tar_target_raw(
-      name = "set_array",
-      command = expression(qs2::qs_read(file = set_file))
+      "set_array",
+      expression(qs2::qs_read(file = set_file))
     ))
   }
-  
-  if (!is.null(x = config[["aux_set_file"]])) {
-    t_aux_set_file <- rlang::expr(targets::tar_target_raw(
-      name = "aux_set_file",
-      command = quote(expr = !!config[["aux_set_file"]]),
-      format = "file"
-    ))
 
-    file_type <- attr(x = config[["aux_set_file"]], "file_ext")
+  # if (!is.null(config$aux_set_file)) {
+  #   t_aux_set_file <- rlang::expr(targets::tar_target_raw(
+  #     "aux_set_file",
+  #     quote(!!config$aux_set_file),
+  #     format = "file"
+  #   ))
+  # 
+  #   file_type <- attr(config$aux_set_file, "file_ext")
+  # 
+  #   if (file_type %=% "har") {
+  #     t_aux_set_array <- rlang::expr(targets::tar_target_raw(
+  #       "aux_set_array",
+  #       expression(.read_har(
+  #         con = aux_set_file
+  #       ))
+  #     ))
+  #   } else if (file_type %=% "qs2") {
+  #     t_aux_set_array <- rlang::expr(targets::tar_target_raw(
+  #       "aux_set_array",
+  #       expression(qs2::qs_read(file = aux_set_file))
+  #     ))
+  #   }
+  # } else {
+  #   t_aux_set_array <- rlang::expr(targets::tar_target_raw(
+  #     "aux_set_array",
+  #     quote(NULL)
+  #   ))
+  # }
 
-    if (identical(x = file_type, y = "har")) {
-      t_aux_set_array <- rlang::expr(targets::tar_target_raw(
-        name = "aux_set_array",
-        command = expression(.read_har(
-          con = aux_set_file,
-          call = set_call
-        ))
-      ))
-    } else if (identical(x = file_type, y = "qs2")) {
-      t_aux_set_array <- rlang::expr(targets::tar_target_raw(
-        name = "aux_set_array",
-        command = expression(qs2::qs_read(file = aux_set_file))
-      ))
-    }
-  } else {
-    t_aux_set_array <- rlang::expr(targets::tar_target_raw(
-      name = "aux_set_array",
-      command = quote(expr = NULL)
-    ))
-  }
-  
-  if (!isTRUE(x = is.na(x = int_data))) {
-  t_int_sets <- rlang::expr(targets::tar_target_raw(
-    name = "int_sets",
-    command = expression(.build_int_sets(
-      set_extract = tab_comp[["set_extract"]][["sets"]],
-      int_data = !!int_data,
-      reference_year = metadata[["reference_year"]]
-    ))
-  ))
-  } else {
-    t_int_sets <- rlang::expr(targets::tar_target_raw(
-      name = "int_sets",
-      command = quote(NA)
-      ))
-  }
+  # if (!isTRUE(is.na(int_data))) {
+  # t_int_sets <- rlang::expr(targets::tar_target_raw(
+  #   "int_sets",
+  #   expression(.build_int_sets(
+  #     set_extract = tab_comp$set_extract$sets,
+  #     int_data = !!int_data,
+  #     reference_year = metadata$reference_year
+  #   ))
+  # ))
+  # } else {
+  #   t_int_sets <- rlang::expr(targets::tar_target_raw(
+  #     "int_sets",
+  #     quote(NA)
+  #     ))
+  # }
 
   t_set_mod.set_array <- rlang::expr(targets::tar_target_raw(
-    name = "mod.set_array",
-    command = expression(.modify_sets(
+    "mod.set_array",
+    expression(.modify_sets(
       set_array = set_array,
-      append = aux_set_array,
-      set_extract = tab_comp[["set_extract"]][["sets"]],
-      full_exclude = !!full_exclude,
-      call = set_call
+      append = NULL,
+      set_extract = purrr::pluck(tab_comp, "set_extract", "sets")
     ))
   ))
 
   t_set_map_files <- rlang::expr(targets::tar_target_raw(
-    name = "set_map_files",
-    command = quote(expr = !!set_map_files)
+    "set_map_files",
+    quote(!!set_map_files)
   ))
 
   t_set_map_file_inputs <- rlang::expr(targets::tar_target_raw(
-    name = "set_map_file_inputs",
-    command = quote(expr = set_map_files),
-    pattern = quote(expr = map(set_map_files)),
+    "set_map_file_inputs",
+    quote(set_map_files),
+    pattern = quote(map(set_map_files)),
     format = "file"
   ))
 
   t_set_map_names <- rlang::expr(targets::tar_target_raw(
-    name = "set_map_file_input_names",
-    command = expression(names(x = set_map_files))
+    "set_map_file_input_names",
+    expression(names(set_map_files))
   ))
 
-  # construct tibbles from metadata and dts for each data type
   t_init.set_tib <- rlang::expr(targets::tar_target_raw(
-    name = "init.set_tib",
-    command = expression(.build_tibble(
-      ls_array = mod.set_array,
-      is_set_array = TRUE,
-      set_extract = tab_comp[["set_extract"]][["sets"]],
-      int_sets = int_sets
+    "init.set_tib",
+    expression(.build_tibble(
+      ls_ = mod.set_array,
+      sets = purrr::pluck(tab_comp, "set_extract", "sets")
     ))
   ))
 
-  # Expand sets according to Tablo specifications ------------------------------
-  # Check set integrity
-  # Set expansion
   t_final.set_tib <- rlang::expr(targets::tar_target_raw(
-    name = "expanded.set_tib",
-    command = expression(.expand_sets(
+    "expanded.set_tib",
+    expression(.expand_sets(
       sets = init.set_tib,
-      int_sets = int_sets,
-      set_extract = tab_comp[["set_extract"]][["sets"]]
+      set_extract = purrr::pluck(tab_comp, "set_extract", "sets")
     ))
   ))
 
   t_precheck.set_mappings <- rlang::expr(targets::tar_target_raw(
-    name = "final.set_tib",
-    command = expression(.retrieve_mappings(
+    "final.set_tib",
+    expression(.retrieve_mappings(
       set_map_file_inputs = set_map_file_inputs,
       set_map_file_input_names = set_map_file_input_names,
       sets = expanded.set_tib,
-      database_version = metadata[["database_version"]],
-      data_format = metadata[["data_format"]]
+      metadata = metadata,
+      CYRS = par_array[[.o_timestep_header()]]
     ))
   ))
 
-  # Write sets
   t_write.sets <- rlang::expr(targets::tar_target_raw(
-    name = "write.set",
-    command = expression(.write_sets(
+    "write.set",
+    expression(.write_sets(
       sets = final.set_tib,
       out_dir = !!write_dir
     )),
-    cue = targets::tar_cue(mode = "always")
+    cue = targets::tar_cue("always")
   ))
 
-  ##############################################################################
-  # gather and check all generated targets
   envir <- rlang::current_env()
   targets <- .gather_targets(
     criteria = "t_",

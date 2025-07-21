@@ -3,7 +3,43 @@
 #' @keywords internal
 #' @noRd
 .aggregate_data <- function(tib_data,
-                            sets) {
+                            sets,
+                            coeff_extract) {
+  
+  req_headers <- unlist(x = subset(
+    x = coeff_extract,
+    subset = {!is.na(x = file)},
+    select = header
+  ))
+  
+  if (!all(is.element(el = req_headers, set = tib_data[["header"]]))) {
+    missing_headers <- toString(x = req_headers[!is.element(el = req_headers, set = tib_data[["header"]])])
+    stop(paste(
+      "Headers determined as required:",
+      missing_headers,
+      "were not loaded."
+    ))
+  }
+  # remove unnecessary (not written) headers
+  tib_data <- subset(
+    x = tib_data,
+    subset = {
+      is.element(el = header, set = req_headers)
+    }
+  )
+  
+  # merge required coeff_extract information
+  r_idx <- match(x = tib_data[["coefficient"]],
+                 table = coeff_extract[["coefficient"]])
+  
+  tib_data[["ls_upper_idx"]] <- coeff_extract[["ls_upper_idx"]][r_idx]
+  tib_data[["ls_mixed_idx"]] <- coeff_extract[["ls_mixed_idx"]][r_idx]
+  
+  # mappings
+  tib_data[["dt"]] <- lapply(X = tib_data[["dt"]],
+                             FUN = .preagg_map,
+                             sets = sets)
+  
   tib_data$dt <- purrr::map2(
     tib_data$dt,
     tib_data$data_type,
@@ -30,38 +66,6 @@
       return(dt)
     }
   )
-  
-  # add intertemporal sets
-  if (any(sets$intertemporal)) {
-    int_sets <- toupper(subset(
-      sets,
-      intertemporal,
-      name
-    )[[1]])
-
-    tib_data$dt <- purrr::pmap(
-      .l = list(
-        tib_data$dt,
-        tib_data$coefficient,
-        tib_data$ls_upper_idx,
-        tib_data$ls_mixed_idx
-      ),
-      .f = function(dt, nme, upper, mixed) {
-        if (any(upper %in% int_sets)) {
-          int_set <- intersect(upper, int_sets)
-          non_int_set <- setdiff(colnames(dt), "Value")
-          time_steps <- purrr::pluck(sets, "mapped_ele", int_set)
-          dt <- dt[, .(time_steps, Value), by = non_int_set]
-          data.table::setnames(
-            dt,
-            c(non_int_set, "time_steps"),
-            mixed
-          )
-        }
-        return(dt)
-      }
-    )
-  }
 
   return(tib_data)
 }

@@ -3,6 +3,7 @@
                                      closure,
                                      var_extract,
                                      sets) {
+browser()
   if (attr(raw_shock, "full_var")) {
     if (.o_check_shock_status()) {
       if (!raw_shock$var %in% closure$full_var) {
@@ -27,7 +28,7 @@
     }
     
     if (!raw_shock$ls_upper %=% "null_set") {
-      shock_LHS <- paste0(raw_shock$var, "(", paste0(ls_upper, collapse = ","), ")")
+      shock_LHS <- paste0(raw_shock$var, "(", paste0(raw_shock$ls_upper, collapse = ","), ")")
     } else {
       shock_LHS <- raw_shock$var
     }
@@ -140,7 +141,7 @@
         structured_data = purrr::list_flatten(expanded_shk$struct)[[1]],
         var_name = raw_shock$var
       )
-      
+      browser()
       if (!all(shk_list %in% exo_list)) {
         errant_tup <- setdiff(shk_list, exo_list)
         error_fun <- substitute(.cli_action(

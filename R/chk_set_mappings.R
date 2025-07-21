@@ -6,16 +6,13 @@
 #' @keywords internal
 #' @noRd
 .check_set_mappings <- function(set_mappings,
-                                time_format,
                                 metadata,
-                                call,
-                                envir,
-                                quiet) {
+                                call) {
   ls_set_ele <- purrr::map2(
-    .x = set_mappings,
-    .y = names(x = set_mappings),
-    .f = function(set_map, map_name) {
-      if (identical(x = tolower(x = tools::file_ext(x = set_map)), y = "csv")) {
+    set_mappings,
+    names(set_mappings),
+    function(set_map, map_name) {
+      if (tolower(tools::file_ext(set_map)) %=% "csv") {
         set_map <- .check_input(
           file = set_map,
           valid_ext = "csv",
@@ -39,14 +36,14 @@
       return(set_ele)
     }
   )
-  
-  if (!quiet) {
-    cli::cli_h1(text = "Core sets")
+
+  if (.o_verbose()) {
+    cli::cli_h1("Core sets")
     purrr::map2(
-      .x = names(x = ls_set_ele),
-      .y = ls_set_ele,
-      .f = function(set_name, ele) {
-        ele <- unlist(x = ele)
+      names(ls_set_ele),
+      ls_set_ele,
+      function(set_name, ele) {
+        ele <- unlist(ele)
         cli::cli_text("{set_name}: {.val {ele}}")
       }
     )

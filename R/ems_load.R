@@ -48,6 +48,8 @@
 #' well as bidirectinoal conversion between v6.2 to v7.0 data formats. 
 #' @seealso [`teems_deploy()`] for loading the output of this function.
 #'
+#' @importFrom rlang check_dots_used
+#' 
 #' @examples
 #' \dontrun{
 #' # GTAP 11 data for the standard GTAP model
@@ -108,17 +110,22 @@
 #'                                    RDLT = 0))
 #' }
 #' @export
-teems_data <- function(dat_input,
-                       par_input,
-                       aux_input = NULL,
-                       unaggregated_input = NULL,
-                       aggregated_input = NULL)
+ems_load <- function(ems_input,
+                     dat_input = NULL,
+                     par_input = NULL,
+                     set_input = NULL,
+                     aux_input = NULL,
+                     unaggregated_input = NULL,
+                     aggregated_input = NULL,
+                     ...)
 {
-if (missing(dat_input)) {.cli_missing(dat_input)}
-if (missing(par_input)) {.cli_missing(par_input)}
-args_list <- mget(x = names(x = formals()))
+rlang::check_dots_used()
+args_list <- mget(names(formals()))
+if (missing(ems_input)) {args_list$ems_input <- NULL}
+args_list$set_mappings <- list(...)
+args_list$... <- NULL
 call <- match.call()
-config <- .validate_data_args(args_list = args_list,
+config <- .validate_load_args(args_list = args_list,
                               call = call)
 config
 }

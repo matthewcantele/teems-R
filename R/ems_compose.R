@@ -1,6 +1,6 @@
 #' Parse model results
 #'
-#' @description `teems_parse()` retrieves and processes results from a solved
+#' @description `ems_compose()` retrieves and processes results from a solved
 #'   model run. Results are parsed according to the specified type (variables,
 #'   coefficients, or base data). Data validation and consistency checks are
 #'   performed during the parsing process.
@@ -8,7 +8,7 @@
 #'   Learn more about this function including output formats and data structures
 #'   in `vignette("something")`
 #'
-#' @inheritParams teems_solve
+#' @inheritParams ems_solve
 #' @param type Character length 1, type of data to parse (default includes all).
 #'   Choices:
 #'   * `"variable"`: Percentage change values for model variables
@@ -18,7 +18,7 @@
 #'
 #' @importFrom rlang arg_match
 #'
-#' @seealso [`teems_solve()`] for running the model simulation.
+#' @seealso [`ems_solve()`] for running the model simulation.
 #'
 #' @examples
 #' # See `vignette("something")` for examples and explanation
@@ -26,9 +26,9 @@
 #' @return A list containing the parsed model results according to the specified
 #'   type.
 #' @export
-teems_compose <- function(cmf_path,
-                          type = c("variable", "coefficient", "set", "inputdata"),
-                          name = NULL)
+ems_compose <- function(cmf_path,
+                        type = c("variable", "coefficient", "set", "inputdata"),
+                        name = NULL)
 {
 call <- match.call()
 type <- rlang::arg_match(arg = type)

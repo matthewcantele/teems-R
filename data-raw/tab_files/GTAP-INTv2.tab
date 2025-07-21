@@ -4146,7 +4146,7 @@ are not 1 then shock them to 1 to get the baseline scenario!
 Coefficient (integer,parameter)
     INIDELTA # binary coefficient to switch mechanism of initial condition #;
 Formula
-    INIDELTA = 0;
+    INIDELTA = 1;
 
 Coefficient (parameter)(all,r,REG)(all,t,ALLTIME)
     CPHI(r,t) # investment parameter #;

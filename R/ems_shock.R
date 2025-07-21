@@ -3,7 +3,7 @@
 #'
 #' @importFrom rlang arg_match
 #'
-#' @description `teems_shock()` is a generic function that loads shocks for
+#' @description `ems_shock()` is a generic function that loads shocks for
 #'   processing as well as conducts a series of compatibility checks. The
 #'   accepted values for `"input"` depend on the shock `"type"` specified. If a
 #'   shock is to be carried out, the output of this function is a required input
@@ -38,7 +38,7 @@
 #'
 #' @return A list of shock configuration options.
 #'
-#' @details `teems_shock()` return values have no purpose used in isolation and
+#' @details `ems_shock()` return values have no purpose used in isolation and
 #'   are rather loaded in [`teems_model()`]. If no shock is specified, a null
 #'   shock will be passed resulting in no change to the underlying base data.
 #'
@@ -48,27 +48,27 @@
 #' @examples
 #' # S3 method for type 'uniform'
 #' # fully uniform: all variable elements receive the same shock value
-#' afeall_full <- teems_shock(var = "afeall",
-#'                            type = "uniform",
-#'                            input = 2)
+#' afeall_full <- ems_shock(var = "afeall",
+#'                          type = "uniform",
+#'                          input = 2)
 #'
 #' # partially uniform: applied only to the "chn" element in set REGr (REG)
 #' # Note that set designations must consiste of the concatenation of the
 #' # standard set (e.g., REG) and variable-specific index (e.g., r).
-#' afeall_chn <- teems_shock(var = "afeall",
-#'                           type = "uniform",
-#'                           input = 2,
-#'                           REGr = "chn")
+#' afeall_chn <- ems_shock(var = "afeall",
+#'                         type = "uniform",
+#'                         input = 2,
+#'                         REGr = "chn")
 #'
 #' # partially uniform over multiple sets and applied to multiple elements:
 #' # applied to the "chn" element in set REGr, "livestock" and "crops" elements
 #' # in PROD_COMMj and "food" element in TRAD_COMMi.
-#' afeall_chn_agri <- teems_shock(var = "afeall",
-#'                                type = "uniform",
-#'                                input = 2,
-#'                                REGr = "chn",
-#'                                PROD_COMMj = c("livestock", "crops"),
-#'                                TRAD_COMMi = "food")
+#' afeall_chn_agri <- ems_shock(var = "afeall",
+#'                              type = "uniform",
+#'                              input = 2,
+#'                              REGr = "chn",
+#'                              PROD_COMMj = c("livestock", "crops"),
+#'                              TRAD_COMMi = "food")
 #'
 #' # S3 method for type 'custom'
 #' df <- expand.grid(ENDW_COMMi = c("labor", "capital", "natlres", "land"),
@@ -77,9 +77,9 @@
 #'                   REGr = c("row", "chn", "usa"))
 #' df$Value <- runif(nrow(df))
 #' head(df)
-#' afeall_full <- teems_shock(var = "afeall",
-#'                            type = "custom",
-#'                            input = df)
+#' afeall_full <- ems_shock(var = "afeall",
+#'                          type = "custom",
+#'                          input = df)
 #'                            
 #' # S3 method for type 'scenario'
 #' df <- expand.grid(REGr = c("row", "chn", "usa"),
@@ -90,19 +90,19 @@
 #' usa_pop <- 323 + (1:4) * 0.6
 #' df$Value <- c(row_pop, chn_pop, usa_pop)
 #' head(df)
-#' pop_shk <- teems_shock(var = "pop",
-#'                        type = "scenario",
-#'                        input = df)
+#' pop_shk <- ems_shock(var = "pop",
+#'                      type = "scenario",
+#'                      input = df)
 #'
 #' @export
-teems_shock <- function(var,
-                        type = c("uniform", "custom", "scenario"),
-                        input,
-                        ...)
+ems_shock <- function(var,
+                      type = c("uniform", "custom", "scenario"),
+                      input,
+                      ...)
 {
   if (missing(var)) {.cli_missing(var)}
   if (missing(type)) {.cli_missing(type)}
   if (missing(input)) {.cli_missing(input)}
   class(type) <- rlang::arg_match(type)
-  UseMethod("teems_shock", type)
+  UseMethod("ems_shock", type)
 }

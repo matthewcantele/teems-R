@@ -3,26 +3,8 @@
 .parse_tab_int <- function(expr,
                            n_timestep,
                            n_timestep_coeff) {
-  expr <- gsub(
-    pattern = "^\\(|\\)$",
-    replacement = "",
-    x = expr
-  )
-  terms <- strsplit(x = expr, split = "-|\\s*-\\s*")[[1]]
-  .convert_p_term <- function(term) {
-    content <- gsub(
-      pattern = "P\\[|\\]",
-      replacement = "",
-      x = term
-    )
-    content <- gsub(
-      pattern = n_timestep_coeff,
-      replacement = as.character(x = n_timestep),
-      x = content
-    )
-    eval(expr = parse(text = content))
-  }
 
+  terms <- strsplit(x = expr, split = "-|\\s*-\\s*")[[1]]
   if (grepl(
     pattern = "P\\[.*\\]\\s*-\\s*P\\[",
     x = expr
@@ -32,12 +14,35 @@
       split = "\\s*-\\s*(?=P\\[)",
       perl = TRUE
     )[[1]]
-    start <- .convert_p_term(term = terms[1])
-    end <- .convert_p_term(term = terms[2])
+    start <- .convert_p_term(term = terms[1],
+                             n_timestep = n_timestep,
+                             n_timestep_coeff = n_timestep_coeff)
+    end <- .convert_p_term(term = terms[2],
+                           n_timestep = n_timestep,
+                           n_timestep_coeff = n_timestep_coeff)
     num_vec <- c(start:end)
   } else {
-    num_vec <- .convert_p_term(term = expr)
+    num_vec <- .convert_p_term(term = expr,
+                               n_timestep = n_timestep,
+                               n_timestep_coeff = n_timestep_coeff)
   }
-  ls_int <- list(num_vec)
-  return(ls_int)
+
+  return(num_vec)
+}
+
+.convert_p_term <- function(term,
+                            n_timestep,
+                            n_timestep_coeff) {
+
+  content <- gsub(
+    pattern = "P\\[|\\]",
+    replacement = "",
+    x = term
+  )
+  content <- gsub(
+    pattern = n_timestep_coeff,
+    replacement = as.character(x = n_timestep),
+    x = content
+  )
+  eval(expr = parse(text = content))
 }

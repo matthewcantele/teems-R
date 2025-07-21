@@ -12,7 +12,7 @@
       function(d, nme) {
         if (!inherits(d, data_class)) {
           errant_class <- d
-          .cli_action(dat_err$nested_class,
+          .cli_action(load_err$nested_class,
             action = "abort",
             call = call
           )
@@ -29,7 +29,7 @@
           )
           df <- read.csv(path)
           if (!colnames(df)[ncol(df)] %=% "Value") {
-            .cli_action(dat_err$no_val_col,
+            .cli_action(load_err$no_val_col,
               action = "abort",
               call = call
             )
@@ -37,7 +37,7 @@
           return(path)
         } else if (inherits(d, "data.frame")) {
           if (!colnames(d)[ncol(d)] %=% "Value") {
-            .cli_action(dat_err$no_val_col,
+            .cli_action(load_err$no_val_col,
               action = "abort",
               call = call
             )

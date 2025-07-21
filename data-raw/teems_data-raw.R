@@ -5,7 +5,8 @@ targets::tar_config_set(store = "./data-raw/_targets")
 # Set target options:
 targets::tar_option_set(
   packages = c("data.table", "usethis", "purrr", "tabulapdf", "dplyr"),
-  format = "qs"
+  format = "qs",
+  cue = tar_cue("always")
 )
 
 
@@ -64,7 +65,8 @@ list(
       package_tabs <- file.path("data-raw", "tab_files")
       file.copy(
         from = tab_repo,
-        to = package_tabs
+        to = package_tabs,
+        overwrite = TRUE
       )
       list.files(
         path = package_tabs,
@@ -84,13 +86,16 @@ list(
   tar_target(
     internal_tab,
     {
-      tabs <- lapply(
-        X = tab_files,
-        FUN = function(tab) {
-          readChar(
+      tabs <- purrr::map2(
+        tab_files,
+        tab_names,
+        function(tab, nme) {
+          tab <- readChar(
             con = tab,
             nchars = file.info(tab)[["size"]]
           )
+          class(tab) <- nme
+          return(tab)
         }
       )
 
@@ -98,6 +103,14 @@ list(
       return(tabs)
     }
   ),
+  
+  # tar_target(
+  #   `GTAP-INTv2`,
+  #  {
+  #    t <- internal_tab$`GTAP-INTv2`
+  #    class(t) <- "GTAP-INTv2"
+  #    return(t)
+  #  }),
 
   # parameter related ------------------------------------------------
   # static ===========================================================
@@ -533,7 +546,7 @@ list(
     gen_wrn,
     {
       list(db_version = c("{.pkg teems} version: {teems_version} has only been vetted on GTAP Data Base versions: {vetted}.",
-                          "The {.fn teems::teems_solve} function can bypass the pipeline and be called on solver-ready input files."))
+                          "The {.fn teems::emssolve} function can bypass the pipeline and be called on solver-ready input files."))
     }
   ),
   
@@ -552,18 +565,49 @@ list(
       list(internal_files = NULL)
     }
   ),
-
+  
   tar_target(
-    dat_err,
+    data_err,
+    {
+      list(missing_tar = "If {.arg target_format} is provided for conversion, a Tablo file of the desired target format must be provided.",
+           invalid_convert = "The HAR file provided for {.arg dat_input} is already of the {.arg target_format} {.val {target_format}}.",
+           missing_tab = "If {.arg time_steps} is provided for a dynamic model, a Tablo file must be provided.",
+           invalid_dat_har = "The header array file provided for {.arg dat_input} appears to be of type {.val {inferred_type}}, not {.val dat}.",
+           invalid_par_har = "The header array file provided for {.arg par_input} appears to be of type {.val {inferred_type}}, not {.val par}.",
+           invalid_set_har = "The header array file provided for {.arg set_input} appears to be of type {.val {inferred_type}}, not {.val set}.",
+           invalid_time_step = "One or more {.arg time_steps} does not progress into the future."
+           )
+    }
+  ),
+  
+  tar_target(
+    data_wrn,
+    {
+      list(time_steps = "The initial timestep provided is neither {.val 0} nor the reference year corresponding to the {.field dat} file loaded: {.val {t0}}.")
+    }
+  ),
+  
+  tar_target(
+    load_err,
     {
       list(nested_class = "Input data must be provided as a {.or {data_class}}, not {.obj_type_friendly {errant_class}}.",
            invalid_input = "The input header provided {.field {nme}} is not among loaded data headers: {.field {existing_headers}}.",
            no_val_col = "Input data for the header {.field {nme}} does contain {.val Value} as the final column.",
            unagg_missing_tup = "{n_missing_tuples} tuple{?s} in the provided input file for {.val {nme}} were missing: {.field {missing_tuples}}.",
            unagg_missing_col = c("Input data for the header {.field {nme}} does not contain all required columns (sets).",
-                                 "The required columns are {.field {req_col}}."))
+                                 "The required columns are {.field {req_col}}."),
+           missing_eqm_input = "If {.arg eqm_input} is not provided, both {.arg dat_input} and {.arg par_input} are required inputs.",
+           missing_set_mappings = "Set mappings passed to {.arg ...} as a pairwise list are required.",
+           invalid_internal_mapping = c("The internal mapping selected: {.val {set_map}}, for set {.val {map_name}} does not exist.",
+                                        "Available internal mappings for {.val {map_name}} include {.val {available_mappings}}")
+          )
     }
   ),
+  
+  tar_target(load_wrn,
+             {
+               list(extra_input = "If {.arg eqm_input} is provided, {.arg dat_input}, {.arg par_input}, and {.arg set_input} arguments are unnecessary.")
+             }),
   
   tar_target(
     cls_err,
@@ -585,7 +629,7 @@ list(
            scen_year_df = "{.obj_type_friendly {input}} supplied as a scenario shock must have {.field Year} as the last column.",
            uni_named_lst = "{.arg ...} must consist of named pairs in the format {.code SETi = set_element}",
            unneeded_dots = "{.arg ...} are only utilized for shock type {.val uniform}.",
-           not_a_shk = "The value provided to {.arg shock} is not an object created with {.fun teems::teems_shock}.",
+           not_a_shk = "The value provided to {.arg shock} is not an object created with {.fun teems::emsshock}.",
            not_a_var = "The variable designated for a shock: {.val {var_name}}  was not found within the model Tablo file.",
            extra_col = "If {.field Year} is provided in lieu of the intertemporal set, the intertemporal set {.field {supplied_int_set}} is not necessary.",
            invalid_set = c("{l_errant_set} set{?s} designated for an element-specific uniform shock: {.field {errant_set}} not applicable to the variable {.val {var_name}}.",
@@ -628,7 +672,7 @@ list(
     swap_err,
     {
       list(invalid_swap = "Invalid list object supplied as swap.",
-           no_var = "The variable {.val {var_name}} designed for a swap {direction} is not found within the model Tablo file provided.",
+           no_var = "The variable {.val {var_name}} designated for a swap {direction} is not found within the model Tablo file provided.",
            invalid_set = c("The swap-{direction} set {.val {non_exist_set}} is not associated with the variable {.val {var_name}}.",
                            "Note that set designations within {.pkg teems} are comprised of the variable-specific uppercase set name and lowercase index.",
                            "For {.val {var_name}} these include: {.field {ls_mixed}}."))
@@ -641,6 +685,7 @@ list(
     {
       usethis::use_data(mappings,
         internal_tab,
+        #`GTAP-INTv2`,
         param_weights,
         internal_cls,
         set_table,
@@ -650,7 +695,8 @@ list(
         gen_wrn,
         gen_err,
         gen_url,
-        dat_err,
+        data_err,
+        load_err,
         shk_err,
         swap_err,
         cls_err,

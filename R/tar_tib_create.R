@@ -2,9 +2,33 @@
 #'
 #' @keywords internal
 #' @noRd
-.finalize_data <- function(tib_data,
-                           sets,
-                           aggregated_input) {
+.create_tib <- function(ls_,
+                        unaggregated_input,
+                        aggregated_input,
+                        data_format,
+                        sets,
+                        coeff_extract) {
+  tib_data <- .build_tibble(
+    ls_ = ls_,
+    sets = sets,
+    unaggregated_input = unaggregated_input,
+    coeff_extract = coeff_extract
+  )
+
+
+  tib_data <- .weight_param(
+    tib_data = tib_data,
+    data_format = data_format,
+    sets = sets
+  )
+
+  tib_data <- .aggregate_data(
+    tib_data = tib_data,
+    sets = sets,
+    coeff_extract = coeff_extract
+  )
+
+
   if (!is.null(aggregated_input)) {
     tib_data <- .inject_agg_input(
       tib_data = tib_data,

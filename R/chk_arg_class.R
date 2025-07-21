@@ -15,7 +15,6 @@
       ),
       function(arg, arg_name, checks, check_name) {
         if (!arg_name %=% check_name) {
-          browser()
           .cli_action(
             msg = "Check missing from checklist",
             action = "abort",

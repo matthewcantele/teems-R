@@ -60,7 +60,9 @@
 }
 
 .cli_missing <- function(arg) {
-  arg <- deparse(substitute(arg))
+  if (!arg %=% "...") {
+    arg <- deparse(substitute(arg))
+  }
   call <- rlang::trace_back()$call[[1]]
   .cli_action("argument {.arg {arg}} is missing, with no default",
     action = "abort",

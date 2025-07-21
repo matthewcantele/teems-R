@@ -16,6 +16,7 @@
     var_union <- .unite_csvs(target = "var_csvs",
                              paths = paths[["var"]],
                              call = call)
+
     output <- .parse_var(
       paths = paths[["var"]],
       var_extract = comp_extract,
@@ -34,7 +35,7 @@
     )
     
     if (identical(x = type, y = "inputdata")) {
-      pre_coeff <- targets::tar_read(name = final.data_tib,
+      pre_coeff <- targets::tar_read(name = data_tib,
                                      store = file.path(paths[["model"]],
                                                        "store"))
       reference_year <- qs2::qs_read(file = paths[["metadata"]])[["reference_year"]]

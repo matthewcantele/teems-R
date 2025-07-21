@@ -22,7 +22,7 @@
       )
     }
   })
-  
+
   if (!all(purrr::map_lgl(multi_ele_shks, is.null))) {
     flattened_shks <- purrr::list_flatten(purrr::compact(multi_ele_shks))
     multi_id <- unique(purrr::map_chr(flattened_shks, attr, "call_id"))

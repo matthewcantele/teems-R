@@ -21,7 +21,7 @@
         call = call
       )
     } else {
-      processed_swap <- do.call(teems_swap, list(raw_swap))[[1]]
+      processed_swap <- do.call(ems_swap, list(raw_swap))[[1]]
     }
   #}
 
