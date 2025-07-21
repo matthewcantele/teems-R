@@ -20,32 +20,10 @@ Install the latest release "v0.0.0.94" using {remotes}
 ```R
 remotes::install_github("matthewcantele/teems-R@v0.0.0.94")
 ```
+The installation may fail, citing "there is no package called ...". Install those packages and try again.
 
-Clone the repository to a local directory
-For Tom:
+Sample scripts are located at the teems-scripts repository
 ```bash
-git clone https://tomkompas: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@github.com/matthewcantele/teems-R.git
-```
-
-For testing:
-```bash
-git clone https://mcantele_testing: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@github.com/matthewcantele/teems-R.git
-```
-
-You need R if you haven't installed it yet
-```bash
-sudo apt intall r-base
-```
-
-Some necessary packages for this beta stage
-```bash
-R -e 'install.packages(c("devtools", "data.table"))'
-```
-
-Enter directory
-```bash
-cd teems-R
-```
 
 
 
