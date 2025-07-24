@@ -6,6 +6,13 @@
 .classify_entries <- function(closure,
                            sets,
                            tab_file) {
+  # exo <- tibble::tibble(cls_entry = closure)
+  # exo[["var_name"]] <- purrr::map_chr(closure, function(e) {strsplit(e, "\\(")[[1]][1]})
+  # exo[["full_var"]] <- !grepl("\\(|\"", exo[["cls_entry"]])
+  # set_pattern <- paste(toupper(x = sets[["name"]]), collapse = "|")
+  # exo[["mixed_var"]] <- grepl("\"", exo[["cls_entry"]]) & grepl(set_pattern, exo[["cls_entry"]])
+  # exo[["ele_var"]] <- grepl("\"", exo[["cls_entry"]]) & !grepl(set_pattern, exo[["cls_entry"]])
+  
   # change name to classify_closure
   # expand standard closure to possible set and element combinations
   exogenous <- tibble::tibble(orig_closure = closure)

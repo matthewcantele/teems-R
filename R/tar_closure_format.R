@@ -2,6 +2,7 @@
 #' @noRd
 .format_closure <- function(closure,
                             tab_readline = 15000) {
+  browser()
   final_closure <- capture.output(cat(
     "exogenous",
     closure,

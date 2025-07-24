@@ -11,10 +11,6 @@
                           unaggregated_input,
                           aggregated_input,
                           write_dir) {
-  # t_data_call <- rlang::expr(targets::tar_target_raw(
-  #   "data_call",
-  #   rlang::expr(quote(!!config$call))
-  # ))
 
   t_dat_file <- rlang::expr(targets::tar_target_raw(
     "dat_file",
@@ -25,6 +21,7 @@
   dat_file_type <- attr(dat_input, "file_ext")
 
   if (dat_file_type %=% "har") {
+    # move check to prepipeline, drop call
     t_dat_array <- rlang::expr(targets::tar_target_raw(
       "dat_array",
       expression(.read_har(
@@ -102,16 +99,6 @@
       coeff_extract = tab_comp$coeff_extract
     ))
   ))
-
-  # t_data_setnames <- rlang::expr(targets::tar_target_raw(
-  #   "final.data_array",
-  #   expression(.update_set_names(
-  #     ls_array = mod.data_array,
-  #     coeff_extract = tab_comp$coeff_extract,
-  #     data_format = metadata$data_format
-  #   ))
-  # ))
-
 
   t_final.data_tib <- rlang::expr(targets::tar_target_raw(
     "data_tib",

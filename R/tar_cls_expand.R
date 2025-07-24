@@ -6,6 +6,7 @@
                             var_omit = NULL,
                             var_extract,
                             sets) {
+
   if (!is.null(x = var_omit)) {
     closure <- subset(x = closure,
                       subset = {

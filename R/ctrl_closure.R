@@ -1,5 +1,4 @@
-#' @importFrom rlang expr enquos current_env
-#' @importFrom purrr pluck list_flatten
+#' @importFrom rlang expr current_env
 #' @importFrom targets tar_target_raw tar_cue
 #' 
 #' @keywords internal
@@ -10,83 +9,73 @@
                              var_omit,
                              write_dir,
                              model_name) {
-
-  # track closure file and any changes
   t_closure.file <- rlang::expr(targets::tar_target_raw(
-    name = "closure_file",
-    command = quote(expr = !!closure_file),
+    "closure_file",
+    quote(!!closure_file),
     format = "file"
   ))
-  
+
   t_closure <- rlang::expr(targets::tar_target_raw(
-    name = "closure",
-    command = expression(expr = {
-      closure <- tail(head(readLines(con = closure_file), -3), -1)
+    "closure",
+    expression({
+      closure <- tail(head(readLines(closure_file), -3), -1)
       return(closure)
     })
   ))
 
-  t_check.closure <- rlang::expr(targets::tar_target_raw(
-    name = "checked.closure",
-    command = expression(.check_closure(
+  t_prep.closure <- rlang::expr(targets::tar_target_raw(
+    "prepped.closure",
+    expression(.prep_closure(
       closure = closure,
-      sets = final.set_tib
-    ))
-  ))
-
-  t_expand.closure <- rlang::expr(targets::tar_target_raw(
-    name = "expanded.closure",
-    command = expression(.expand_closure(
-      closure = checked.closure,
       var_omit = !!var_omit,
-      var_extract = tab_comp[["var_extract"]],
+      var_extract = tab_comp$var_extract,
       sets = final.set_tib
     ))
   ))
 
   t_swap.in.closure <- rlang::expr(targets::tar_target_raw(
-    name = "swapped.in.cls",
-    command = expression(.swap_in(
-      closure = expanded.closure,
+    "swapped.in.cls",
+    expression(.swap_in(
+      closure = prepped.closure,
       swap_in = !!swap_in,
       sets = final.set_tib,
-      var_extract = tab_comp[["var_extract"]]
+      var_extract = tab_comp$var_extract
     ))
   ))
 
   t_swap.out.closure <- rlang::expr(targets::tar_target_raw(
-    name = "swapped.out.cls",
-    command = expression(.swap_out(
+    "swapped.out.cls",
+    expression(.swap_out(
       closure = swapped.in.cls,
       swap_out = !!swap_out,
       sets = final.set_tib,
-      var_extract = tab_comp[["var_extract"]]
+      var_extract = tab_comp$var_extract
     ))
   ))
 
   t_final.closure <- rlang::expr(targets::tar_target_raw(
-    name = "final.closure",
-    command = expression(.format_closure(
-      closure = swapped.out.cls[["orig_closure"]]
+    "final.closure",
+    expression(.format_closure(
+      closure = swapped.out.cls$orig_closure
     )),
-    cue = targets::tar_cue(mode = "always")
+    cue = targets::tar_cue("always")
   ))
 
   # Write closure
   t_write.closure <- rlang::expr(targets::tar_target_raw(
-    name = "write.closure",
-    command = expression(.TEEMS_write(
+    "write.closure",
+    expression(.TEEMS_write(
       input = final.closure,
       file = paste0(!!model_name, ".cls"),
       write_dir = !!write_dir
     )),
-    cue = targets::tar_cue(mode = "always")
+    cue = targets::tar_cue("always")
   ))
 
-  ##############################################################################
-  # gather and check all generated targets
   envir <- rlang::current_env()
-  targets <- .gather_targets(criteria = "t_",
-                             envir = envir)
+  targets <- .gather_targets(
+    criteria = "t_",
+    envir = envir
+  )
   return(targets)
 }
