@@ -3,9 +3,9 @@
 .check_statements <- function(tab,
                               ok_state,
                               call) {
+
   # remove comments
   n_comments <- paste(unlist(x = strsplit(x = tab, "![^!]*!", perl = TRUE)), collapse = "")
-  # break into commands
   statements <- unlist(x = strsplit(x = n_comments, split = ";", perl = TRUE))
   
   # remove new lines and carriage returns

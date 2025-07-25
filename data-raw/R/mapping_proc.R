@@ -8,10 +8,10 @@ process_mappings <- function(path,
   ls_mappings <- list()
   for (v in db_version) {
     for (d in data_format) {
-      set_names <- list.files(path = file.path("data-raw", "teems-mappings", v, d))
+      set_names <- list.files(path = file.path("data-raw", "mappings", v, d))
       for (s in set_names) {
         set_mappings <- list.files(
-          path = file.path("data-raw", "teems-mappings", v, d, s),
+          path = file.path("data-raw", "mappings", v, d, s),
           recursive = TRUE,
           full.names = TRUE
         )

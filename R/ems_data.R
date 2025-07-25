@@ -2,6 +2,7 @@
 ems_data <- function(dat_input,
                      par_input,
                      set_input,
+                     aux_input = NULL,
                      tab_file = NULL,
                      target_format = NULL,
                      time_steps = NULL,
@@ -37,8 +38,21 @@ ems_data <- function(dat_input,
     type = "set",
     call = call
   )
+  
+  ls_data <- list(
+    dat = args_list$dat,
+    par = args_list$par,
+    set = args_list$set
+  )
+  
+  if (!is.null(args_list$aux_input)) {
+    ls_data <- .distribute_aux(tab_file = args_list$tab_file,
+                               ls_aux = args_list$aux,
+                               ls_data = ls_data)
+  }
 
   if (!is.null(args_list$target_format)) {
+    browser()
     ls_data <- .convert_db(
       tab_file = args_list$tab_file,
       ls_dat = args_list$dat,
@@ -48,12 +62,6 @@ ems_data <- function(dat_input,
       target_format = args_list$target_format
     )
   } else {
-    ls_data <- list(
-      dat = args_list$dat,
-      par = args_list$par,
-      set = args_list$set
-    )
-
     attr(ls_data, "metadata") <- args_list$metadata
   }
 

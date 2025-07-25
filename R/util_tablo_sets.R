@@ -4,28 +4,24 @@
 #' @noRd
 .tablo_sets <- function(tab_extract,
                         call) {
-  # Set statements
-  sets <- subset(
-    x = tab_extract,
-    subset = {
-      is.element(
-        el = tolower(x = type),
-        set = "set"
-      )
-    }
-  )
+  sets <- subset(tab_extract, tolower(type) %in% "set")
 
   # qualifier_arg
   # fill empty qualifier with implicit value (non_intertemporal)
+  # handle mssing set label
   sets[["qualifier"]] <- ifelse(
-    test = grepl(pattern = "\\(|\\)", x = .get_element(sets[["remainder"]], " ", 1)),
-    yes = .get_element(
+    substr(sets$remainder, 1, 1) == "(",
+    .get_element(
       input = sets[["remainder"]],
       split = " ",
       index = 1
     ),
-    no = "(non_intertemporal)"
+    NA
   )
+
+  sets[["qualifier"]] <- ifelse(is.na(sets$qualifier),
+                                "(non_intertemporal)",
+                                sets$qualifier)
 
   # check validity of qualifier (must be intertemporal or non_intertemporal)
   valid_qual <- c("(intertemporal)", "(non_intertemporal)")
@@ -43,13 +39,28 @@
     remainder = sets[["remainder"]],
     pattern = sets[["qualifier"]]
   )
-
-  # Set names
-  sets[["name"]] <- .get_element(
-    input = sets[["remainder"]],
-    split = " ",
-    index = 1
+  
+  sets[["name"]] <- ifelse(grepl("#", sets$remainder),
+    .get_element(
+      input = sets[["remainder"]],
+      split = "#",
+      index = 1
+    ),
+    ifelse(grepl("\\(", sets$remainder),
+      .get_element(
+        input = sets[["remainder"]],
+        split = "\\(",
+        index = 1
+      ),
+      .get_element(
+        input = sets[["remainder"]],
+        split = "=",
+        index = 1
+      )
+    )
   )
+
+  sets[["name"]] <- trimws(sets$name)
 
   # clear name from remainder
   sets[["remainder"]] <- .advance_remainder(
@@ -58,12 +69,11 @@
   )
 
   # get descriptive info
-  sets[["label"]] <- trimws(x = .get_element(
-    input = sets[["remainder"]],
-    split = "#",
-    index = 2,
-    fixed = TRUE
-  ))
+  sets[["label"]] <- ifelse(grepl("#", sets$remainder),
+    trimws(purrr::map(strsplit(sets$remainder, "#"), 2)),
+    NA
+  )
+  
   # clear label from remainder
   sets[["remainder"]] <- .advance_remainder(
     remainder = sets[["remainder"]],

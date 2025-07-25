@@ -28,13 +28,18 @@
   #   }
   # }
   # 
+
   return_comp <- purrr::pluck(.x = return_comp, 1, pos)
   
   # here we need an algo to identify the no set entries
-  if (identical(x = pos, 2L)) {
-    if (!grepl(pattern = "\\(", x = return_comp)) {
-      return_comp <- NA
+  if (length(return_comp) != 0) {
+    if (identical(x = pos, 2L)) {
+      if (!grepl(pattern = "\\(", x = return_comp)) {
+        return_comp <- NA
+      }
     }
+  } else {
+    return_comp <- NA
   }
   
   return(return_comp)

@@ -8,6 +8,7 @@
                          cache = TRUE,
                          internal = TRUE,
                          hash = NULL) {
+
   # file to object
   if (!is.list(file)) {
     arg <- as.character(substitute(file))

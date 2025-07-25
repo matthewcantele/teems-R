@@ -147,9 +147,7 @@ File
 File
     GTAPPARM # file containing behavioral parameters #;
 File
-    INTDATA # file containing the number time steps and associated intervals #;
-File
-    INTPARM # file containing intertemporal-specific parameters #;
+    GTAPINT # file containing GTAP-INT intertemporal-specific coefficients #;
 
 !<
     --------------------
@@ -242,6 +240,8 @@ Set
 Subset
     ENDWM is subset of ENDW;
 Subset
+    ENDWC is subset of ENDWM;
+Subset
     ENDWS is subset of ENDW;
 Set 
     ENDWMS # mobile and sluggish endowments # = ENDWM + ENDWS;
@@ -249,48 +249,36 @@ Subset
     ENDWMS is subset of ENDW;
 Subset
     ENDWC is subset of ENDWMS;
-
+Set
+    ENDWMSNC # mobile and sluggish not capital # = ENDWMS - ENDWC;
 Set
     DEMD # demanded commodities and endowments # = ENDW + COMM;
 
 Coefficient (integer)
-    NINTERVAL # Number of time-steps #;
-
+    NTSP # Number of timesteps #;
 Read
-    NINTERVAL from file INTDATA header "NTSP";
+    NTSP from file GTAPINT header "NTSP";
 
 Set (intertemporal)
-    ALLTIME # All time steps # maximum size 51 (P[0] - P[NINTERVAL-1]);
+    ALLTIME # All time steps # maximum size 51 (P[0] - P[NTSP-1]);
 
 Coefficient (parameter)(all,t,ALLTIME)
-    YEAR(t) # Actual number of years #;
-
+    YEAR(t) # Actual years #;
 Read
-    YEAR from file INTDATA header "AYRS";
+    YEAR from file GTAPINT header "YEAR";
 
 Set (intertemporal)
     INITIME # Initial time step # size 1 (P[0]);
 
 Set (intertemporal)
-    ENDTIME # End time step # size 1 (P[NINTERVAL-1]);
+    ENDTIME # End time step # size 1 (P[NTSP-1]);
 
 Set (intertemporal)
-    FWDTIME # All time steps except ENDTIME # maximum size 50 (P[0] - P[NINTERVAL-2]);
+    FWDTIME # All time steps except ENDTIME # maximum size 50 (P[0] - P[NTSP-2]);
 
-Set (intertemporal)
-    BWDTIME # All time steps except INITIME # maximum size 200 (P[1]-P[NINTERVAL-1]);
-
-Set (intertemporal)
-    MIDTIME # All time steps except INITIME and ENDTIME # maximum size 50 (P[1] - P[ninterval-2]);
-
-Subset initime is subset of ALLTIME ;
-Subset endtime is subset of ALLTIME ;
-Subset fwdtime is subset of ALLTIME ;
-Subset bwdtime is subset of ALLTIME ;
-Subset midtime is subset of ALLTIME ;
-Subset midtime is subset of fwdtime ;
-Subset midtime is subset of bwdtime ;
-
+Subset INITIME is subset of ALLTIME;
+Subset ENDTIME is subset of ALLTIME;
+Subset FWDTIME is subset of ALLTIME;
 
 !<
     -------------------
@@ -927,30 +915,40 @@ Read
     VKB from file GTAPDATA header "VKB";
 Update (all,r,REG)(all,t,ALLTIME)
     VKB(r,t) = pinv(r,t) * kb(r,t);
-Coefficient 
- (parameter) DELTAKADJ #Switch coefficient to turn off convex adjustment cost function#;
- (parameter)(all,r,REG)(all,t,ALLTIME) CPHI(r,t) #Investment parameter#;
- (parameter)(all,r,REG)(all,t,ALLTIME) KAPPA(r,t) #Depreciation rate#;
- (parameter)(all,t,ALLTIME) LTGR(t) #Long run economic growth#;
- (all,r,REG)(all,t,ALLTIME) VCAPI(r,t) #Value of real capital increment#;
-Formula (initial)DELTAKADJ=1;
-Read 
- CPHI from file GTAPDATA header "CPHI";
- KAPPA from file GTAPDATA header "KAPP";
- LTGR from file GTAPPARM header "LTGR";
+Coefficient (parameter)
+    DELTAKADJ # Switch coefficient to turn off convex adjustment cost function #;
+Formula (initial)
+    DELTAKADJ = 1;
+Coefficient (parameter)(all,r,REG)(all,t,ALLTIME)
+    CPHI(r,t) # investment parameter #;
+Formula (all,r,REG)(all,t,ALLTIME)
+    CPHI(r,t) = 0.1;
+Coefficient (parameter)(all,r,REG)(all,t,ALLTIME)
+    KAPPA(r,t) # depreciation rate #;
+Formula (all,r,REG)(all,t,ALLTIME)
+    KAPPA(r,t) = 0.08;
+
+Coefficient (parameter)(all,t,ALLTIME)
+    LTGR(t) # Long run economic growth #;
+Coefficient (all,r,REG)(all,t,ALLTIME)
+    VCAPI(r,t) # Value of real capital increment #;
+!Read 
+ LTGR from file GTAPPARM header "LTGR";!
+Formula (all,t,ALLTIME)
+    LTGR(r,t) = 0;
 Coefficient (all,r,REG)(all,t,ALLTIME)
     REGINV(r,t) # regional GROSS investment in r #;
 Formula (all,r,REG)(all,t,ALLTIME)
     REGINV(r,t) = sum{c,COMM, VIP(c,r,t)};
-Formula 
- (initial)(all,r,REG)(all,t,ALLTIME) VCAPI(r,t) = DELTAKADJ*[(VKB(r,t)^2+2*CPHI(r,t)*VKB(r,t)*REGINV(r,t))^0.5-VKB(r,t)]/CPHI(r,t)
+Formula (initial)(all,r,REG)(all,t,ALLTIME)
+    VCAPI(r,t) = DELTAKADJ*[(VKB(r,t)^2+2*CPHI(r,t)*VKB(r,t)*REGINV(r,t))^0.5-VKB(r,t)]/CPHI(r,t)
                                                 + [1-DELTAKADJ]*REGINV(r,t);
-Variable 
- (all,r,REG)(all,t,ALLTIME) capi(r,t) #Increase in capital stock#;
+Variable (all,r,REG)(all,t,ALLTIME)
+    capi(r,t) #Increase in capital stock#;
 Variable (all,r,REG)(all,t,ALLTIME)
     qinv(r,t) # demand for investment/capital goods in region r #;
-Update
- (all,r,REG)(all,t,ALLTIME) VCAPI(r,t) = capi(r,t)*pinv(r,t);
+Update (all,r,REG)(all,t,ALLTIME)
+    VCAPI(r,t) = capi(r,t)*pinv(r,t);
 Equation
 E_inv #Investment function# (all,r,REG)(all,t,ALLTIME)
    qinv(r,t)=capi(r,t)+DELTAKADJ*CPHI(r,t)*VCAPI(r,t)
@@ -2468,12 +2466,12 @@ Equation E_qes2
     qes(e,a,r,t) = qe(e,r,t) - ETRAE(e,r,t) * [pes(e,a,r,t) - pe(e,r,t)]
                - endwslack(e,r,t);
 
-zerodivide default RNREG;
+Zerodivide default RNREG;
 Coefficient (all,e,ENDW)(all,a,ACTS)(all,r,REG)(all,t,ALLTIME)
     REVSHR(e,a,r,t) # Share of endowment e in total endowment revenue/supply #;
 Formula (all,e,ENDW)(all,a,ACTS)(all,r,REG)(all,t,ALLTIME)
     REVSHR(e,a,r,t) = EVOS(e,a,r,t) / VES(e,r,t);
-zerodivide off;
+Zerodivide off;
 
 Equation E_pe2
 # composite price for sluggish endowments #
@@ -2530,9 +2528,9 @@ Equation E_peb !< This equation assures market clearing for all endowments >!
 >!
 Variable (all,r,REG)(all,t,ALLTIME)
     ke(r,t) # end-of-period capital stock in r #;
-Coefficient (ge 0)(all,r,REG)(all,t,fwdtime)
+Coefficient (ge 0)(all,r,REG)(all,t,FWDTIME)
     VKDELTA(r,t) # value of beginning-of-period capital stock in region r #;
-Variable (all,r,REG)(all,t,fwdtime)
+Variable (all,r,REG)(all,t,FWDTIME)
     kdelta(r,t) # end-of-period capital stock in r #;
 Coefficient
  (all,r,REG)(all,t,ALLTIME) VPINV(r,t) #Value of capital investment price#;
@@ -2550,11 +2548,11 @@ Coefficient (all,r,REG)(all,t,ALLTIME)
     INVKERATIO(r,t)
     # ratio of gross investment to end-of-period capital stock in r #;
 Formula 
- (all,r,REG)(all,t,fwdtime) INVKERATIO(r,t)=[(Year(t+1)-Year(t))*VCAPI(r,t)]
+ (all,r,REG)(all,t,FWDTIME) INVKERATIO(r,t)=[(Year(t+1)-Year(t))*VCAPI(r,t)]
    /[(Year(t+1)-Year(t))*VCAPI(r,t)+(1-(KAPPA(r,t)+LTGR(t))*(Year(t+1)-Year(t)))*VKB(r,t)];
- (all,r,REG)(all,t,endtime) INVKERATIO(r,t)=[(Year(t)-Year(t-1))*VCAPI(r,t)]
+ (all,r,REG)(all,t,ENDTIME) INVKERATIO(r,t)=[(Year(t)-Year(t-1))*VCAPI(r,t)]
    /[(Year(t)-Year(t-1))*VCAPI(r,t)+(1-(KAPPA(r,t)+LTGR(t))*(Year(t)-Year(t-1)))*VKB(r,t)];
- (all,r,REG)(all,t,fwdtime) 
+ (all,r,REG)(all,t,FWDTIME) 
  VKDELTA(r,t)=VKB(r,t+1)/VPINV(r,t+1)/
        [(Year(t+1)-Year(t))*VCAPI(r,t)/VPINV(r,t)+(1-(KAPPA(r,t)+LTGR(t))*(Year(t+1)-Year(t)))*VKB(r,t)/VPINV(r,t)];
 Equation E_ke
@@ -2563,7 +2561,7 @@ Equation E_ke
     ke(r,t) = INVKERATIO(r,t) * capi(r,t) + [1.0 - INVKERATIO(r,t)] * kb(r,t);
 Equation E_kslack
 # ending capital stock equals beginning stock plus net investment #
-(all,r,REG)(all,t,fwdtime)
+(all,r,REG)(all,t,FWDTIME)
     kb(r,t+1) = ke(r,t)+kdelta(r,t);
 
 Coefficient (all,r,REG)(all,t,ALLTIME)
@@ -2626,53 +2624,63 @@ Read
 
 !<
     Rational expectation extension:
-      (1) Set REDELTA=0 and RESEDELTA=0 to simulate the conventional adative
+      (1) Set REEXODELTA=0, REDELTA=0 and RESEDELTA=0 to simulate the conventional adaptive
           recursive expectation results;
-      (2) Set REDELTA=1 and RESEDELTA=1 to simulate the iterative rational 
+      (2) Set REEXODELTA=0, REDELTA=1 and RESEDELTA=1 to simulate the iterative rational
           expectation results;
-      (3) Set REDELTA=1 and RESEDELTA=0 to simulate the rational expectation 
+      (3) Set REEXODELTA=0, REDELTA=1 and RESEDELTA=0 to simulate the rational expectation
           results with non-recursive solution method;
-      (4) Set REEXODELTA=1 to simulate the iterative rational expectation 
-          results with non-recursive solution method;
+      (4) Set REEXODELTA=1 in a multi-steps approach to simulate the iterative rational expectation
+          results with non-recursive solution method (need run_me.sh file and Python script extension);
 >!
 
-Coefficient 
-    (parameter) REDELTA # binary coefficient to switch rational expectation mechanism #;
-    (parameter) RESEDELTA # binary coefficient to switch to recursive rational expectation mechanism #;
-    (parameter) REEXODELTA # binary coefficient to switch to exogenous RORE for iterative RE approach #;
-    (all,r,REG)(all,t,ALLTIME) VRENTAL(r,t)
-    # capital rental price or gross rate of return #;
-    (all,t,ALLTIME) VRORG(t)
-    # binary coefficient to switch expectation mechanism #;
-Read
-    VRORG from file GTAPDATA header "RORG";
+Coefficient (parameter)
+    REDELTA # binary coefficient to switch rational expectation mechanism #;
+Formula (initial)
+    REDELTA = 1;
+Coefficient (parameter)
+    RESEDELTA # binary coefficient to switch to recursive rational expectation mechanism #;
+Formula (initial)
+    RESEDELTA=0; 
+Coefficient (parameter)
+    REEXODELTA # binary coefficient to switch to exogenous RORE for iterative RE approach #;
+Formula (initial)
+    REEXODELTA=0;
+Coefficient (all,r,REG)(all,t,ALLTIME)
+    VRENTAL(r,t) # capital rental price or gross rate of return #;
+Formula (all,r,REG)(all,t,ALLTIME)
+    VRENTAL(r,t) = sum{e,ENDWC, [VES(e,r,t) / GROSSCAP(r,t)]};
+Coefficient (all,t,alltime)
+    VRORG(t) # value of global net rate of return on capital stock #;
+Formula (all,t,ALLTIME)
+    VRORG(t) = 0.04;
+!Read
+    VRORG from file GTAPDATA header "RORG";!
 
-Formula 
-    (initial)REDELTA=0; 
-    (initial)RESEDELTA=0; 
-    (initial)REEXODELTA=0; 
-    (all,r,REG)(all,t,ALLTIME)VRENTAL(r,t) = sum{e,ENDWC, [VES(e,r,t) / GROSSCAP(r,t)]};
+Variable (all,r,REG)(all,t,ALLTIME)
+    pval(r,t) # present value of a unit of capital #;
+Variable (all,r,REG)(all,t,ALLTIME)
+    pval_se(r,t) # present value of a unit of capital #;
+Variable (all,r,REG)(all,t,ALLTIME)
+    ror_act(r,t) # actual rate of return #;
+Variable (all,r,REG)(all,t,ALLTIME)
+    ror_exo(r,t) # actual rate of return #;
+Variable (all,t,ALLTIME)
+    rorg(t) # global net rate of return on capital stock #;
 
-Variable 
-    (all,r,REG)(all,t,ALLTIME) pval(r,t) # present value of a unit of capital #;
-    (all,r,REG)(all,t,ALLTIME) pval_se(r,t) # present value of a unit of capital #;
-    (all,r,REG)(all,t,ALLTIME) ror_act(r,t) # actual rate of return #;
-    (all,r,REG)(all,t,ALLTIME) ror_exo(r,t) # actual rate of return #;
-    (all,t,ALLTIME) rorg(t) # global net rate of return on capital stock #;
-
-Update
-    (all,t,ALLTIME) VRORG(t) = rorg(t); 
+Update (all,t,ALLTIME)
+    VRORG(t) = rorg(t); 
 
 Equation PVALFWDTIME
 # present value of a unit of capital #
-(all,r,REG)(all,t,fwdtime)
+(all,r,REG)(all,t,FWDTIME)
     pval(r,t) = 1/[VRENTAL(r,t+1)+VPINV(r,t+1)*(1-KAPPA(r,t)*(Year(t+1)-Year(t)))-VPINV(r,t)*(1+VRORG(t)*(Year(t+1)-Year(t)))]*
                 [VRENTAL(r,t+1)*rental(r,t+1)+VPINV(r,t+1)*(1-KAPPA(r,t)*(Year(t+1)-Year(t)))*pinv(r,t+1)
                 -VPINV(r,t)*(1+VRORG(t)*(Year(t+1)-Year(t)))*[pinv(r,t)+VRORG(t)*(Year(t+1)-Year(t))/[1+VRORG(t)*(Year(t+1)-Year(t))]*rorg(t)]]
                 -VRORG(t)/[1+VRORG(t)]*rorg(t);
 Equation PVALENDTIME 
 # present value of a unit of capital #
-(all,r,REG)(all,t,endtime)
+(all,r,REG)(all,t,ENDTIME)
     pval(r,t) = 1/[VRENTAL(r,t)-VPINV(r,t)*(Year(t)-Year(t-1))*(KAPPA(r,t)+VRORG(t))]*
                 [VRENTAL(r,t)*rental(r,t)
                 -VPINV(r,t)*(Year(t)-Year(t-1))*(KAPPA(r,t)+VRORG(t))*pinv(r,t)
@@ -3191,7 +3199,7 @@ Equation E_tot
 ! GDP expenditure side summary !
 Set 
     GDPEX (Household,Investment,Government,Exports,IntnlMargins,Imports);
-Coefficient (all,r,REG)(all,t,ALLTIME)(all,g,GDPEX)
+Coefficient (all,r,REG)(all,g,GDPEX)(all,t,ALLTIME)
     GDPEXP(r,g,t) # GDP expenditure side summary #;
 Formula   
 (all,r,REG)(all,t,ALLTIME) GDPEXP(r,"Household",t)    = sum{c,COMM, VPP(c,r,t)};  
@@ -3200,8 +3208,6 @@ Formula
 (all,s,REG)(all,t,ALLTIME) GDPEXP(s,"Exports",t)      = sum{c,COMM, sum{d,REG, VFOB(c,s,d,t)}};  
 (all,r,REG)(all,t,ALLTIME) GDPEXP(r,"IntnlMargins",t) = sum{m,MARG, VST(m,r,t)};  
 (all,d,REG)(all,t,ALLTIME) GDPEXP(d,"Imports",t)      = - sum{c,COMM, sum{s,REG, VCIF(c,s,d,t)}}; 
-Write 
-    GDPEXP to file GTAPSUM header "GDPE"; 
 
 Variable (all,r,REG)(all,t,ALLTIME)
     vgdp(r,t) # change in value of GDP #;
@@ -4273,7 +4279,7 @@ Equation E_CNTqfd
     CNTqfd(c,a,r,t)
         = [0.01 * EVSCALFACT(r,t)] * DFTAX(c,a,r,t) * [qfd(c,a,r,t) - pop(r,t)];
 
-Variable (linear,change) (all,r,REG)(all,t,ALLTIME)(all,d,DIR)
+Variable (linear,change) (all,r,REG)(all,d,DIR)(all,t,ALLTIME)
     CNTqfr(r,d,t)
     # cont. to EV of changes in use of dom. and imp. intermediates in r #;
 !change to avoid complicated if()!
@@ -4307,7 +4313,7 @@ Equation E_CNTqpd
 (all,c,COMM)(all,r,REG)(all,t,ALLTIME)
     CNTqpd(c,r,t) = [0.01 * EVSCALFACT(r,t)] * DPTAX(c,r,t) * [qpd(c,r,t) - pop(r,t)];
 
-Variable (linear,change) (all,r,REG)(all,t,ALLTIME)(all,d,DIR)
+Variable (linear,change) (all,r,REG)(all,d,DIR)(all,t,ALLTIME)
     CNTqpr(r,d,t)
     # cont. to EV of changes in consumption of dom. and imp. goods in r #;
 !change to avoid complicated if()!
@@ -4341,7 +4347,7 @@ Equation E_CNTqgd
 (all,c,COMM)(all,r,REG)(all,t,ALLTIME)
     CNTqgd(c,r,t) = [0.01 * EVSCALFACT(r,t)] * DGTAX(c,r,t) * [qgd(c,r,t) - pop(r,t)];
 
-Variable (linear,change) (all,r,REG)(all,t,ALLTIME)(all,d,DIR)
+Variable (linear,change) (all,r,REG)(all,d,DIR)(all,t,ALLTIME)
     CNTqgr(r,d,t)
     # cont. to EV of changes in gov't consumption of dom. and imp goods in r #;
 Equation E_CNTqgrdom
@@ -4374,7 +4380,7 @@ Equation E_CNTqid
 (all,c,COMM)(all,r,REG)(all,t,ALLTIME)
     CNTqid(c,r,t) = DITAX(c,r,t) * [0.01 * EVSCALFACT(r,t)] * [qid(c,r,t) - pop(r,t)];
 
-Variable (linear,change) (all,r,REG)(all,t,ALLTIME)(all,d,DIR)
+Variable (linear,change) (all,r,REG)(all,d,DIR)(all,t,ALLTIME)
     CNTqia(r,d,t)
     # contribution to EV of changes in dom. and imp. investment goods in r #;
 Equation E_CNTqiadom 
@@ -4556,7 +4562,7 @@ Equation E_CNTpop
 >!
 
 !< Allocative efficiency contributions >!
-Variable (linear,change) (all,r,REG)(all,t,ALLTIME)(all,x,ALLTAX)
+Variable (linear,change) (all,r,REG)(all,x,ALLTAX)(all,t,ALLTIME)
     CNTalleffr(r,x,t) # total contribution to regional EV of allocative effects #;
 !Equation E_CNTalleffr
 # total contribution to regional EV of allocative effects #
@@ -4633,7 +4639,7 @@ Equation E_CNTalleffcr
         + sum{d,REG, CNTqxs(c,r,d,t)}
         + sum{s,REG, CNTqms(c,s,r,t)};
 
-Variable (linear,change) (all,r,REG)(all,t,ALLTIME)(all,e,TECHTYPE)
+Variable (linear,change) (all,e,TECHTYPE)(all,r,REG)(all,t,ALLTIME)
     CNTtechr(e,r,t) # contribution to regional EV of all technical change #;
 !Equation E_CNTtechr
 # contribution to regional EV of all technical change #
@@ -4928,8 +4934,6 @@ Zerodivide off;
 
 postsim (begin);
 
-File (new) WELVIEW # output file containing welfare decomposition summary #;
-
 !<
     SET definitions for Welfare summary file. Supplementary sets for "toggles" 
     in VIEWHAR.
@@ -4976,7 +4980,7 @@ Zerodivide (nonzero_by_zero) default RNREG;
     -----------------------------
 >!
 
-Coefficient (all,r,REG)(all,t,ALLTIME)(all,c,COLUMN)
+Coefficient (all,r,REG)(all,c,COLUMN)(all,t,ALLTIME)
     WELFARE(r,c,t) # aggregate report of welfare change #;
 Formula (all,r,REG)(all,t,ALLTIME)
     WELFARE(r,"alloc_A1",t)= sum{x, ALLTAX, CNTalleffr(r,x,t)};
@@ -4992,9 +4996,6 @@ Formula (all,r,REG)(all,t,ALLTIME)
     WELFARE(r,"IS_F1",t)   = CNTpinv(r,t);
 Formula (all,r,REG)(all,t,ALLTIME)
     WELFARE(r,"PREF_G1",t) = CNTdpar(r,t);
-Write
-    WELFARE to file WELVIEW header "A"
-    longname "EV Decomposition: Summary";
 
 !<
     C-A1: Allocative efficiency effect: Activity, comodity and endowment Summary
@@ -5016,11 +5017,7 @@ Formula (all,r,REG)(all,t,ALLTIME)(all,e,ENDW)
 Formula (all,r,REG)(all,t,ALLTIME)(all,c,UCOM)
     CNTalleff(c,r,t) = CNTalleffcr(UCOM2COMM(c),r,t);
 Formula (all,r,REG)(all,t,ALLTIME)(all,a,UACT)
-    CNTalleff(a,r,t) = sum{c,COMM, CNTqca(c,UACT2ACTS(a),r,t)};
-Write
-    CNTalleff to file WELVIEW header "A1"
-    longname "Allocative Efficiency Effect: Summary";!
-
+    CNTalleff(a,r,t) = sum{c,COMM, CNTqca(c,UACT2ACTS(a),r,t)};!
 Coefficient (all,a,ALLOCEFF)(all,r,REG)(all,t,ALLTIME)
     CNTalleff(a,r,t) # allocative efficiency #;
 Formula (all,r,REG)(all,t,ALLTIME)(all,e,ENDW)
@@ -5030,20 +5027,14 @@ Formula (all,r,REG)(all,t,ALLTIME)(all,c,COMM)
 Formula (all,r,REG)(all,t,ALLTIME)(all,a,ACTS)
     CNTalleff(a,r,t) = sum{c,COMM, CNTqca(c,a,r,t)};
 
-Write
-    CNTalleff to file WELVIEW header "A1"
-    longname "Allocative Efficiency Effect: Summary";
 !<
     C-A2: Allocative efficiency effect: Tax type summary
     ----------------------------------------------------
 >!
-Coefficient (all,r,REG)(all,t,ALLTIME)(all,x,ALLTAX)
+Coefficient (all,r,REG)(all,x,ALLTAX)(all,t,ALLTIME)
     CNTalleffkr(r,x,t) # allocative efficiency effect #;
-Formula (all,r,REG)(all,t,ALLTIME)(all,x,ALLTAX)
+Formula (all,r,REG)(all,x,ALLTAX)(all,t,ALLTIME)
     CNTalleffkr(r,x,t) = CNTalleffr(r,x,t);
-Write
-    CNTalleffkr to file WELVIEW header "A2"
-    longname "Allocative Efficiency Effect: Tax Type Summary";
 
 !<
     C-AX: Decomposition of allocative effect: Tax type and commodity
@@ -5065,9 +5056,6 @@ Coefficient (all,a,ACTS)(all,r,REG)(all,t,ALLTIME)
     OTAX(a,r,t) # output tax effect #;
 Formula (all,a,ACTS)(all,r,REG)(all,t,ALLTIME)
     OTAX(a,r,t) = CNTqo(a,r,t);
-Write
-    OTAX to file WELVIEW header "A21"
-    longname "Output Tax Effect";
 
 !<
     C-A211: Output tax effect: Explanatory factors
@@ -5080,7 +5068,7 @@ Formula (all,c,COMM)(all,a,ACTS)(all,r,REG)(all,t,ALLTIME)
     UOUTAX(c,a,r,t) = [MAKEB(c,a,r,t) - MAKES(c,a,r,t)] / MAKES(c,a,r,t) * 100;
 
 !change to avoid complicated if()!
-Coefficient (all,c,COMM)(all,a,ACTS)(all,r,REG)(all,t,ALLTIME)(all,co,COL)
+Coefficient (all,c,COMM)(all,a,ACTS)(all,r,REG)(all,co,COL)(all,t,ALLTIME)
     OUTPUT(c,a,r,co,t) # output tax, explanatory factors #;
 !Formula (all,c,COMM)(all,a,ACTS)(all,r,REG)(all,t,ALLTIME)(all,co,COL)
     OUTPUT(c,a,r,co) 
@@ -5097,9 +5085,6 @@ Formula (all,c,COMM)(all,a,ACTS)(all,r,REG)(all,t,ALLTIME)
     OUTPUT(c,a,r,"taxrateb",t) = BOUTAX(c,a,r,t);
 Formula (all,c,COMM)(all,a,ACTS)(all,r,REG)(all,t,ALLTIME)
     OUTPUT(c,a,r,"taxrateu",t) = UOUTAX(c,a,r,t);
-Write
-    OUTPUT to file WELVIEW header "A211"
-    longname "Output Tax Effect: Explanatory Factors";
 
 !<
     C-A22:  Domestic tax effect
@@ -5119,7 +5104,7 @@ Write
     ...................................
 >!
 
-Coefficient (all,c,COMM)(all,ac,ACTIVITY)(all,r,REG)(all,t,ALLTIME)(all,d,DIR)
+Coefficient (all,c,COMM)(all,ac,ACTIVITY)(all,r,REG)(all,d,DIR)(all,t,ALLTIME)
     ATAX(c,ac,r,d,t) # tax effect: summary #;
 !change to avoid complicated if()!
 !Formula (all,c,COMM)(all,ac,ACTIVITY)(all,r,REG)(all,t,ALLTIME)
@@ -5153,19 +5138,15 @@ Formula (all,c,COMM)(all,r,REG)(all,t,ALLTIME)
 Formula (all,c,COMM)(all,r,REG)(all,t,ALLTIME)
     ATAX(c,"investment",r,"imported",t) = CNTqim(c,r,t);
 
-Write
-    ATAX to file WELVIEW header "A22"
-    longname "Domestic Tax Effect: Summary";
-
 !<
     C-A221: Intermediate input tax effect
     .....................................
 >!
 
-Coefficient (all,c,COMM)(all,a,ACTS)(all,r,REG)(all,t,ALLTIME)(all,d,DIR)
+Coefficient (all,c,COMM)(all,a,ACTS)(all,r,REG)(all,d,DIR)(all,t,ALLTIME)
     STAX(c,a,r,d,t) # intermediate input tax effect #;
 !change to avoid complicated if()!
-!Formula (all,c,COMM)(all,a,ACTS)(all,r,REG)(all,t,ALLTIME)(all,d,DIR)
+!Formula (all,c,COMM)(all,a,ACTS)(all,r,REG)(all,d,DIR)(all,t,ALLTIME)
     STAX(c,a,r,d) 
         = IF[d="domestic", CNTqfd(c,a,r,t)]
         + IF[d="imported", CNTqfm(c,a,r,t)];!
@@ -5174,19 +5155,15 @@ Formula (all,c,COMM)(all,a,ACTS)(all,r,REG)(all,t,ALLTIME)
 Formula (all,c,COMM)(all,a,ACTS)(all,r,REG)(all,t,ALLTIME)
     STAX(c,a,r,"imported",t) = CNTqfm(c,a,r,t);
 
-Write
-    STAX to file WELVIEW header "A221"
-    longname "Intermed. Input Tax Effect";
-
 !<
     C-A222: Investment intermediate input tax effect
     ................................................
 >!
 
-Coefficient (all,c,COMM)(all,r,REG)(all,t,ALLTIME)(all,d,DIR)
+Coefficient (all,c,COMM)(all,r,REG)(all,d,DIR)(all,t,ALLTIME)
     ITAX(c,r,d,t) # investment intermediate input tax effect #;
 !change to avoid complicated if()!
-!Formula (all,c,COMM)(all,r,REG)(all,t,ALLTIME)(all,d,DIR)
+!Formula (all,c,COMM)(all,r,REG)(all,d,DIR)(all,t,ALLTIME)
     ITAX(c,r,d) 
         = IF[d="domestic", CNTqid(c,r,t)]
         + IF[d="imported", CNTqim(c,r,t)];!
@@ -5195,16 +5172,12 @@ Formula (all,c,COMM)(all,r,REG)(all,t,ALLTIME)
 Formula (all,c,COMM)(all,r,REG)(all,t,ALLTIME)
     ITAX(c,r,"imported",t) = CNTqim(c,r,t);
 
-Write
-    ITAX to file WELVIEW header "A222"
-    longname "Investment Intermed. Input Tax Effect";
-
 !<
     C-A22F: Intermediate input tax effect: Explanatory factors
     ..........................................................
 >!
 
-Coefficient (all,c,COMM)(all,a,ACTS)(all,r,REG)(all,t,ALLTIME)(all,d,DIR)(all,co,COL) 
+Coefficient (all,c,COMM)(all,a,ACTS)(all,r,REG)(all,d,DIR)(all,co,COL)(all,t,ALLTIME)
     FIRM(c,a,r,d,co,t) # explanatory factors: firm interm. input tax effect #;
 !change to avoid complicated if()!
 !Formula (all,c,COMM)(all,a,ACTS)(all,r,REG)(all,t,ALLTIME)(all,co,COL)
@@ -5233,18 +5206,15 @@ Formula (all,c,COMM)(all,a,ACTS)(all,r,REG)(all,t,ALLTIME)
 Formula (all,c,COMM)(all,a,ACTS)(all,r,REG)(all,t,ALLTIME)
     FIRM(c,a,r,"imported","taxrateu",t) = 100 * [VMFP(c,a,r,t) - VMFB(c,a,r,t)] / VMFB(c,a,r,t);
 
-Formula (all,c,COMM)(all,a,ACTS)(all,r,REG)(all,t,ALLTIME)(all,d,DIR)
+Formula (all,c,COMM)(all,a,ACTS)(all,r,REG)(all,d,DIR)(all,t,ALLTIME)
     FIRM(c,a,r,d,"welcnt",t) = STAX(c,a,r,d,t);
-Write
-    FIRM to file WELVIEW header "A22F"
-    longname "Intermed. Input Tax Effect: Explanatory Factors";
 
 !<
     C-A22P: Private consumption tax Effect: Explanatory Factors
     ...........................................................
 >!
 
-Coefficient (all,c,COMM)(all,r,REG)(all,t,ALLTIME)(all,d,DIR)(all,co,COL)
+Coefficient (all,c,COMM)(all,r,REG)(all,d,DIR)(all,co,COL)(all,t,ALLTIME)
     PRIVATE(c,r,d,co,t) # explanatory factors: priv hh consumption tax effect #;
 !change to avoid complicated if()!
 !Formula (all,c,COMM)(all,r,REG)(all,t,ALLTIME)(all,co,COL)
@@ -5271,18 +5241,15 @@ Formula (all,c,COMM)(all,r,REG)(all,t,ALLTIME)
 Formula (all,c,COMM)(all,r,REG)(all,t,ALLTIME)
     PRIVATE(c,r,"imported","taxrateu",t) = 100 * [VMPP(c,r,t) - VMPB(c,r,t)] / VMPB(c,r,t);
 
-Formula (all,c,COMM)(all,r,REG)(all,t,ALLTIME)(all,d,DIR)
+Formula (all,c,COMM)(all,r,REG)(all,d,DIR)(all,t,ALLTIME)
     PRIVATE(c,r,d,"welcnt",t) = ATAX(c,"private",r,d,t);
-Write
-    PRIVATE to file WELVIEW header "A22P"
-    longname "Private Cons. Tax Effect: Explanatory Factors";
 
 !<
     C-A22G: Government consumption tax effect: Explanatory factors
     ..............................................................
 >!
 
-Coefficient (all,c,COMM)(all,r,REG)(all,t,ALLTIME)(all,d,DIR)(all,co,COL)
+Coefficient (all,c,COMM)(all,r,REG)(all,d,DIR)(all,co,COL)(all,t,ALLTIME)
     GOVT(c,r,d,co,t) # explanatory factors: gov't hh consumption tax effect #;
 !change to avoid complicated if()!
 !Formula (all,c,COMM)(all,r,REG)(all,t,ALLTIME)(all,co,COL)
@@ -5309,18 +5276,15 @@ Formula (all,c,COMM)(all,r,REG)(all,t,ALLTIME)
     GOVT(c,r,"imported","taxrateb",t) = 100 * [BVMGP(c,r,t) - BVMGB(c,r,t)] / BVMGB(c,r,t);
 Formula (all,c,COMM)(all,r,REG)(all,t,ALLTIME)
     GOVT(c,r,"imported","taxrateu",t) = 100 * [VMGP(c,r,t) - VMGB(c,r,t)] / VMGB(c,r,t);
-Formula (all,c,COMM)(all,r,REG)(all,t,ALLTIME)(all,d,DIR)
+Formula (all,c,COMM)(all,r,REG)(all,d,DIR)(all,t,ALLTIME)
     GOVT(c,r,d,"welcnt",t) = ATAX(c,"govt",r,d,t);
-Write
-    GOVT to file WELVIEW header "A22G"
-    longname "Government Cons. Tax Effect: Explanatory Factors";
 
 !<
     C-A22I: Investment tax effect: Explanatory factors
     ..................................................
 >!
 
-Coefficient (all,c,COMM)(all,r,REG)(all,t,ALLTIME)(all,d,DIR)(all,co,COL)
+Coefficient (all,c,COMM)(all,r,REG)(all,d,DIR)(all,co,COL)(all,t,ALLTIME)
     INVESTMENT(c,r,d,co,t) # explanatory factors: investment tax effect #;
 !change to avoid complicated if()!
 !Formula (all,c,COMM)(all,r,REG)(all,t,ALLTIME)(all,co,COL)
@@ -5346,11 +5310,8 @@ Formula (all,c,COMM)(all,r,REG)(all,t,ALLTIME)
     INVESTMENT(c,r,"imported","taxrateb",t) = 100 * [BVMIP(c,r,t) - BVMIB(c,r,t)] / BVMIB(c,r,t);
 Formula (all,c,COMM)(all,r,REG)(all,t,ALLTIME)
     INVESTMENT(c,r,"imported","taxrateu",t) = 100 * [VMIP(c,r,t) - VMIB(c,r,t)] / VMIB(c,r,t);
-Formula (all,c,COMM)(all,r,REG)(all,t,ALLTIME)(all,d,DIR)
+Formula (all,c,COMM)(all,r,REG)(all,d,DIR)(all,t,ALLTIME)
     INVESTMENT(c,r,d,"welcnt",t) = ATAX(c,"investment",r,d,t);
-Write
-    INVESTMENT to file WELVIEW header "A22I"
-    longname "Investment Tax Effect: Explanatory Factors";
 
 !<
     C-A23: Trade tax effect
@@ -5371,9 +5332,6 @@ Formula (all,c,COMM)(all,s,REG)(all,d,REG)(all,t,ALLTIME)
     TTAX(c,s,d,"xtax",t) = CNTqxs(c,s,d,t);
 Formula (all,c,COMM)(all,s,REG)(all,d,REG)(all,t,ALLTIME)
     TTAX(c,s,d,"mtax",t) = CNTqms(c,s,d,t);
-Write
-    TTAX to file WELVIEW header "A23"
-    longname "Trade Tax Effect";
 
 !<
     C-A231: Trade tax effect: Explanatory factors
@@ -5422,9 +5380,6 @@ Formula (all,c,COMM)(all,s,REG)(all,d,REG)(all,t,ALLTIME)
     TRADE(c,s,d,"taxrateb","import",t) = BMTAX(c,s,d,t);
 Formula (all,c,COMM)(all,s,REG)(all,d,REG)(all,t,ALLTIME)
     TRADE(c,s,d,"taxrateu","import",t) = UMTAX(c,s,d,t);
-Write
-    TRADE to file WELVIEW header "A231"
-    longname "Trade Tax Effect: Explanatory Factors";
 
 !<
     C-A24: Endowment tax effect
@@ -5443,9 +5398,6 @@ Coefficient (all,e,ENDW)(all,r,REG)(all,t,ALLTIME)
     FACTAX(e,r,t) # Endowment tax effect #;
 Formula (all,e,ENDW)(all,r,REG)(all,t,ALLTIME)
     FACTAX(e,r,t) = sum{a,ACTS, CNTqfe(e,a,r,t)};
-Write 
-    FACTAX to file WELVIEW header "A24"
-    longname "Endowment Tax Effect";
 
 !<
     C-A241: Endowment tax effect: Explanatory factors
@@ -5458,7 +5410,7 @@ Formula (all,e,ENDW)(all,a,ACTS)(all,r,REG)(all,t,ALLTIME)
 
 ! Note: PFACTOR in "classic" welfare decomp was changed to FACTORTAX because 
         the variable pfactor(r,t) has already been defined !
-Coefficient (all,e,ENDW)(all,a,ACTS)(all,r,REG)(all,t,ALLTIME)(all,co,COL)
+Coefficient (all,e,ENDW)(all,a,ACTS)(all,r,REG)(all,co,COL)(all,t,ALLTIME)
     FACTORTAX(e,a,r,co,t) # Endowment tax effect #;
 !change to avoid complicated if()!
 !Formula (all,e,ENDW)(all,a,ACTS)(all,r,REG)(all,t,ALLTIME)(all,co,COL)
@@ -5475,9 +5427,6 @@ Formula (all,e,ENDW)(all,a,ACTS)(all,r,REG)(all,t,ALLTIME)
     FACTORTAX(e,a,r,"taxrateb",t) = BETAX(e,a,r,t);
 Formula (all,e,ENDW)(all,a,ACTS)(all,r,REG)(all,t,ALLTIME)
     FACTORTAX(e,a,r,"taxrateu",t) = UETAX(e,a,r,t);
-Write 
-    FACTORTAX to file WELVIEW header "A241" 
-    longname "Endowment Tax Effect: Explanatory Factors";
 
 !<
     C-A25: Income tax effect
@@ -5496,9 +5445,6 @@ Coefficient (all,e,ENDW)(all,r,REG)(all,t,ALLTIME)
     YTAX(e,r,t) # factor income tax effect #;
 Formula (all,e,ENDW)(all,r,REG)(all,t,ALLTIME)
     YTAX(e,r,t) = sum{a,ACTS, CNTqea(e,a,r,t)};
-Write
-    YTAX to file WELVIEW header "A25" 
-    longname "Income Tax Effect";
 
 !<
     C-A251: Income tax effect: Explanatory factors
@@ -5508,7 +5454,7 @@ Coefficient (all,e,ENDW)(all,a,ACTS)(all,r,REG)(all,t,ALLTIME)
     UINCTAX(e,a,r,t) # power of income tax, updated #;
 Formula (all,e,ENDW)(all,a,ACTS)(all,r,REG)(all,t,ALLTIME)
     UINCTAX(e,a,r,t) = [[EVFB(e,a,r,t) - EVOS(e,a,r,t)] / EVOS(e,a,r,t)] * 100;
-Coefficient (all,e,ENDW)(all,a,ACTS)(all,r,REG)(all,t,ALLTIME)(all,co,COL)
+Coefficient (all,e,ENDW)(all,a,ACTS)(all,r,REG)(all,co,COL)(all,t,ALLTIME)
     INCOMETAX(e,a,r,co,t) # income tax effect: Explanatory Factors #;
 !change to avoid complicated if()!
 !Formula (all,e,ENDW)(all,a,ACTS)(all,r,REG)(all,t,ALLTIME)(all,co,COL)
@@ -5525,31 +5471,22 @@ Formula (all,e,ENDW)(all,a,ACTS)(all,r,REG)(all,t,ALLTIME)
     INCOMETAX(e,a,r,"taxrateb",t) = BINCTAX(e,a,r,t);
 Formula (all,e,ENDW)(all,a,ACTS)(all,r,REG)(all,t,ALLTIME)
     INCOMETAX(e,a,r,"taxrateu",t) = UINCTAX(e,a,r,t);
-Write
-    INCOMETAX to file WELVIEW header "A251"
-    longname "Income Tax Effect: Explanatory Factors";
 
 !<
     C-B1: Endowment effect: Gross of depreciation
     ---------------------------------------------
 >!
 
-Coefficient (all,r,REG)(all,t,ALLTIME)(all,e,ENDW)
+Coefficient (all,r,REG)(all,e,ENDW)(all,t,ALLTIME)
     CNTendowment(r,e,t) # contribution to welfare by ENDW e in region r #;
-Formula (all,r,REG)(all,t,ALLTIME)(all,e,ENDW)
+Formula (all,r,REG)(all,e,ENDW)(all,t,ALLTIME)
     CNTendowment(r,e,t) = CNTendw(e,r,t);
-Write
-    CNTendowment to file WELVIEW header "B1"
-    longname "Endowment Effect, Gross of Depreciation";
 
 !<
     C-B2: Endowment effect: depreciation
     ------------------------------------
 >!
 
-Write
-    CNTkb to file WELVIEW header "B2"
-    longname "Endowment Effect: Depreciation";
 
 !<
     C-C1: Technical change effect
@@ -5559,34 +5496,10 @@ Write
     C-C1X: Technical change effect: Further decomposition
 >!
 
-Coefficient (all,r,REG)(all,t,ALLTIME)(all,e,TECHTYPE)
+Coefficient (all,r,REG)(all,e,TECHTYPE)(all,t,ALLTIME)
     CNTtech(r,e,t) # contribution to welfare change by tech #;
-Formula (all,r,REG)(all,t,ALLTIME)(all,e,TECHTYPE)
+Formula (all,r,REG)(all,e,TECHTYPE)(all,t,ALLTIME)
     CNTtech(r,e,t) = CNTtechr(e,r,t);
-Write
-    CNTtech to file WELVIEW header "C1"
-    longname "Technical Change Effect: Summary";
-Write
-    CNTtech_ao to file WELVIEW header "C11"
-    longname "(ao) Output Augm. Tech. Change Effect";
-Write
-    CNTtech_afe to file WELVIEW header "C12"
-    longname "(afe) Primary Factor Augm. Tech. Change Effect";
-Write
-    CNTtech_ava to file WELVIEW header "C13"
-    longname "(ava) Value Added Augm. Tech. Change Effect";
-Write
-    CNTtech_aint to file WELVIEW header "C14"
-    longname "(aint) Composite Intermed. Input Augm. Tech. Change Effect";
-Write
-     CNTtech_af to file WELVIEW header "C15"
-    longname "(afa) Intermed. Input Augm. Tech. Change Effect";
-Write
-    CNTtech_atmfsd to file WELVIEW header "C16"
-    longname "(atmfsd) Internat. Margin Augm. Tech. Change Effect";
-Write
-    CNTtech_ams to file WELVIEW header "C17"
-    longname "(ams) Bilateral Import Augm. Tech. Change Effect";
 
 !<
     C-D1: Population effect
@@ -5602,7 +5515,7 @@ Write
 
 ! Note: TOT(c,r,t,f) in Welfare Decomp was renamed to WTOT(c,r,t,f) because a 
         prior tot(r,t) variable has been declared in the model!
-Coefficient (all,c,COMM)(all,r,REG)(all,t,ALLTIME)(all,p1,PRICES)(all,f,FORM)
+Coefficient (all,c,COMM)(all,r,REG)(all,p1,PRICES)(all,f,FORM)(all,t,ALLTIME)
     WTOT(c,r,p1,f,t)
     # terms trade effects decomposed by effects of different prices #;
 Formula (all,c,COMM)(all,r,REG)(all,t,ALLTIME)
@@ -5624,16 +5537,13 @@ Formula (all,c,COMM)(all,r,REG)(all,t,ALLTIME)
         = -c3_cr(c,r,t) * CNTtotr(r,t)
         / sum{p1,PRICES, sum{k,COMM, WTOT(k,r,p1,"percent",t)}};
 
-Write
-    WTOT to file WELVIEW header "E1"
-    longname "Terms of Trade Effect";
 
 !<
     C-F1: I-S Effect: Explanatory factors
     -------------------------------------
 >!
 
-Coefficient (all,r,REG)(all,t,ALLTIME)(all,c,COLM)
+Coefficient (all,r,REG)(all,c,COLM)(all,t,ALLTIME)
     CGDSCOMP(r,c,t) # components of cgds effect #;
 Formula (all,r,REG)(all,t,ALLTIME)
     CGDSCOMP(r,"ISbal",t) = ISBAL(r,t);
@@ -5641,9 +5551,6 @@ Formula (all,r,REG)(all,t,ALLTIME)
     CGDSCOMP(r,"p_cgds",t) = pinv(r,t);
 Formula (all,r,REG)(all,t,ALLTIME)
     CGDSCOMP(r,"p_save",t) = psave(r,t);
-Write
-    CGDSCOMP to file WELVIEW header "F1"
-    longname "I-S Effect: Explanatory Factors";
 
 !<
     -----------------------------
@@ -5662,7 +5569,7 @@ Write
     -----------------------------------
 >!
 
-Coefficient (all,c,COMM)(all,s,REG)(all,d,REG) (all,t,ALLTIME)
+Coefficient (all,c,COMM)(all,s,REG)(all,d,REG)(all,t,ALLTIME)
     DQXS(c,s,d,t) 
     # ch. in vol. of exports of c from region s to d at initial basic prices #; 
 Formula  (all,c,COMM)(all,s,REG)(all,d,REG)(all,t,ALLTIME)
@@ -5736,24 +5643,6 @@ Formula (all,s,REG)(all,d,REG)(all,t,ALLTIME)
 
 Zerodivide off;
 
-FILE 
- (New) GTAPVOL # HAR file of volume changes # ;
-!< Write the output of this module to ViewHAR for easy viewing and summation >!
-
-Write
-    DQXS to file GTAPVOL header "DQXS";
-    DQDS to file GTAPVOL header "DQDS";
-    DQFE to file GTAPVOL header "DQFE";
-    DQFM to file GTAPVOL header "DQFM";
-    DQFD to file GTAPVOL header "DQFD";
-    DQPM to file GTAPVOL header "DQPM";
-    DQPD to file GTAPVOL header "DQPD";
-    DTOT to file GTAPVOL header "DTOT";
-    DQO  to file GTAPVOL header "DQO";
-    DQC  to file GTAPVOL header "DQC";
-    DQGD to file GTAPVOL header "DQGD";
-    DQGM to file GTAPVOL header "DQGM";
-
 !<
     --------------
     END OF GTAPVol
@@ -5787,38 +5676,44 @@ Set
     SALES # Commodity Sales Summary # 
     (Intermediate,Household,Investment,Government,Exports,IntnlMargins);
 
-Coefficient (all,a,ACTS)(all,r,REG)(all,t,ALLTIME)(all,c,COSTS)
+Coefficient (all,a,ACTS)(all,r,REG)(all,c,COSTS)(all,t,ALLTIME)
     COSTSUM(a,r,c,t) # industry cost summary #;
-Formula   
- (all,a,ACTS)(all,r,REG)(all,t,ALLTIME) COSTSUM(a,r,"IntDom",t)      = sum{c,COMM, VDFP(c,a,r,t)}; 
- (all,a,ACTS)(all,r,REG)(all,t,ALLTIME) COSTSUM(a,r,"IntImp",t)      = sum{c,COMM, VMFP(c,a,r,t)}; 
- (all,a,ACTS)(all,r,REG)(all,t,ALLTIME)(all,e,ENDW) COSTSUM(a,r,e,t) = EVFP(e,a,r,t); 
- (all,a,ACTS)(all,r,REG)(all,t,ALLTIME) COSTSUM(a,r,"PTAX",t)        = sum{c,COMM, PTAX(c,a,r,t)};
- (all,a,ACTS)(all,r,REG)(all,t,ALLTIME)(all,e,ENDW) COSTSUM(a,r,e,t) = EVFP(e,a,r,t); 
- (all,a,ACTS)(all,r,REG)(all,t,ALLTIME) COSTSUM(a,r,"PTAX",t)        = sum{c,COMM, PTAX(c,a,r,t)};
-Write 
-    COSTSUM to file GTAPSUM header "COST"; 
+Formula (all,a,ACTS)(all,r,REG)(all,t,ALLTIME)
+    COSTSUM(a,r,"IntDom",t) = sum{c,COMM, VDFP(c,a,r,t)}; 
+Formula (all,a,ACTS)(all,r,REG)(all,t,ALLTIME)
+    COSTSUM(a,r,"IntImp",t) = sum{c,COMM, VMFP(c,a,r,t)}; 
+Formula (all,a,ACTS)(all,r,REG)(all,e,ENDW)(all,t,ALLTIME)
+    COSTSUM(a,r,e,t) = EVFP(e,a,r,t); 
+Formula (all,a,ACTS)(all,r,REG)(all,t,ALLTIME)
+    COSTSUM(a,r,"PTAX",t) = sum{c,COMM, PTAX(c,a,r,t)};
+Formula (all,a,ACTS)(all,r,REG)(all,e,ENDW)(all,t,ALLTIME)
+    COSTSUM(a,r,e,t) = EVFP(e,a,r,t); 
+Formula (all,a,ACTS)(all,r,REG)(all,t,ALLTIME)
+    COSTSUM(a,r,"PTAX",t) = sum{c,COMM, PTAX(c,a,r,t)};
  
-Coefficient (all,r,REG)(all,t,ALLTIME)(all,g,GDPIN) 
+Coefficient (all,r,REG)(all,g,GDPIN)(all,t,ALLTIME)
    GDPINC(r,g,t) # income-side GDP #;
-Formula
-   (all,r,REG)(all,t,ALLTIME)(all,e,ENDW) GDPINC(r,e,t) = sum{a,ACTS, EVFP(e,a,r,t)};
-   (all,r,REG)(all,t,ALLTIME) GDPINC(r,"IndTaxes",t) =   INDTAX(r,t) - TAXRFU(r,t);
-Write 
-    GDPINC to file GTAPSUM header "GDPI"; 
+Formula (all,r,REG)(all,e,ENDW)(all,t,ALLTIME)
+    GDPINC(r,e,t) = sum{a,ACTS, EVFP(e,a,r,t)};
+Formula (all,r,REG)(all,t,ALLTIME)
+    GDPINC(r,"IndTaxes",t) = INDTAX(r,t) - TAXRFU(r,t);
 
-Coefficient (all,c,COMM)(all,r,REG)(all,t,ALLTIME)(all,sa,SALES)
+Coefficient (all,c,COMM)(all,r,REG)(all,sa,SALES)(all,t,ALLTIME)
     SALESUM(c,r,sa,t) # commodity sales summary #;
-Formula    
-(all,c,COMM)(all,r,REG)(all,t,ALLTIME) SALESUM(c,r,"Intermediate",t) = sum{a,ACTS, VDFB(c,a,r,t)};
-(all,c,COMM)(all,r,REG)(all,t,ALLTIME) SALESUM(c,r,"Household",t)    = VDPB(c,r,t);
-(all,c,COMM)(all,r,REG)(all,t,ALLTIME) SALESUM(c,r,"Investment",t)   = VDIB(c,r,t);
-(all,c,COMM)(all,r,REG)(all,t,ALLTIME) SALESUM(c,r,"Government",t)   = VDGB(c,r,t);
-(all,c,COMM)(all,r,REG)(all,t,ALLTIME) SALESUM(c,r,"Exports",t)      = VXDXSB(c,r,t);
-(all,c,MARG)(all,r,REG)(all,t,ALLTIME) SALESUM(c,r,"IntnlMargins",t) = VST(c,r,t);
-(all,c,NMRG)(all,r,REG)(all,t,ALLTIME) SALESUM(c,r,"IntnlMargins",t) = 0;
-Write 
-    SALESUM to file GTAPSUM header "SALE"; 
+Formula (all,c,COMM)(all,r,REG)(all,t,ALLTIME)
+    SALESUM(c,r,"Intermediate",t) = sum{a,ACTS, VDFB(c,a,r,t)};
+Formula (all,c,COMM)(all,r,REG)(all,t,ALLTIME)
+    SALESUM(c,r,"Household",t) = VDPB(c,r,t);
+Formula (all,c,COMM)(all,r,REG)(all,t,ALLTIME)
+    SALESUM(c,r,"Investment",t) = VDIB(c,r,t);
+Formula (all,c,COMM)(all,r,REG)(all,t,ALLTIME)
+    SALESUM(c,r,"Government",t) = VDGB(c,r,t);
+Formula (all,c,COMM)(all,r,REG)(all,t,ALLTIME)
+    SALESUM(c,r,"Exports",t) = VXDXSB(c,r,t);
+Formula (all,c,MARG)(all,r,REG)(all,t,ALLTIME)
+    SALESUM(c,r,"IntnlMargins",t) = VST(c,r,t);
+Formula (all,c,NMRG)(all,r,REG)(all,t,ALLTIME)
+    SALESUM(c,r,"IntnlMargins",t) = 0;
 
 Zerodivide default RNREG;
 Zerodivide (nonzero_by_zero) default RNREG;
@@ -5826,34 +5721,22 @@ Zerodivide (nonzero_by_zero) default RNREG;
     VDBCHK(c,r,t) # VCB(c,r,t) - MAKEBCOM(c,r,t) should be tiny #;
 Formula (all,c,COMM)(all,r,REG)(all,t,ALLTIME)
     VDBCHK(c,r,t) = VCB(c,r,t) - MAKEBCOM(c,r,t);
-Write 
-    VDBCHK to file GTAPSUM header "VMCK";
 Formula (all,c,COMM)(all,r,REG)(all,t,ALLTIME)
     VDBCHK(c,r,t) = 100 * VDBCHK(c,r,t) / VCB(c,r,t);
-Write 
-    VDBCHK to file GTAPSUM header "VMCP" longname "VDBCHK as %"; 
 
 Coefficient (all,c,COMM)(all,s,REG)(all,d,REG)(all,t,ALLTIME)
     TRDCHK(c,s,d,t) # VCIF(c,s,d) - [VFOB(c,s,d) + VTFSD(c,s,d)] should be tiny #;
 Formula (all,c,COMM)(all,s,REG)(all,d,REG)(all,t,ALLTIME)
     TRDCHK(c,s,d,t) = VCIF(c,s,d,t) - [VFOB(c,s,d,t) + VTFSD(c,s,d,t)];
-Write 
-    TRDCHK to file GTAPSUM header "TRCK";
 Formula (all,c,COMM)(all,s,REG)(all,d,REG)(all,t,ALLTIME)
     TRDCHK(c,s,d,t) = 100 * TRDCHK(c,s,d,t) / VCIF(c,s,d,t);
-Write 
-    TRDCHK to file GTAPSUM header "TRCP" longname "TRDCHK as %"; 
 
-Coefficient (all,m,MARG) (all,t,ALLTIME)
+Coefficient (all,m,MARG)(all,t,ALLTIME)
     VTMCHK(m,t) # VTMUSE(m) - VTMPROV(m) should be tiny #;
 Formula (all,m,MARG)(all,t,ALLTIME)
     VTMCHK(m,t) = VTMUSE(m,t) - VTMPROV(m,t);
-Write 
-    VTMCHK to file GTAPSUM header "VTCK";
 Formula (all,m,MARG)(all,t,ALLTIME)
     VTMCHK(m,t) = 100 * VTMCHK(m,t) / VTMUSE(m,t);
-Write 
-    VTMCHK to file GTAPSUM header "VTCP" longname "VTMCHK as %"; 
 
 Coefficient (all,c,COMM)(all,r,REG)(all,t,ALLTIME)
     CHKMKClIMP(c,r,t) # Checking the accounting on imports supply and demand #;
@@ -5862,25 +5745,14 @@ Formula (all,c,COMM)(all,r,REG)(all,t,ALLTIME)
         = sum{s,REG, VMSB(c,s,r,t)}
         - sum{a,ACTS, VMFB(c,a,r,t)}
         - VMPB(c,r,t) - VMGB(c,r,t) - VMIB(c,r,t);
-Write 
-    CHKMKClIMP to file GTAPSUM header "MPCK";
 Formula (all,c,COMM)(all,r,REG)(all,t,ALLTIME)
     CHKMKClIMP(c,r,t) = 100 * CHKMKClIMP(c,r,t) / [sum{s,REG, VMSB(c,s,r,t)}];
-
-Write 
-    CHKMKClIMP to file GTAPSUM header "MPCP" longname "CHKMKClIMP as %"; 
-
 Coefficient (all,c,COMM)(all,a,ACTS)(all,r,REG)(all,t,ALLTIME)
     VOSCHK(c,a,r,t) # MAKEB - [MAKES + PTAX] should be tiny #;
 Formula (all,c,COMM)(all,a,ACTS)(all,r,REG)(all,t,ALLTIME)
     VOSCHK(c,a,r,t) = MAKEB(c,a,r,t) - [MAKES(c,a,r,t) + PTAX(c,a,r,t)];
-Write 
-    VOSCHK to file GTAPSUM header "VOCK";
 Formula (all,c,COMM)(all,a,ACTS)(all,r,REG)(all,t,ALLTIME)
     VOSCHK(c,a,r,t) = 100 * VOSCHK(c,a,r,t) / MAKEB(c,a,r,t);
-Write 
-    VOSCHK to file GTAPSUM header "VOCS" longname "VOSCHK as %"; 
-
 Coefficient (all,r,REG)(all,t,ALLTIME)
     vroract(r,t) # vact #;
 Formula (initial) (all,r,REG)(all,t,ALLTIME)
@@ -5894,83 +5766,7 @@ Formula (initial) (all,r,REG)(all,t,ALLTIME)
 Update (change)(all,r,REG)(all,t,ALLTIME)
     vrore(r,t) = rore(r,t);
 
-zerodivide off;
-
-postsim (begin);
-Write
-    VDBCHK     to file GTAPSUM header "VMCQ" longname "PostSim VDBCHK as %";
-    TRDCHK     to file GTAPSUM header "TRCQ" longname "PostSim TRDCHK as %";
-    VTMCHK     to file GTAPSUM header "VTCQ" longname "PostSim VTMCHK as %";
-    CHKMKClIMP to file GTAPSUM header "MPCQ" longname "PostSim CHKMKClIMP as %";
-    VOSCHK     to file GTAPSUM header "VOCQ" longname "PostSim VOPCHK as %";
-    GDPINC     to file GTAPSUM header "GDIP" longname "PostSim GDPINC";
-    GDP        to file GTAPSUM header "GDEP" longname "PostSim GDPEXP";
-    vroract       to file GTAPSUM header "RORA" longname "PostSim VACT";
-    vrore       to file GTAPSUM header "RORE" longname "PostSim VACT";
-postsim (end);
-
-Write
- VKDELTA to file OutFile header "VKDL" longname
- "Slack coefficient for capital motion equation";
- DPARSUM to file OutFile header "DPSM" longname
- "Sum of Distribution Parameters in Household Demand System";
- VERNUM to file OutFile header "DVER" longname "Format of GTAP Data";
- EVFP to file OutFile header "EVFP" longname
- "primary factor purchases, at purchasers prices";
- EVOS to file OutFile header "EVOS" longname
- "value of endowment supply in region r, net of direct tax";
- SAVE to file OutFile header "SAVE" longname "net saving, by region";
- VDEP to file OutFile header "VDEP" longname "capital depreciation";
- VDFP to file OutFile header "VDFP" longname
- "domestic purchases, by firms, at purchasers prices";
- VDFB to file OutFile header "VDFB" longname
- "domestic purchases, by firms, at basic prices";
- VDGP to file OutFile header "VDGP" longname
- "domestic purchases, by government, at purchasers prices";
- VDGB to file OutFile header "VDGB" longname
- "domestic purchases, by government, at basic prices";
- VDPP to file OutFile header "VDPP" longname
- "domestic purchases, by households, at purchasers prices";
- VDPB to file OutFile header "VDPB" longname
- "domestic purchases, by households, at basic prices";
- VDIP to file OutFile header "VDIP" longname
- "domestic purchases, by investment, at purchasers prices";
- VDIB to file OutFile header "VDIB" longname
- "domestic purchases, by investment, at basic prices";
- EVFB to file OutFile header "EVFB" longname
- "primary factor purchases, by firms, at basic prices";
- VMFP to file OutFile header "VMFP" longname
- "imported purchases, by firms, at purchasers prices";
- VMFB to file OutFile header "VMFB" longname
- "imported purchases, by firms, at basic prices";
- VMGP to file OutFile header "VMGP" longname
- "import purchases, by government, at purchasers prices";
- VMGB to file OutFile header "VMGB" longname
- "import purchases, by government, at basic prices";
- VMPP to file OutFile header "VMPP" longname
- "import purchases, by households, at purchasers prices";
- VMPB to file OutFile header "VMPB" longname
- "import purchases, by households, at basic prices";
- VMIP to file OutFile header "VMIP" longname
- "import purchases, by investment, at purchasers prices";
- VMIB to file OutFile header "VMIB" longname
- "import purchases, by investment, at basic prices";
- VMSB to file OutFile header "VMSB" longname "imports, at basic prices";
- VCIF to file OutFile header "VCIF" longname "imports, at CIF prices";
- VKB to file OutFile header "VKB" longname "capital stock";
- VST to file OutFile header "VST" longname "margin exports";
- VTMFSD to file OutFile header "VTWR" longname "margins by margin commodity";
- VFOB to file OutFile header "VFOB" longname
- "non-margin exports, at FOB prices";
- VXSB to file OutFile header "VXSB" longname
- "non-margin exports, at basic prices";
- MAKES to file OutFile header "MAKS" longname
- "MAKE matrix (before output tax/subsidy)";
- MAKEB to file OutFile header "MAKB" longname "MAKE matrix at basic prices";
-
- KAPPA to file OutFile header "KAPP" longname "Depreciation rate";
- CPHI to file OutFile header "CPHI" longname "Investment parameter";
- VRORG to file OutFile header "RORG" longname "Long term interest rate";
+Zerodivide off;
 
 !<
     =====================

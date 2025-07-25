@@ -9,6 +9,7 @@
     dat_input = "is.character",
     par_input = "is.character",
     set_input = "is.character",
+    aux_input = c("is.null", "is.character"),
     tab_file = c("is.null", "is.character"),
     target_format = c("is.null", "is.character"),
     time_steps = "is.numeric"
@@ -37,6 +38,15 @@
     cache = FALSE,
     call = call
   )
+  
+  if (!is.null(args_list$aux_input)) {
+    args_list$aux_input <- .check_input(args_list$aux_input,
+                                        valid_ext = "har",
+                                        cache = FALSE,
+                                        call = call
+    )
+    args_list$aux <- .read_har(con = args_list$aux_input)
+  }
 
   if (!is.null(args_list$target_format)) {
     target_format <- args_list$target_format

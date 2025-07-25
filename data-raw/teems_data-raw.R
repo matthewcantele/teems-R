@@ -4,7 +4,7 @@ targets::tar_config_set(store = "./data-raw/_targets")
 
 # Set target options:
 targets::tar_option_set(
-  packages = c("data.table", "usethis", "purrr", "tabulapdf", "dplyr"),
+  packages = c("data.table", "usethis", "purrr", "tabulapdf", "dplyr", "fs"),
   format = "qs",
   cue = tar_cue("always")
 )
@@ -25,21 +25,24 @@ list(
   ),
   # mapping related --------------------------------------------------
   tar_target(
+    mapping_csvs,
+    {
+      fs::dir_copy(file.path("../teems-mappings/", db_version),
+                   file.path("./data-raw/mappings", db_version),
+                   overwrite = TRUE)
+
+    },
+    pattern = map(db_version)
+  ),
+  tar_target(
     mapping_files,
     {
-      package_mappings <- "../teems-mappings"
-      file.copy(
-        from = package_mappings,
-        to = "./data-raw",
-        recursive = T
-      )
       list.files(
-        path = package_mappings,
+        path = "./data-raw/mappings",
         recursive = TRUE,
         full.names = TRUE
       )
-    },
-    format = "file"
+    }
   ),
   tar_target(
     mappings,
@@ -103,14 +106,6 @@ list(
       return(tabs)
     }
   ),
-  
-  # tar_target(
-  #   `GTAP-INTv2`,
-  #  {
-  #    t <- internal_tab$`GTAP-INTv2`
-  #    class(t) <- "GTAP-INTv2"
-  #    return(t)
-  #  }),
 
   # parameter related ------------------------------------------------
   # static ===========================================================
@@ -192,191 +187,6 @@ list(
       return(cls)
     }
   ),
-
-  # inst/ext data -------------------------------------------------------------
-  # teems_dat()
-  tar_target(
-    SAVE_file,
-    "./data-raw/examples/SAVE.csv",
-    format = "file"
-  ),
-  tar_target(
-    SAVE_data,
-    {
-      SAVE <- read.csv(file = SAVE_file)
-      fwrite(SAVE, file = "./inst/extdata/SAVE.csv")
-    },
-    format = "file"
-  ),
-  tar_target(
-    SAVE_preagg,
-    {
-      SAVE <- read.csv(file = SAVE_file)
-      set.seed(seed = 1789)
-      SAVE[["Value"]] <- runif(
-        n = nrow(SAVE),
-        min = min(SAVE[["Value"]]),
-        max = max(SAVE[["Value"]])
-      )
-
-      fwrite(SAVE, file = "./inst/extdata/SAVE_preagg.csv")
-    },
-    format = "file"
-  ),
-  tar_target(
-    reg_big3_file,
-    "./data-raw/teems-mappings/v9/v6.2/REG/big3.csv",
-    format = "file"
-  ),
-  tar_target(
-    reg_big3,
-    {
-      read.csv(file = reg_big3_file)
-    }
-  ),
-  tar_target(
-    SAVE_postagg,
-    {
-      SAVE <- read.csv(file = SAVE_file)
-      r_idx <- match(x = SAVE[["REGr"]], table = reg_big3[["H1"]])
-      SAVE[["REGr"]] <- reg_big3[["mapping"]][r_idx]
-      SAVE <- aggregate(Value ~ REGr, data = SAVE, FUN = sum)
-
-      fwrite(SAVE, file = "./inst/extdata/SAVE_postagg.csv")
-    },
-    format = "file"
-  ),
-
-  # teems_param()
-  tar_target(
-    SUBP_file,
-    "./data-raw/examples/SUBP.csv",
-    format = "file"
-  ),
-  tar_target(
-    SUBP_data,
-    {
-      SUBP <- read.csv(file = SUBP_file)
-      fwrite(SUBP, file = "./inst/extdata/SUBP.csv")
-    },
-    format = "file"
-  ),
-  tar_target(
-    SUBP_preagg,
-    {
-      SUBP <- read.csv(file = SUBP_file)
-      set.seed(seed = 1859)
-      SUBP[["Value"]] <- runif(
-        n = nrow(SUBP),
-        min = min(SUBP[["Value"]]),
-        max = max(SUBP[["Value"]])
-      )
-
-      fwrite(SUBP, file = "./inst/extdata/SUBP_preagg.csv")
-    },
-    format = "file"
-  ),
-  tar_target(
-    sector_macro_file,
-    "./data-raw/teems-mappings/v9/v6.2/TRAD_COMM/macro_sector.csv",
-    format = "file"
-  ),
-  tar_target(
-    sector_macro,
-    read.csv(sector_macro_file)
-  ),
-  tar_target(
-    SUBP_postagg,
-    {
-      SUBP <- read.csv(file = SUBP_file)
-      r_idx <- match(x = SUBP[["REGr"]], table = reg_big3[["H1"]])
-      SUBP[["REGr"]] <- reg_big3[["mapping"]][r_idx]
-
-      i_idx <- match(x = SUBP[["TRAD_COMMi"]], table = sector_macro[["H2"]])
-      SUBP[["TRAD_COMMi"]] <- sector_macro[["mapping"]][i_idx]
-      SUBP <- aggregate(Value ~ TRAD_COMMi + REGr, data = SUBP, FUN = sum)
-
-      fwrite(SUBP, file = "./inst/extdata/SUBP_postagg.csv")
-    },
-    format = "file"
-  ),
-  tar_target(
-    usr_macro,
-    {
-      usr_mapping <- read.csv(file = sector_macro_file)
-      colnames(usr_mapping) <- c("original_elements", "new_mapping")
-      fwrite(usr_mapping, file = "./inst/extdata/user_mapping.csv")
-    },
-    format = "file"
-  ),
-  tar_target(
-    endw_labagg_file,
-    "./data-raw/teems-mappings/v9/v6.2/ENDW_COMM/labor_agg.csv",
-    format = "file"
-  ),
-  tar_target(
-    endw_labagg,
-    read.csv(endw_labagg_file)
-  ),
-
-  # teems_closure()
-  tar_target(
-    GTAPv6.2_cls_file,
-    {
-      closure_files[grepl(pattern = "v6.2", x = closure_files)]
-    },
-    format = "file"
-  ),
-  tar_target(
-    GTAPv6.2_cls,
-    {
-      readLines(GTAPv6.2_cls_file)
-    }
-  ),
-  tar_target(
-    user_cls,
-    {
-      user_cls <- sub(
-        pattern = "incomeslack",
-        replacement = "y",
-        x = GTAPv6.2_cls
-      )
-      writeLines(user_cls, "./inst/extdata/user_closure.cls")
-    },
-    format = "file"
-  ),
-
-  # teems_time()
-  tar_target(
-    user_CPHI,
-    {
-      set.seed(seed = 2025)
-      user_CPHI <- expand.grid(
-        REGr = unique(reg_big3[["mapping"]]),
-        ALLTIMEt = 0:3
-      )
-      user_CPHI[["Value"]] <- runif(
-        n = nrow(user_CPHI),
-        min = 0.05,
-        max = 0.15
-      )
-      fwrite(user_CPHI, "./inst/extdata/user_CPHI.csv")
-    },
-    format = "file"
-  ),
-  tar_target(
-    user_LRORG,
-    {
-      set.seed(seed = 2100)
-      user_LRORG <- data.frame(
-        ALLTIMEt = 0:3,
-        Value = runif(n = 4, min = 0.01, max = 0.1)
-      )
-      fwrite(user_LRORG, "./inst/extdata/user_LRORG.csv")
-    },
-    format = "file"
-  ),
-
   # v6.2 <> v7 conversion
   tar_target(
     GTAPv7_manual,
@@ -526,7 +336,7 @@ list(
       rbind(dat_conversion, param_conversion)
     }
   ),
-  
+
   # messages
   tar_target(
     gen_err,
@@ -541,7 +351,7 @@ list(
                                 "Note that user-provided {file_type} files may need to be modified for compatibility with various {.pkg teems} functions."))
     }
   ),
-  
+
   tar_target(
     gen_wrn,
     {
@@ -549,7 +359,7 @@ list(
                           "The {.fn teems::emssolve} function can bypass the pipeline and be called on solver-ready input files."))
     }
   ),
-  
+
   tar_target(
     gen_info,
     {
@@ -558,14 +368,14 @@ list(
                    "Data format: {.field {data_format}}"))
     }
   ),
-  
+
   tar_target(
     gen_url,
     {
       list(internal_files = NULL)
     }
   ),
-  
+
   tar_target(
     data_err,
     {
@@ -579,14 +389,14 @@ list(
            )
     }
   ),
-  
+
   tar_target(
     data_wrn,
     {
       list(time_steps = "The initial timestep provided is neither {.val 0} nor the reference year corresponding to the {.field dat} file loaded: {.val {t0}}.")
     }
   ),
-  
+
   tar_target(
     load_err,
     {
@@ -603,12 +413,12 @@ list(
           )
     }
   ),
-  
+
   tar_target(load_wrn,
              {
                list(extra_input = "If {.arg eqm_input} is provided, {.arg dat_input}, {.arg par_input}, and {.arg set_input} arguments are unnecessary.")
              }),
-  
+
   tar_target(
     cls_err,
     {
@@ -619,7 +429,7 @@ list(
            no_var = "{l_var} variable{?s} from the closure file not present in the Tablo file: {.val {var_discrepancy}}.")
     }
   ),
-  
+
   tar_target(
     shk_err,
     {
@@ -651,14 +461,14 @@ list(
       )
     }
   ),
-  
+
   tar_target(
     shk_infm,
     {
       list(uni_named_lst = "Note that set names consist of the concatenation of the set name and variable-specific lowercase index.")
     }
   ),
-  
+
   tar_target(
     shk_url,
     {
@@ -667,7 +477,7 @@ list(
            uniform = NULL)
     }
   ),
-  
+
   tar_target(
     swap_err,
     {
@@ -678,7 +488,7 @@ list(
                            "For {.val {var_name}} these include: {.field {ls_mixed}}."))
     }
   ),
-  
+
   # internal data ====================================================
   tar_target(
     internal_data,

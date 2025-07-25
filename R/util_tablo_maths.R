@@ -5,9 +5,7 @@
 .tablo_maths <- function(tab_extract,
                          call) {
 
-  maths <- subset(x = tab_extract, subset = {
-    is.element(el = tolower(x = type), set = c("equation", "formula"))
-  })
+  maths <- subset(tab_extract, tolower(type) %in% c("equation", "formula"))
 
   maths[["name"]] <- unlist(x = purrr::map2(
     .x = maths[["type"]],

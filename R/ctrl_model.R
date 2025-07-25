@@ -21,12 +21,17 @@
     "tab_path",
     quote(!!config$tab_file)
   ))
+  
+  t_var_omit <- rlang::expr(targets::tar_target_raw(
+    "var_omit",
+    quote(!!config$var_omit)
+  ))
 
   t_tab_components <- rlang::expr(targets::tar_target_raw(
     "tab_comp",
     expression(.process_tablo(
       tab_file = tab_path,
-      var_omit = !!config$var_omit,
+      var_omit = var_omit,
       call = model_call
     ))
   ))

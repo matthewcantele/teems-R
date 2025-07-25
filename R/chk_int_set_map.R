@@ -6,6 +6,7 @@
                                     metadata,
                                     set_map,
                                     call) {
+
   if (is.null(metadata$data_format)) {
     data_format <- switch(metadata$database_version,
       "v9" = "v6.2",

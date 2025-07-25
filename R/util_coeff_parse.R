@@ -10,10 +10,12 @@
                          chron_yrs = NULL,
                          call) {
   # check paths
+ 
   if (!isTRUE(x = all(sapply(X = paths, FUN = file.exists)))) {
-    .cli_action(msg = "Internal error: one or more coefficient file paths does not exist.",
+    .cli_action(msg = "One or more coefficient file paths does not exist.",
       action = "abort",
-      call = call
+      call = call,
+      .internal = TRUE
     )
   }
 
@@ -67,7 +69,8 @@
       action = "abort",
       msg = "One or more coefficients identified from the Tablo
                 extract was not found in the output csvs.",
-      call = call
+      call = call,
+      .internal = TRUE
     )
   }
 
@@ -76,6 +79,8 @@
                  table = coeff_extract[["coefficient"]])
   coeff_tib[["set_nmes"]] <- coeff_extract[["ls_mixed_idx"]][r_idx]
 
+  # implement checks here so it doesn't fail in next function
+  
   # if there is a gap in the coefficient declaration like (all, r, REG) we have
   # an error. This should be fixed in the tab parsing section
   coeff_tib[["dat"]] <- purrr::pmap(

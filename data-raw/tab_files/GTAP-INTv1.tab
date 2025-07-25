@@ -257,7 +257,6 @@ Subset
 
 Coefficient (integer)
     NTSP # Number of timesteps #;
-
 Read
     NTSP from file GTAPINT header "NTSP";
 
@@ -266,7 +265,6 @@ Set (intertemporal)
 
 Coefficient (parameter)(all,t,ALLTIME)
     YEAR(t) # Actual years #;
-
 Read
     YEAR from file GTAPINT header "YEAR";
 
@@ -282,10 +280,10 @@ Set (intertemporal)
 Set (intertemporal)
     FTRTIME # All time steps except INITIME # maximum size 200 (P[1]-P[NTSP-1]);
 
-Subset INITIME is subset of ALLTIME ;
-Subset ENDTIME is subset of ALLTIME ;
-Subset FWDTIME is subset of ALLTIME ;
-Subset FTRTIME is subset of ALLTIME ;
+Subset INITIME is subset of ALLTIME;
+Subset ENDTIME is subset of ALLTIME;
+Subset FWDTIME is subset of ALLTIME;
+Subset FTRTIME is subset of ALLTIME;
 
 
 !<
@@ -4151,17 +4149,17 @@ Formula
 Coefficient (parameter)(all,r,REG)(all,t,ALLTIME)
     CPHI(r,t) # investment parameter #;
 Formula (all,r,REG)(all,t,ALLTIME)
-    CPHI(r,t) = 0.1;
+    CPHI(r,t) = 20;
 
 Coefficient (parameter)(all,r,REG)(all,t,ALLTIME)
     KAPPA(r,t) # depreciation rate #;
 Formula (all,r,REG)(all,t,ALLTIME)
-    KAPPA(r,t) = 0.5;
+    KAPPA(r,t) = 0.08;
 
 Coefficient (all,t,ALLTIME)
     LRORG(t) # value of global interest rate #;
 Formula (all,t,ALLTIME)
-    LRORG(t) = 0.5;
+    LRORG(t) = 0.04;
 
 Formula (all,r,REG)(all,t,ALLTIME)
     LINVPRC(r,t) = 1; !Normalised value of ps("zcgds",r,t)!
