@@ -5,18 +5,9 @@
 .inject_time <- function(ls_data,
                          time_steps,
                          tab_file,
+                         set_extract,
+                         coeff_extract,
                          call) {
-  set_extract <- .process_tablo(
-    tab_file = tab_file,
-    type = "set",
-    call = call
-  )$sets
-
-  coeff_extract <- .process_tablo(
-    tab_file = tab_file,
-    type = "coefficient",
-    call = call
-  )
 
   int_sets <- subset(
     set_extract,

@@ -6,7 +6,6 @@
                                     metadata,
                                     set_map,
                                     call) {
-
   if (is.null(metadata$data_format)) {
     data_format <- switch(metadata$database_version,
       "v9" = "v6.2",
@@ -21,11 +20,19 @@
   available_mappings <- colnames(set_mappings)[-1]
 
   if (!set_map %in% available_mappings) {
-    .cli_action(
-      load_err$invalid_internal_mapping,
-      action = c("abort", "inform"),
-      call = call
-    )
+    if (!is.null(available_mappings)) {
+      .cli_action(
+        load_err$invalid_internal_mapping,
+        action = c("abort", "inform"),
+        call = call
+      )
+    } else {
+      .cli_action(
+        load_err$no_internal_mapping,
+        action = "abort",
+        call = call
+      )
+    }
     # add information for what the mappings are ??mappings
   } else {
     sel_mapping <- set_mappings[, mget(c(colnames(set_mappings)[1], ..set_map))]

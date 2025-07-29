@@ -40,6 +40,7 @@
       )
     }
   )
+
   final_shocks <- unlist(x = final_shocks, recursive = F)
   class(final_shocks) <- "shock"
   # note to swap purrr map functions for all sapplys and some lapplys eventually

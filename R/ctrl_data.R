@@ -109,7 +109,8 @@
       data_format = metadata$data_format,
       sets = final.set_tib,
       coeff_extract = tab_comp$coeff_extract
-    ))
+    )),
+    garbage_collection = TRUE
   ))
 
   # potentially combine targets, keep dts distinct from lead

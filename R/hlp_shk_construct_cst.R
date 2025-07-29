@@ -9,12 +9,13 @@
 .construct_shock.custom <- function(raw_shock,
                                     closure,
                                     sets) {
+
   if (inherits(raw_shock$input, "character")) {
     value <- data.table::fread(raw_shock$input)
   } else {
     value <- raw_shock$input
   }
-  
+  browser()
   if ("Year" %in% raw_shock$set) {
     time_set_upper <- intersect(raw_shock$ls_upper, subset(sets, intertemporal, name)[[1]])
     time_set <- raw_shock$ls_mixed[match(time_set_upper, raw_shock$ls_upper)]

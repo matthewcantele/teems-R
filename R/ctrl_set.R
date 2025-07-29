@@ -6,7 +6,8 @@
 .set_control <- function(set_input,
                          set_map_files,
                          data_type,
-                         write_dir) {
+                         write_dir,
+                         set_hash) {
   t_set_file <- rlang::expr(targets::tar_target_raw(
     "set_file",
     quote(!!set_input),
@@ -29,51 +30,6 @@
       expression(qs2::qs_read(file = set_file))
     ))
   }
-
-  # if (!is.null(config$aux_set_file)) {
-  #   t_aux_set_file <- rlang::expr(targets::tar_target_raw(
-  #     "aux_set_file",
-  #     quote(!!config$aux_set_file),
-  #     format = "file"
-  #   ))
-  # 
-  #   file_type <- attr(config$aux_set_file, "file_ext")
-  # 
-  #   if (file_type %=% "har") {
-  #     t_aux_set_array <- rlang::expr(targets::tar_target_raw(
-  #       "aux_set_array",
-  #       expression(.read_har(
-  #         con = aux_set_file
-  #       ))
-  #     ))
-  #   } else if (file_type %=% "qs2") {
-  #     t_aux_set_array <- rlang::expr(targets::tar_target_raw(
-  #       "aux_set_array",
-  #       expression(qs2::qs_read(file = aux_set_file))
-  #     ))
-  #   }
-  # } else {
-  #   t_aux_set_array <- rlang::expr(targets::tar_target_raw(
-  #     "aux_set_array",
-  #     quote(NULL)
-  #   ))
-  # }
-
-  # if (!isTRUE(is.na(int_data))) {
-  # t_int_sets <- rlang::expr(targets::tar_target_raw(
-  #   "int_sets",
-  #   expression(.build_int_sets(
-  #     set_extract = tab_comp$set_extract$sets,
-  #     int_data = !!int_data,
-  #     reference_year = metadata$reference_year
-  #   ))
-  # ))
-  # } else {
-  #   t_int_sets <- rlang::expr(targets::tar_target_raw(
-  #     "int_sets",
-  #     quote(NA)
-  #     ))
-  # }
 
   t_set_mod.set_array <- rlang::expr(targets::tar_target_raw(
     "mod.set_array",
@@ -124,7 +80,8 @@
       set_map_file_input_names = set_map_file_input_names,
       sets = expanded.set_tib,
       metadata = metadata,
-      CYRS = par_array[[.o_timestep_header()]]
+      CYRS = par_array[[.o_timestep_header()]],
+      set_hash = !!set_hash
     ))
   ))
 

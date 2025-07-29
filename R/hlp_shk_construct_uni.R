@@ -3,7 +3,7 @@
                                      closure,
                                      var_extract,
                                      sets) {
-browser()
+
   if (attr(raw_shock, "full_var")) {
     if (.o_check_shock_status()) {
       if (!raw_shock$var %in% closure$full_var) {
@@ -38,7 +38,8 @@ browser()
       time_set_upper <- intersect(raw_shock$ls_upper, subset(sets, intertemporal, name)[[1]])
       time_set <- raw_shock$ls_mixed[match(time_set_upper, raw_shock$ls_upper)]
       CYRS <- attr(sets, "CYRS")
-      if (!Year %in% CYRS) {
+      if (!Year %in% CYRS$Value) {
+        CYRS <- CYRS$Value
         error_fun <- substitute(.cli_action(
           shk_err$uni_invalid_year,
           action = "abort",
@@ -57,7 +58,7 @@ browser()
         
         rlang::abort(error_inputs)
       }
-      v_idx <- match(Year, CYRS)
+      v_idx <- match(Year, CYRS$Value)
       purrr::pluck(raw_shock, "subset", "Year") <- purrr::pluck(sets, "mapped_ele", time_set_upper, v_idx)
       names(raw_shock$subset) <- sub("Year", time_set, names(raw_shock$subset))
     }
@@ -106,7 +107,7 @@ browser()
     
     if (.o_check_shock_status()) {
       # name change this function, nothing checked
-      checked_shk <- .check_closure(
+      checked_shk <- .classify_entries(
         closure = shock_LHS,
         sets = sets
       )

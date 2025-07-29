@@ -1,3 +1,30 @@
+#' `r lifecycle::badge("experimental")` Modify data inputs.
+#'
+#' @description `ems_data()` prepares data for various
+#'   non-standard models including intertemporal runs, database
+#'   format conversion as well as converts to human-readable
+#'   format.
+#'
+#' @inheritParams ems_model
+#' @param dat_input Character of length 1, file name in working
+#'   directory or path to a GTAP data "dat" HAR file. Input
+#'   containing base coefficient data.
+#' @param par_input Character of length 1, file name in working
+#'   directory or path to a GTAP parameter "par" HAR file. Input
+#'   containing parameter coefficient data.
+#' @param aux_input Character of length 1, file name in working
+#'   directory or path to a GTAP HAR file. Input containing
+#'   auxillary coefficient data. Coefficients will be sorted into
+#'   parameter and non-parameter lists.
+#' @param target_format Character of length 1, default `NULL`. In
+#'   the case of database conversion, either "v6.2" or "v7.0" as
+#'   the desired format.
+#' @param time_steps Integer vector of variable length (default
+#'   is `NULL`). `"time_steps"` are inputted as the chronological
+#'   years of steps including initial reference year or steps
+#'   from t0. For example, `c(2017, 2020, 2024, 2028, 2032, 2038,
+#'   2044, 2050)` is identical to `c(0, 3, 7, 11, 15, 21, 27,
+#'   33)`.
 #' @export
 ems_data <- function(dat_input,
                      par_input,
@@ -37,7 +64,7 @@ ems_data <- function(dat_input,
     tab_file = args_list$tab_file,
     type = "set",
     call = call
-  )
+  )$sets
   
   ls_data <- list(
     dat = args_list$dat,
@@ -52,12 +79,11 @@ ems_data <- function(dat_input,
   }
 
   if (!is.null(args_list$target_format)) {
-    browser()
     ls_data <- .convert_db(
       tab_file = args_list$tab_file,
-      ls_dat = args_list$dat,
-      ls_par = args_list$par,
-      ls_set = args_list$set,
+      ls_data = ls_data,
+      set_extract = set_extract,
+      coeff_extract = coeff_extract,
       metadata = args_list$metadata,
       target_format = args_list$target_format
     )
@@ -70,6 +96,8 @@ ems_data <- function(dat_input,
       ls_data = ls_data,
       time_steps = args_list$time_steps,
       tab_file = args_list$tab_file,
+      set_extract = set_extract,
+      coeff_extract = coeff_extract,
       call
     )
   }

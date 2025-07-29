@@ -4,8 +4,7 @@
 #' @keywords internal
 #' @noRd
 .classify_entries <- function(closure,
-                           sets,
-                           tab_file) {
+                           sets) {
   # exo <- tibble::tibble(cls_entry = closure)
   # exo[["var_name"]] <- purrr::map_chr(closure, function(e) {strsplit(e, "\\(")[[1]][1]})
   # exo[["full_var"]] <- !grepl("\\(|\"", exo[["cls_entry"]])

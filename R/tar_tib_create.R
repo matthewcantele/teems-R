@@ -8,6 +8,7 @@
                         data_format,
                         sets,
                         coeff_extract) {
+
   tib_data <- .build_tibble(
     ls_ = ls_,
     sets = sets,

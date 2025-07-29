@@ -20,7 +20,7 @@
     new_exits <- unlist(x = concat_swap_out)
 
     # create swap_out specific closure structure
-    checked_exits <- .check_closure(
+    checked_exits <- .classify_entries(
       closure = new_exits,
       sets = sets
     )

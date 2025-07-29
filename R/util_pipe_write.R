@@ -21,7 +21,8 @@
     set_input = load_config$set_input,
     set_map_files = set_map_files,
     data_type = "set",
-    write_dir = teems_paths$launchpad
+    write_dir = teems_paths$launchpad,
+    set_hash = attr(load_specs, "call_id")
   )
 
   data_targets <- .data_control(

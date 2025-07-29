@@ -409,7 +409,10 @@ list(
            missing_eqm_input = "If {.arg eqm_input} is not provided, both {.arg dat_input} and {.arg par_input} are required inputs.",
            missing_set_mappings = "Set mappings passed to {.arg ...} as a pairwise list are required.",
            invalid_internal_mapping = c("The internal mapping selected: {.val {set_map}}, for set {.val {map_name}} does not exist.",
-                                        "Available internal mappings for {.val {map_name}} include {.val {available_mappings}}")
+                                        "Available internal mappings for {.val {map_name}} include {.val {available_mappings}}"),
+           missing_ele_ext_mapping = "The set mapping for {.val {map_name}} is missing mappings for {.val {missing_ele}}.",
+           no_ele_ext_mapping = "No required elements were found for the {.field {data_format}} set {.val {map_name}} indicating an invalid set name.",
+           no_internal_mapping = "No internal {.field {data_format}} mappings were found for the set {.val {map_name}}."
           )
     }
   ),

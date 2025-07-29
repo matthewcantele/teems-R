@@ -16,7 +16,7 @@
     new_entries <- unlist(x = concat_swap_in)
 
     # run check and expansion on new entries
-    checked_entries <- .check_closure(
+    checked_entries <- .classify_entries(
       closure = new_entries,
       sets = sets
     )

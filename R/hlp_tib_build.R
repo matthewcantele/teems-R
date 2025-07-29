@@ -83,7 +83,6 @@
 #' @export
 .build_tibble.set <- function(ls_,
                               sets) {
-
   ls_ <- lapply(ls_, function(header) {
     dim_length <- length(dimnames(header$data))
     header$dt <- data.table::as.data.table(as.matrix(header$data))
