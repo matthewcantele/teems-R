@@ -2,8 +2,7 @@
 #' @noRd
 .check_diagnostics <- function(out_file,
                                error,
-                               singularity,
-                               quiet) {
+                               singularity) {
   if (any(grepl(pattern = "Accurate", x = out_file))) {
     accuracy_output <- out_file[grep(pattern = "Accurate", x = out_file)]
 
@@ -38,7 +37,7 @@
                   least 4 digit precision, less than the recommended 80%."
       )
     } else {
-      if (!quiet) {
+      if (.o_verbose()) {
         .cli_action(
           action = "inform",
           msg = "{.emph {accuracy}} of variables accurate at at least 4 digit 
@@ -61,7 +60,7 @@
         msg = "Errors detected."
       )
     } else {
-      if (!quiet) {
+      if (.o_verbose()) {
         .cli_action(
           action = "inform",
           msg = "No errors detected."
@@ -75,7 +74,7 @@
         msg = "Singularity detected."
       )
     } else {
-      if (!quiet) {
+      if (.o_verbose()) {
         .cli_action(
           action = "inform",
           msg = "No singularity detected."

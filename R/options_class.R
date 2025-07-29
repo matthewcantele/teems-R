@@ -206,6 +206,12 @@ eqm_options <- options_init()
 #' @description
 #' placeholder
 #' 
+#' @param verbose Logical of length 1 (default is `TRUE`). If `FALSE`,
+#'   function-specific diagnostics are silenced.
+#' @param ndigits Integer (default is `6`). Exact number of digits to the right
+#'   of the decimal point to be written to file for numeric type double (GEMPack
+#'   equivalent "real"). This value is passed to the `format()` nsmall argument
+#'   and `round()` digits argument.
 #' @param full_exclude A character vector (default is `c("DREL", "DVER", "XXCR",
 #'   "XXCD", "XXCP", "SLUG", "EFLG")`). Specifies headers to fully exclude from
 #'   all aspects of the model run. Failure to designate these headers properly

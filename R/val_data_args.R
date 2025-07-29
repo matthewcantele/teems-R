@@ -12,7 +12,7 @@
     aux_input = c("is.null", "is.character"),
     tab_file = c("is.null", "is.character"),
     target_format = c("is.null", "is.character"),
-    time_steps = "is.numeric"
+    time_steps = c("is.null", "is.numeric")
   )
 
   .check_arg_class(

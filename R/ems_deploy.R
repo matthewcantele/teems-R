@@ -1,6 +1,5 @@
 #' `r lifecycle::badge("experimental")`
-#' Loads all specifications executes a model-specifc `targets`
-#' pipeline
+#' Loads and execute model-specifc `targets` pipeline
 #'
 #' @description `ems_deploy()` creates and executes a
 #'   [`targets`](https://books.ropensci.org/targets/) pipeline for all
@@ -186,5 +185,7 @@ gen_out <- .write_cmf(model_name = model_name,
                       metadata = load_specs[["metadata"]],
                       store_dir = teems_paths[["store"]],
                       io_files = gen_out[["io_files"]])
-gen_out[["cmf_path"]]
+cmf_path <- gen_out[["cmf_path"]]
+class(cmf_path) <- "cmf"
+cmf_path
 }

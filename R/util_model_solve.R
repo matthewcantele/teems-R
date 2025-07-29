@@ -2,8 +2,7 @@
 #' @noRd
 .solve_model <- function(exec_cmd,
                          sol_parse_cmd,
-                         paths,
-                         quiet) {
+                         paths) {
   elapsed_time <- system.time(system(command = exec_cmd))
   print(elapsed_time)
   cat(exec_cmd, file = file.path(paths[["run"]], "model_exec.txt"))
@@ -24,8 +23,7 @@
   .check_diagnostics(
     out_file = out_file,
     error = error,
-    singularity = singularity,
-    quiet = quiet
+    singularity = singularity
   )
   return(invisible(NULL))
 }

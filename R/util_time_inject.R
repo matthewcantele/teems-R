@@ -7,6 +7,7 @@
                          tab_file,
                          set_extract,
                          coeff_extract,
+                         metadata,
                          call) {
 
   int_sets <- subset(

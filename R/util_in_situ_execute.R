@@ -7,8 +7,7 @@
                              shock_file,
                              closure_file,
                              in_situ_writeout,
-                             call,
-                             quiet) {
+                             call) {
 
     io_files <- list(...)
 
@@ -33,7 +32,7 @@
       internal = FALSE
     )
 
-    if (!quiet) {
+    if (.o_verbose()) {
       .cli_action(
         action = "inform",
         msg = "\"solve-in-situ\" mode activated."

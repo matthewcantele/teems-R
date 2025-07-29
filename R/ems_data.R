@@ -1,9 +1,8 @@
-#' `r lifecycle::badge("experimental")` Modify data inputs.
+#' `r lifecycle::badge("experimental")` Modify data inputs
 #'
 #' @description `ems_data()` prepares data for various
-#'   non-standard models including intertemporal runs, database
-#'   format conversion as well as converts to human-readable
-#'   format.
+#'   non-standard models including intertemporal runs as well as
+#'   converts GTAP databases between v6.2 and v7.0 formats.
 #'
 #' @inheritParams ems_model
 #' @param dat_input Character of length 1, file name in working
@@ -19,12 +18,49 @@
 #' @param target_format Character of length 1, default `NULL`. In
 #'   the case of database conversion, either "v6.2" or "v7.0" as
 #'   the desired format.
-#' @param time_steps Integer vector of variable length (default
-#'   is `NULL`). `"time_steps"` are inputted as the chronological
-#'   years of steps including initial reference year or steps
-#'   from t0. For example, `c(2017, 2020, 2024, 2028, 2032, 2038,
-#'   2044, 2050)` is identical to `c(0, 3, 7, 11, 15, 21, 27,
-#'   33)`.
+#' @param time_steps Integer vector of variable length with
+#'   initial value 0 or reference year corresponding to database
+#'   employed (default is `NULL`). Input format can be either the
+#'   chronological years of steps including initial reference
+#'   year or steps from t0. For example, `c(2017, 2018, 2020,
+#'   2022)` is identical to `c(c(0, 1, 3, 5))`.
+#' @param ... Future extension
+#'
+#' @return A list ready for input into the `"ems_input"` argument
+#'   of [`ems_load()`]
+#' 
+#' @seealso [`ems_load()`] for using the output of this function.
+#' 
+#' @examples
+#' \dontrun{
+#' # Data format conversions
+#' v62_data <- ems_data(dat_input = "path/to/v7_data/v11c/flexAgg11c17/gsdfdat.har",
+#'                      par_input = "path/to/v7_data/v11c/flexAgg11c17/gsdfpar.har",
+#'                      set_input = "path/to/v7_data/v11c/flexAgg11c17/gsdfset.har",
+#'                      tab_file = "GTAPv6.2",
+#'                      target_format = "v6.2")
+#'
+#' v7_data <- ems_data(dat_input = "path/to/v62_data/v10A/flexagg10AY14/gsddat.har",
+#'                     par_input = "path/to/v62_data/v10A/flexagg10AY14/gsdpar.har",
+#'                     set_input = "path/to/v62_data/v10A/flexagg10AY14/gsdset.har",
+#'                     tab_file = "GTAPv7.0",
+#'                     target_format = "v7.0")
+#' 
+#' # Intertemporal modification (GTAP-REv1)
+#' GTAP_RE <- ems_data(dat_input = "path/to/v7_data/v11c/flexAgg11c17/gsdfdat.har",
+#'                     par_input = "path/to/v7_data/v11c/flexAgg11c17/gsdfpar.har",
+#'                     set_input = "path/to/v7_data/v11c/flexAgg11c17/gsdfset.har",
+#'                     tab_file = "GTAP-REv1",
+#'                     time_steps = c(2017, 2018, 2019, 2020))
+#'  
+#' # Intertemporal modification with data format conversion (GTAP-INTv1)
+#' GTAP_INT <- ems_data(dat_input = "path/to/v7_data/v11c/flexAgg11c17/gsdfdat.har",
+#'                      par_input = "path/to/v7_data/v11c/flexAgg11c17/gsdfpar.har",
+#'                      set_input = "path/to/v7_data/v11c/flexAgg11c17/gsdfset.har",
+#'                      tab_file = "GTAP-INTv1",
+#'                      target_format = "v6.2",
+#'                      time_steps = c(0, 1, 2, 3))                          
+#' }           
 #' @export
 ems_data <- function(dat_input,
                      par_input,
@@ -98,6 +134,7 @@ ems_data <- function(dat_input,
       tab_file = args_list$tab_file,
       set_extract = set_extract,
       coeff_extract = coeff_extract,
+      metadata = args_list$metadata,
       call
     )
   }

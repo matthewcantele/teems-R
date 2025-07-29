@@ -5,13 +5,13 @@
                               call) {
 
   if (!time_steps[1] %=% 0) {
-    time_steps <- time_steps - time_steps[1]
-    if (!time_steps[1] %=% 0) {
+    if (!time_steps[1] %=% t0) {
       .cli_action(data_wrn$time_steps,
-        action = "warn",
-        call = call
+                  action = "warn",
+                  call = call
       )
     }
+    time_steps <- time_steps - time_steps[1]
   }
 
   if (!all(diff(x = time_steps) > 0)) {

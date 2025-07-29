@@ -7,9 +7,6 @@
 #'   accuracy, and error checks are carried out following a successful
 #'   run.
 #'
-#'   Learn more about this function including Tablo file limitations
-#'   in `vignette("something")`
-#'
 #' @inheritParams ems_deploy
 #'
 #' @param cmf_path Character length 1 (default is `NULL`), path to the
@@ -76,20 +73,16 @@
 #'   are required for in-situ model runs.
 #'
 #'
-#' @seealso [`teems_compose()`] for retrieving model results.
+#' @seealso [`ems_compose()`] for retrieving model results.
 #'
 #' @examples
 #' \dontrun{
-#' # See `vignette("something")` for examples and explanation
-#' # A number of runtime options are available to solve the model.
-#'
 #' # sample static model setup
 #' v6.2_cmf_path <- teems_deploy(model_config = v6.2_model_config,
 #'                              base_config = v6.2_base_config,
 #'                              param_config = v6.2_param_config,
 #'                              set_config = v6.2_set_config,
-#'                              closure_config = v6.2_closure_config,
-#'                              verbose = TRUE)
+#'                              closure_config = v6.2_closure_config)
 #'
 #' # The most simple solution is an LU Johansen with a single task:
 #' ems_solve(cmf_path = v6.2_cmf_path,
@@ -142,21 +135,20 @@ ems_solve <- function(cmf_path = NULL,
                       closure_file = NULL,
                       shock_file = NULL,
                       in_situ_writeout = TRUE,
-                      quiet = FALSE,
                       ...)
 {
 call <- match.call()
 .check_docker(image_name = "teems",
               call = call)
 if (!missing(x = ...)) {
+  # make this a separate function
 cmf_path <- .execute_in_situ(... = ...,
                              tab_file = tab_file,
                              closure_file = closure_file,
                              shock_file = shock_file,
                              cmf_path = cmf_path,
                              in_situ_writeout = in_situ_writeout,
-                             call = call,
-                             quiet = quiet)
+                             call = call)
 }
 timeID <- format(x = Sys.time(), "%H%M")
 paths <- .get_solver_paths(cmf_path = cmf_path,
@@ -189,7 +181,6 @@ cmd <- .construct_cmd(paths = paths,
 if (identical(x = cmd, y = terminal_run)) {return(invisible(NULL))}
 .solve_model(exec_cmd = cmd[["exec"]],
              sol_parse_cmd = cmd[["sol_parse"]],
-             paths = paths,
-             quiet = quiet)
+             paths = paths)
 return(invisible(NULL))
 }

@@ -393,7 +393,7 @@ list(
   tar_target(
     data_wrn,
     {
-      list(time_steps = "The initial timestep provided is neither {.val 0} nor the reference year corresponding to the {.field dat} file loaded: {.val {t0}}.")
+      list(time_steps = "The initial timestep provided is neither {.val {as.numeric(0)}} nor the reference year corresponding to the {.field dat} file loaded: {.val {t0}}.")
     }
   ),
 
@@ -508,6 +508,7 @@ list(
         gen_wrn,
         gen_err,
         gen_url,
+        data_wrn,
         data_err,
         load_err,
         shk_err,

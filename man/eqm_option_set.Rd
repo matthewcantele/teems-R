@@ -7,6 +7,14 @@
 eqm_option_set(...)
 }
 \arguments{
+\item{verbose}{Logical of length 1 (default is \code{TRUE}). If \code{FALSE},
+function-specific diagnostics are silenced.}
+
+\item{ndigits}{Integer (default is \code{6}). Exact number of digits to the right
+of the decimal point to be written to file for numeric type double (GEMPack
+equivalent "real"). This value is passed to the \code{format()} nsmall argument
+and \code{round()} digits argument.}
+
 \item{full_exclude}{A character vector (default is \code{c("DREL", "DVER", "XXCR", "XXCD", "XXCP", "SLUG", "EFLG")}). Specifies headers to fully exclude from
 all aspects of the model run. Failure to designate these headers properly
 will result in errors because some headers cannot be aggregated or mapped.

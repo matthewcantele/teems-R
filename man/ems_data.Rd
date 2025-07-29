@@ -2,7 +2,7 @@
 % Please edit documentation in R/ems_data.R
 \name{ems_data}
 \alias{ems_data}
-\title{#' \ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#experimental}{\figure{lifecycle-experimental.svg}{options: alt='[Experimental]'}}}{\strong{[Experimental]}} Modify data inputs.}
+\title{\ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#experimental}{\figure{lifecycle-experimental.svg}{options: alt='[Experimental]'}}}{\strong{[Experimental]}} Modify data inputs}
 \usage{
 ems_data(
   dat_input,
@@ -25,9 +25,9 @@ directory or path to a GTAP parameter "par" HAR file. Input
 containing parameter coefficient data.}
 
 \item{aux_input}{Character of length 1, file name in working
-directory or path to a GTAP HAR file.Input containing
-auxillary coefficient data. Currently used primarily to load
-time related data for dynamic models.}
+directory or path to a GTAP HAR file. Input containing
+auxillary coefficient data. Coefficients will be sorted into
+parameter and non-parameter lists.}
 
 \item{tab_file}{Character of length 1, path to a local Tablo model file or
 selection of an internal Tablo file. Currently supported internal Tablo
@@ -37,14 +37,54 @@ model files can be viewed with ().}
 the case of database conversion, either "v6.2" or "v7.0" as
 the desired format.}
 
-\item{time_steps}{Integer vector of variable length (default
-is \code{NULL}). \code{"time_steps"} are inputted as the chronological
-years of steps including initial reference year or steps
-from t0. For example, \code{c(2017, 2020, 2024, 2028, 2032, 2038, 2044, 2050)} is identical to \code{c(0, 3, 7, 11, 15, 21, 27, 33)}.}
+\item{time_steps}{Integer vector of variable length with
+initial value 0 or reference year corresponding to database
+employed (default is \code{NULL}). Input format can be either the
+chronological years of steps including initial reference
+year or steps from t0. For example, \code{c(2017, 2018, 2020, 2022)} is identical to \code{c(c(0, 1, 3, 5))}.}
+
+\item{...}{Future extension}
+}
+\value{
+A list ready for input into the \code{"ems_input"} argument
+of \code{\link[=ems_load]{ems_load()}}
 }
 \description{
-\code{ems_data()} prepares data for
-various non-standard models including intertemporal runs,
-database format conversion as well as converts to
-human-readable format.
+\code{ems_data()} prepares data for various
+non-standard models including intertemporal runs as well as
+converts GTAP databases between v6.2 and v7.0 formats.
+}
+\examples{
+\dontrun{
+# Data format conversions
+v62_data <- ems_data(dat_input = "path/to/v7_data/v11c/flexAgg11c17/gsdfdat.har",
+                     par_input = "path/to/v7_data/v11c/flexAgg11c17/gsdfpar.har",
+                     set_input = "path/to/v7_data/v11c/flexAgg11c17/gsdfset.har",
+                     tab_file = "GTAPv6.2",
+                     target_format = "v6.2")
+
+v7_data <- ems_data(dat_input = "path/to/v62_data/v10A/flexagg10AY14/gsddat.har",
+                    par_input = "path/to/v62_data/v10A/flexagg10AY14/gsdpar.har",
+                    set_input = "path/to/v62_data/v10A/flexagg10AY14/gsdset.har",
+                    tab_file = "GTAPv7.0",
+                    target_format = "v7.0")
+
+# Intertemporal modification (GTAP-REv1)
+GTAP_RE <- ems_data(dat_input = "path/to/v7_data/v11c/flexAgg11c17/gsdfdat.har",
+                    par_input = "path/to/v7_data/v11c/flexAgg11c17/gsdfpar.har",
+                    set_input = "path/to/v7_data/v11c/flexAgg11c17/gsdfset.har",
+                    tab_file = "GTAP-REv1",
+                    time_steps = c(2017, 2018, 2019, 2020))
+ 
+# Intertemporal modification with data format conversion (GTAP-INTv1)
+GTAP_INT <- ems_data(dat_input = "path/to/v7_data/v11c/flexAgg11c17/gsdfdat.har",
+                     par_input = "path/to/v7_data/v11c/flexAgg11c17/gsdfpar.har",
+                     set_input = "path/to/v7_data/v11c/flexAgg11c17/gsdfset.har",
+                     tab_file = "GTAP-INTv1",
+                     target_format = "v6.2",
+                     time_steps = c(0, 1, 2, 3))                          
+}           
+}
+\seealso{
+\code{\link[=ems_load]{ems_load()}} for using the output of this function.
 }
