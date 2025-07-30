@@ -8,7 +8,7 @@ Currently under development!
 ## Installation
 Install R if it is not yet on your system and an IDE like RStudio for interactive code execution
 ```bash
-sudo apt intall r-base
+sudo apt install r-base
 ```
 
 Install the R package {remotes} and any dependencies flagged
@@ -23,13 +23,13 @@ remove.packages("teems")
 
 Install the latest release "v0.0.0.94" using {remotes}
 ```R
-remotes::install_github("matthewcantele/teems-R@v0.0.0.94")
+remotes::install_github("matthewcantele/teems-R@v0.0.0.95")
 ```
 The installation may fail, citing "there is no package called ...". Install those packages and try again.
 
 Sample scripts are located at the teems-scripts repository: https://github.com/teems-org/teems-scripts#
 ```bash
-git pull https://github.com/teems-org/teems-scripts.git
+git clone https://github.com/teems-org/teems-scripts.git
 ```
 
 
