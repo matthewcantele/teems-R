@@ -14,7 +14,6 @@
         store = teems_paths[["store"]])
     }, silent = TRUE)
     if (inherits(x = output, what = "try-error")) {
-      browser()
       errored_tar <- targets::tar_errored(store = teems_paths[["store"]])
       raw_error <- targets::tar_meta(names = errored_tar,
                                      store = teems_paths[["store"]])[["error"]]

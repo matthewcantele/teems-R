@@ -33,6 +33,7 @@
       shock_LHS <- raw_shock$var
     }
   } else {
+
     if ("Year" %in% names(raw_shock$subset)) {
       Year <- purrr::pluck(raw_shock, "subset", "Year")
       time_set_upper <- intersect(raw_shock$ls_upper, subset(sets, intertemporal, name)[[1]])
@@ -142,7 +143,7 @@
         structured_data = purrr::list_flatten(expanded_shk$struct)[[1]],
         var_name = raw_shock$var
       )
-      browser()
+
       if (!all(shk_list %in% exo_list)) {
         errant_tup <- setdiff(shk_list, exo_list)
         error_fun <- substitute(.cli_action(
