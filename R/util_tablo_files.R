@@ -3,17 +3,13 @@
 #'
 #' @keywords internal
 #' @noRd
-.tablo_files <- function(tab_extract) {
-  # File statements ############################################################
-  files <- subset(x = tab_extract, subset = {
-    is.element(
-      el = tolower(x = type),
-      set = "file"
-    )
-  })
+.tablo_files <- function(tab_extract,
+                         call) {
 
-  files[["names"]] <- trimws(x = purrr::map(sapply(X = files[["remainder"]],
-                                                   FUN = strsplit, split = " "), 1))
+  files <- subset(tab_extract, tolower(type) %in% "file")
+
+  files[["names"]] <- trimws(purrr::map_chr(
+    purrr::map(purrr::map(files$remainder, strsplit, " "), 1), 1))
 
   files[["remainder"]] <- .advance_remainder(
     remainder = files[["remainder"]],

@@ -1,16 +1,21 @@
 #' @importFrom purrr pluck
 #' @keywords internal
 #' @noRd
-.execute_in_situ <- function(...,
-                             cmf_path,
+.execute_in_situ <- function(input_files,
+                             n_timesteps,
                              tab_file,
                              shock_file,
                              closure_file,
-                             in_situ_writeout,
+                             writeout,
                              call) {
 
-    io_files <- list(...)
-
+  if (.o_verbose()) {
+    .cli_action(
+      solve_info$in_situ,
+      action = "inform",
+    )
+  }
+  
     tab_file <- .check_input(
       file = tab_file,
       valid_ext = "tab",
@@ -32,66 +37,47 @@
       internal = FALSE
     )
 
-    if (.o_verbose()) {
-      .cli_action(
-        action = "inform",
-        msg = "\"solve-in-situ\" mode activated."
-      )
-    }
+    browser()
 
-    parsed_tablo <- .parse_tablo(tab_file = tab_file)
-    tablo_files <- purrr::pluck(
-      .x = .tablo_files(tab_extract = parsed_tablo[["extract"]]),
-      "names"
-    )
-    req_files <- tablo_files[!is.element(el = tablo_files, set = "(new)")]
+    tab_comp <- .process_tablo(tab_file = tab_file)
+    req_files <- setdiff(purrr::pluck(tab_comp, "file_extract", "names"),
+                         "(new)")
 
-    if (!all(is.element(el = names(x = io_files), set = req_files))) {
-      missing_files <- req_files[!is.element(
-        el = names(x = io_files),
-        set = req_files
-      )]
-      .cli_action(
+    if (!all(req_files %in% names(input_files))) {
+      missing_files <- setdiff(req_files, names(input_files))
+      .cli_action(solve_err$insitu_missing_input,
         action = "abort",
-        msg = "The Tablo file provided indicates that the following
-                  files are required: {.val {req_files}} however one or more appear to
-                  not have been provided: {.val {missing_files}}.",
         call = call
       )
     }
 
-    if (!all(sapply(X = io_files, FUN = file.exists))) {
-      missing_files <- names(x = io_files)[!sapply(
-        X = io_files,
-        FUN = file.exists
-      )]
-      .cli_action(
+    if (!all(purrr::map_lgl(input_files, file.exists))) {
+      nonexist_files <- input_files[!purrr::map_lgl(input_files, file.exists)]
+      .cli_action(solve_err$insitu_no_file,
         action = "abort",
-        msg = "One or more input files provided does not exist:
-                  {.val {missing_files}}."
       )
     }
 
-    io_files <- sapply(X = io_files, FUN = normalizePath)
-    model_dir <- dirname(path = tab_file)
+    input_files <- purrr::map_chr(input_files, normalizePath)
+    model_dir <- dirname(tab_file)
     launchpad_dir <- file.path(model_dir, "launchpad")
-    if (dir.exists(paths = launchpad_dir)) {
+    if (dir.exists(launchpad_dir)) {
       unlink(x = launchpad_dir, recursive = TRUE, force = TRUE)
     }
-    dir.create(path = file.path(launchpad_dir, "out", "sets"),
+    dir.create(file.path(launchpad_dir, "out", "sets"),
                recursive = TRUE)
-    dir.create(path = file.path(launchpad_dir, "out", "coefficients"),
+    dir.create(file.path(launchpad_dir, "out", "coefficients"),
                recursive = TRUE)
-    dir.create(path = file.path(launchpad_dir, "out", "variables", "bin"),
+    dir.create(file.path(launchpad_dir, "out", "variables", "bin"),
                recursive = TRUE)
 
-    if (in_situ_writeout) {
-      coeff_extract <- .tablo_coeff(tab_extract = parsed_tablo[["extract"]])
-      coefficient_names <- coeff_extract[["name"]]
-      tablo_sets <- .tablo_sets(tab_extract = parsed_tablo[["extract"]])[["sets"]]
+    browser()
+    if (writeout) {
+      coeff_extract <- purrr::pluck(parsed_tablo, "coeff_extract")
+      tablo_sets <- purrr::pluck(parsed_tablo, "set_extract", "sets")
       set_names <- toupper(x = tablo_sets[["name"]])
-      parsed_tablo[["tab"]] <- .append_tablo(
-        tab = parsed_tablo[["tab"]],
+      final.tablo <- .append_tablo(
+        tab = tab_comp$conden_tab,
         coeff_extract = coeff_extract,
         sets = tablo_sets
       )

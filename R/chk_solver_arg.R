@@ -55,12 +55,13 @@
   }
 
   if (identical(x = matrix_method, y = "NDBBD")) {
-    if (is.null(x = n_timesteps)) {
-      .cli_action(msg = "The {.arg n_timesteps} argument is required when using 
-                  the {.val {matrix_method}} method.",
-                  action = "abort",
-                  call = call)
-    }
+    # this warning necessary in NULL method
+    # if (is.null(x = n_timesteps)) {
+    #   .cli_action(msg = "The {.arg n_timesteps} argument is required when using 
+    #               the {.val {matrix_method}} method.",
+    #               action = "abort",
+    #               call = call)
+    # }
     nesteddbbd <- 1
   } else {
     nesteddbbd <- 0

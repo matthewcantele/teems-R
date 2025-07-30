@@ -15,13 +15,6 @@ ems_solve(
   laD = 200L,
   laDi = 500L,
   terminal_run = FALSE,
-  docker_tag = "latest",
-  n_timesteps = NULL,
-  tab_file = NULL,
-  closure_file = NULL,
-  shock_file = NULL,
-  in_situ_writeout = TRUE,
-  quiet = FALSE,
   ...
 )
 }
@@ -92,9 +85,6 @@ from MA48B/BD because LA is ..."}
 allows the user to close any R IDE or other programs prior to
 running from the terminal.}
 
-\item{docker_tag}{Character length 1 (default \code{"latest"}). Docker
-tag to specify the which Docker image is use.}
-
 \item{...}{A named list of input files necessary for an "in-situ"
 model run. Names must correspond to "File" statements within the
 model Tablo file. Elements correspond to file paths where these
@@ -115,22 +105,15 @@ options. In order to solve, a \code{teems} Docker image must be
 prebuilt according to these specifications. Singularity,
 accuracy, and error checks are carried out following a successful
 run.
-
-Learn more about this function including Tablo file limitations
-in \code{vignette("something")}
 }
 \examples{
 \dontrun{
-# See `vignette("something")` for examples and explanation
-# A number of runtime options are available to solve the model.
-
 # sample static model setup
 v6.2_cmf_path <- teems_deploy(model_config = v6.2_model_config,
                              base_config = v6.2_base_config,
                              param_config = v6.2_param_config,
                              set_config = v6.2_set_config,
-                             closure_config = v6.2_closure_config,
-                             verbose = TRUE)
+                             closure_config = v6.2_closure_config)
 
 # The most simple solution is an LU Johansen with a single task:
 ems_solve(cmf_path = v6.2_cmf_path,
@@ -165,5 +148,5 @@ ems_solve(cmf_path = v6.2_cmf_path,
 }
 }
 \seealso{
-\code{\link[=teems_compose]{teems_compose()}} for retrieving model results.
+\code{\link[=ems_compose]{ems_compose()}} for retrieving model results.
 }

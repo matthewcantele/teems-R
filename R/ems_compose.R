@@ -1,30 +1,38 @@
-#' Parse model results
+#' `r lifecycle::badge("experimental")` Compose model results
 #'
-#' @description `ems_compose()` retrieves and processes results from a solved
-#'   model run. Results are parsed according to the specified type (variables,
-#'   coefficients, or base data). Data validation and consistency checks are
-#'   performed during the parsing process.
-#'
-#'   Learn more about this function including output formats and data structures
-#'   in `vignette("something")`
+#' @description `ems_compose()` retrieves and processes results
+#'   from a solved model run. Results are parsed according to the
+#'   specified type (variables, coefficients, or base data). Data
+#'   validation and consistency checks are performed during the
+#'   parsing process.
 #'
 #' @inheritParams ems_solve
-#' @param type Character length 1, type of data to parse (default includes all).
-#'   Choices:
+#' 
+#' @param type Character length 1, type of data to parse (default
+#'   includes all). Choices:
 #'   * `"variable"`: Percentage change values for model variables
 #'   * `"coefficient"`: Absolute values for model coefficients
 #'   * `"set"`: Model sets
-#'   * `"basedata"`: Merged pre- and post-model basedata values
+#'   * `"inputdata"`: Merged pre- and post-model basedata values
+#' @param name Character vector, a subset of the selected type
+#'   filtered by name.
 #'
 #' @importFrom rlang arg_match
 #'
 #' @seealso [`ems_solve()`] for running the model simulation.
 #'
 #' @examples
-#' # See `vignette("something")` for examples and explanation
+#' \dontrun{
+#' inputdata <- ems_compose(cmf_path = cmf_path, type = "inputdata")
+#' variables <- ems_compose(cmf_path = cmf_path, type = "variable")
+#' coefficients <- ems_compose(cmf_path = cmf_path, type = "coefficient")
+#' sets <- ems_compose(cmf_path = cmf_path, type = "set")
+#' 
+#' qfd <- ems_compose(cmf_path = cmf_path, type = "variable", name = "qfd")
+#' }
 #'
-#' @return A list containing the parsed model results according to the specified
-#'   type.
+#' @return A list containing the parsed model results according
+#'   to the specified type.
 #' @export
 ems_compose <- function(cmf_path,
                         type = c("variable", "coefficient", "set", "inputdata"),

@@ -1,6 +1,6 @@
 Package: teems
 Title: Trade and Environment Equilibrium Modeling System
-Version: 0.0.0.94
+Version: 0.0.0.95
 Authors@R: 
     person("Matthew", "Cantele",
     email = "m.cantele@unimelb.edu.au",

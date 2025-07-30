@@ -1,7 +1,7 @@
 #' @noRd
 #' @keywords internal
 options_class <- R6::R6Class(
-  classname = "eqm_option",
+  classname = "ems_option",
   class = FALSE,
   portable = FALSE,
   cloneable = FALSE,
@@ -13,15 +13,17 @@ options_class <- R6::R6Class(
     timestep_header = NULL,
     n_timestep_header = NULL,
     full_exclude = NULL,
+    docker_tag = NULL,
 
     # Initialize method
-    initialize = function(verbose = NULL, ndigits = NULL, check_shock_status = NULL, timestep_header = NULL, n_timestep_header = NULL, full_exclude = NULL) {
+    initialize = function(verbose = NULL, ndigits = NULL, check_shock_status = NULL, timestep_header = NULL, n_timestep_header = NULL, full_exclude = NULL, docker_tag = NULL) {
       self$verbose <- verbose
       self$ndigits <- ndigits
       self$check_shock_status <- check_shock_status
       self$timestep_header <- timestep_header
       self$n_timestep_header <- n_timestep_header
       self$full_exclude <- full_exclude
+      self$docker_tag <- docker_tag
     },
     
     # Export all options as a list
@@ -33,6 +35,7 @@ options_class <- R6::R6Class(
         timestep_header = self$get_timestep_header(),
         n_timestep_header = self$get_n_timestep_header(),
         full_exclude = self$get_full_exclude(),
+        docker_tag = self$get_docker_tag(),
       )
     },
     
@@ -44,6 +47,7 @@ options_class <- R6::R6Class(
       self$set_timestep_header(list$timestep_header)
       self$set_n_timestep_header(list$n_timestep_header)
       self$set_full_exclude(list$full_exclude)
+      self$set_docker_tag(list$docker_tag)
     },
     
     # Reset all options to NULL
@@ -54,6 +58,7 @@ options_class <- R6::R6Class(
       self$timestep_header <- NULL
       self$n_timestep_header <- NULL
       self$full_exclude <- NULL
+      self$docker_tag <- NULL
     },
     
     # Getter methods with defaults (using %|||% operator)
@@ -79,6 +84,10 @@ options_class <- R6::R6Class(
     
     get_full_exclude = function() {
       self$full_exclude %|||% c("DREL", "DVER", "XXCR", "XXCD", "XXCP", "SLUG", "EFLG")
+    },
+    
+    get_docker_tag = function() {
+      self$docker_tag %|||% "latest"
     },
     
     # Setter methods with validation
@@ -124,6 +133,12 @@ options_class <- R6::R6Class(
       self$full_exclude <- full_exclude
     },
     
+    set_docker_tag = function(docker_tag) {
+      if (!is.null(docker_tag)) {
+        self$validate_docker_tag(docker_tag)
+      }
+      self$docker_tag <- docker_tag
+    },
     
     # Validation methods
     validate_verbose = function(verbose) {
@@ -162,6 +177,12 @@ options_class <- R6::R6Class(
       }
     },
     
+    validate_docker_tag = function(docker_tag) {
+      if (!is.character(docker_tag)) {
+        cli::cli_abort("{.arg docker_tag} must be a character vector.")
+      }
+    },
+    
     # Validate all current options
     validate = function() {
       self$validate_verbose(self$get_verbose())
@@ -170,6 +191,7 @@ options_class <- R6::R6Class(
       self$validate_timestep_header(self$get_timestep_header())
       self$validate_n_timestep_header(self$get_n_timestep_header())
       self$validate_full_exclude(self$get_full_exclude())
+      self$validate_docker_tag(self$get_docker_tag())
     }
   )
 )
@@ -177,48 +199,64 @@ options_class <- R6::R6Class(
 # fix cli and call forwarding
 
 # Create constructor functions
-options_new <- function(verbose = NULL, ndigits = NULL, check_shock_status = NULL, timestep_header = NULL, n_timestep_header = NULL, full_exclude = NULL) {
+options_new <- function(verbose = NULL, ndigits = NULL, check_shock_status = NULL, timestep_header = NULL, n_timestep_header = NULL, full_exclude = NULL, docker_tag = NULL) {
   options_class$new(
     verbose = verbose,
     ndigits = ndigits,
     check_shock_status = check_shock_status,
     timestep_header = timestep_header,
     n_timestep_header = n_timestep_header,
-    full_exclude = full_exclude
+    full_exclude = full_exclude,
+    docker_tag = docker_tag
   )
 }
 
-options_init <- function(verbose = NULL, ndigits = NULL, check_shock_status = NULL, timestep_header = NULL, n_timestep_header = NULL, full_exclude = NULL) {
+options_init <- function(verbose = NULL, ndigits = NULL, check_shock_status = NULL, timestep_header = NULL, n_timestep_header = NULL, full_exclude = NULL, docker_tag = NULL) {
   options_new(
     verbose = verbose,
     ndigits = ndigits,
     check_shock_status = check_shock_status,
     timestep_header = timestep_header,
     n_timestep_header = n_timestep_header,
-    full_exclude = full_exclude
+    full_exclude = full_exclude,
+    docker_tag = docker_tag
   )
 }
 
 # Create the global options object (like tar_options)
-eqm_options <- options_init()
+ems_options <- options_init()
 
 #' options
-#' @description
-#' placeholder
-#' 
-#' @param verbose Logical of length 1 (default is `TRUE`). If `FALSE`,
-#'   function-specific diagnostics are silenced.
-#' @param ndigits Integer (default is `6`). Exact number of digits to the right
-#'   of the decimal point to be written to file for numeric type double (GEMPack
-#'   equivalent "real"). This value is passed to the `format()` nsmall argument
-#'   and `round()` digits argument.
-#' @param full_exclude A character vector (default is `c("DREL", "DVER", "XXCR",
-#'   "XXCD", "XXCP", "SLUG", "EFLG")`). Specifies headers to fully exclude from
-#'   all aspects of the model run. Failure to designate these headers properly
-#'   will result in errors because some headers cannot be aggregated or mapped.
+#' @description placeholder
+#'
+#' @param verbose Logical of length 1 (default is `TRUE`). If
+#'   `FALSE`, function-specific diagnostics are silenced.
+#' @param ndigits Integer (default is `6`). Exact number of
+#'   digits to the right of the decimal point to be written to
+#'   file for numeric type double (GEMPack equivalent "real").
+#'   This value is passed to the `format()` nsmall argument and
+#'   `round()` digits argument.
+#' @param check_shock_status Logical of length 1 (default is
+#'   `TRUE`). If `FALSE`, no check on shock element
+#'   endogenous/exogenous status is conducted.
+#' @param timestep_header A character vector length 1 (default is
+#'   `"YEAR"`). Coefficient containing a numeric vector of
+#'   timestep intervals. For novel intertemporal models - modify
+#'   with caution.
+#' @param n_timestep_header A character vector length 1 (default
+#'   is `"NTSP"`). Coefficient containing a numeric vector length
+#'   one with sum of timestep intervals. For novel intertemporal
+#'   models - modify with caution.
+#' @param full_exclude A character vector (default is `c("DREL",
+#'   "DVER", "XXCR", "XXCD", "XXCP", "SLUG", "EFLG")`). Specifies
+#'   headers to fully exclude from all aspects of the model run.
+#'   Failure to designate these headers properly will result in
+#'   errors because some headers cannot be aggregated or mapped.
 #'   Modify with caution.
+#' @param docker_tag Character length 1 (default `"latest"`).
+#'   Docker tag to specify the which Docker image is use.
 #' @export
-eqm_option_set <- function(...) {
+ems_option_set <- function(...) {
   dots <- list(...)
   
   # Validate that all arguments are named
@@ -227,7 +265,7 @@ eqm_option_set <- function(...) {
   }
   
   # Validate argument names
-  valid_names <- c("verbose", "ndigits", "check_shock_status", "timestep_header", "n_timestep_header", "full_exclude")
+  valid_names <- c("verbose", "ndigits", "check_shock_status", "timestep_header", "n_timestep_header", "full_exclude", "docker_tag")
   invalid_names <- setdiff(names(dots), valid_names)
   if (length(invalid_names) > 0) {
     stop("Invalid option names: ", paste(invalid_names, collapse = ", "))
@@ -235,58 +273,63 @@ eqm_option_set <- function(...) {
   
   # Set options using the setter methods
   if ("verbose" %in% names(dots)) {
-    eqm_options$set_verbose(dots$verbose)
+    ems_options$set_verbose(dots$verbose)
   }
 
   if ("ndigits" %in% names(dots)) {
-    eqm_options$set_ndigits(dots$ndigits)
+    ems_options$set_ndigits(dots$ndigits)
   }
   
   if ("check_shock_status" %in% names(dots)) {
-    eqm_options$set_check_shock_status(dots$check_shock_status)
+    ems_options$set_check_shock_status(dots$check_shock_status)
   }
   
   if ("timestep_header" %in% names(dots)) {
-    eqm_options$set_timestep_header(dots$timestep_header)
+    ems_options$set_timestep_header(dots$timestep_header)
   }
   
   if ("n_timestep_header" %in% names(dots)) {
-    eqm_options$set_n_timestep_header(dots$n_timestep_header)
+    ems_options$set_n_timestep_header(dots$n_timestep_header)
   }
   
   if ("full_exclude" %in% names(dots)) {
-    eqm_options$set_full_exclude(dots$full_exclude)
+    ems_options$set_full_exclude(dots$full_exclude)
+  }
+  
+  if ("docker_tag" %in% names(dots)) {
+    ems_options$set_docker_tag(dots$docker_tag)
   }
   
     # Validate all options after setting
-  eqm_options$validate()
+  ems_options$validate()
   
   invisible(NULL)
 }
 
 # Get current options (like tar_option_get)
 #' @export
-eqm_option_get <- function(name = NULL) {
+ems_option_get <- function(name = NULL) {
   if (is.null(name)) {
     # Return all options
-    return(eqm_options$export())
+    return(ems_options$export())
   }
   
   # Return specific option
   switch(name,
-         verbose = eqm_options$get_verbose(),
-         ndigits = eqm_options$get_ndigits(),
-         check_shock_status = eqm_options$get_check_shock_status(),
-         timestep_header = eqm_options$get_timestep_header(),
-         n_timestep_header = eqm_options$get_n_timestep_header(),
-         full_exclude = eqm_options$get_full_exclude(),
+         verbose = ems_options$get_verbose(),
+         ndigits = ems_options$get_ndigits(),
+         check_shock_status = ems_options$get_check_shock_status(),
+         timestep_header = ems_options$get_timestep_header(),
+         n_timestep_header = ems_options$get_n_timestep_header(),
+         full_exclude = ems_options$get_full_exclude(),
+         docker_tag = ems_options$get_docker_tag(),
          stop("Unknown option: ", name)
   )
 }
 
 # Reset options (like tar_option_reset)
 #' @export
-eqm_option_reset <- function() {
-  eqm_options$reset()
+ems_option_reset <- function() {
+  ems_options$reset()
   invisible(NULL)
 }

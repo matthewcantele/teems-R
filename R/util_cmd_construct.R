@@ -2,7 +2,6 @@
 #' @noRd
 .construct_cmd <- function(paths,
                            terminal_run,
-                           docker_tag,
                            timeID,
                            n_tasks,
                            n_subintervals,
@@ -20,7 +19,7 @@
   docker_preamble <- paste(
     "docker run --rm --mount",
     paste("type=bind", paste0("src=", paths[["run"]]), "dst=/opt/launchpad", sep = ","),
-    paste0("teems", ":", docker_tag),
+    paste0("teems", ":", .o_docker_tag()),
     "/bin/bash -c"
   )
   exec_preamble <- paste(

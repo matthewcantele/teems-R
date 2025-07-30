@@ -49,6 +49,11 @@
       tab_extract = extract,
       call = call
     )
+    
+    file_extract <- .tablo_files(
+      tab_extract = extract,
+      call = call
+    )
 
     if (.o_verbose()) {
       n_var <- nrow(var_extract)
@@ -83,6 +88,7 @@
       coeff_extract = coeff_extract,
       set_extract = set_extract,
       math_extract = math_extract,
+      file_extract = file_extract,
       summary = summary
     )
     class(tab_comp$orig_tab) <- "tabfile"

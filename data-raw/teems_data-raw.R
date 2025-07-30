@@ -491,6 +491,22 @@ list(
                            "For {.val {var_name}} these include: {.field {ls_mixed}}."))
     }
   ),
+  
+  tar_target(
+    solve_err,
+    {
+      list(missing_dots = "All input files must be passed as {.arg ...} under the `in-situ solve` method (i.e., when {.arg cmf_file} is not provided and the pipeline is bypassed).",
+           insitu_missing_input = "The Tablo file provided indicates that the following files are required: {.val {req_files}} however one or more appear to not have been provided: {.val {missing_files}}.",
+           insitu_no_file = "One or more input files provided does not exist: {.val {nonexist_files}}.")
+    }
+  ),
+  
+  tar_target(
+    solve_info,
+    {
+      list(in_situ = "\"solve-in-situ\" mode activated.")
+    }
+  ),
 
   # internal data ====================================================
   tar_target(
@@ -516,6 +532,8 @@ list(
         cls_err,
         shk_infm,
         shk_url,
+        solve_err,
+        solve_info,
         overwrite = TRUE,
         internal = TRUE
       )

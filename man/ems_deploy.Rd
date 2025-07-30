@@ -3,14 +3,13 @@
 \name{ems_deploy}
 \alias{ems_deploy}
 \title{\ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#experimental}{\figure{lifecycle-experimental.svg}{options: alt='[Experimental]'}}}{\strong{[Experimental]}}
-Loads all specifications executes a model-specifc \code{targets}
-pipeline}
+Loads and execute model-specifc \code{targets} pipeline}
 \usage{
 ems_deploy(
   model_config,
   load_config,
   model_name = "teems",
-  base_dir = tempdir(),
+  base_dir,
   .testing = FALSE
 )
 }
@@ -61,94 +60,28 @@ path serves as a required input to \code{\link[=ems_solve]{ems_solve()}}.
 }
 \examples{
 \dontrun{
-# A GTAPv6.2 3-region, 6-sector, 4-endowment static model run with
-# numeraire shock. Note that the GTAPv7 is currently only
-# compatible with a separate data format not available in freely
-# distributed GTAP Databases. Future work will produce a function
-# to utilize v6.2 data compatible with GTAPv7 and v7 compatible
-# data with v6.2-based models.
+# Ephemeral store and model inputs (written to a temporary directory):
+ems_deploy(model_config = model_specs,
+           load_config = load_specs,
+           model_name = "my_temp_model")
 
-v6.2_model_config <- teems_model(tab_file = "GTAPv6.2",
-                                ndigits = 8,
-                                verbose = TRUE)
+# Persistent store and model inputs
+ems_deploy(model_config = model_specs,
+           load_config = load_specs,
+           model_name = "my_persistent_model",
+           base_dir = "~")
 
-v6.2_base_config <- teems_base(base_har = "~/dat/GTAP/v9/2011/gddat.har")
-
-v6.2_param_config <- teems_param(par_har = "~/dat/GTAP/v9/2011/gdpar.har")
-
-v6.2_set_config <- teems_sets(set_har = "~/dat/GTAP/v9/2011/gdset.har",
-                             region_mapping = "big3",
-                             sector_mapping = "macro_sector",
-                             endowment_mapping = "labor_agg",
-                             verbose = TRUE)
-
-v6.2_numeraire_shk <- teems_shock(var = "pfactwld",
-                                 type = "uniform",
-                                 value = 1)
-
-v6.2_closure_config <- teems_closure(shock = v6.2_numeraire_shk)
-
-v6.2_cmf_path <- teems_deploy(model_config = v6.2_model_config,
-                             base_config = v6.2_base_config,
-                             param_config = v6.2_param_config,
-                             set_config = v6.2_set_config,
-                             closure_config = v6.2_closure_config,
-                             verbose = TRUE)
-
-# A GTAP-INTv1 3-region, 6-sector, 4-endowment, 5 timestep
-# intertemporal model run with numeraire shock.
-INTv1_model_config <- teems_model(tab_file = "GTAP-INTv1",
-                                  ndigits = 8,
-                                  verbose = TRUE)
-
-INTv1_base_config <- teems_base(base_har = "~/dat/GTAP/v9/2011/gddat.har")
-
-INTv1_param_config <- teems_param(par_har = "~/dat/GTAP/v9/2011/gdpar.har")
-
-INTv1_set_config <- teems_sets(set_har = "~/dat/GTAP/v9/2011/gdset.har",
-                               region_mapping = "big3",
-                               sector_mapping = "macro_sector",
-                               endowment_mapping = "labor_agg",
-                               verbose = TRUE)
-
-INTv1_numeraire_shk <- teems_shock(var = "pfactwld",
-                                   type = "uniform",
-                                   value = 1)
-
-INTv1_closure_config <- teems_closure(shock = INTv1_numeraire_shk)
-
-INTv1_time_config <- teems_time(time_steps = c(2011, 2012, 2015, 2020, 2030))
-
-INTv1_cmf_path <- teems_deploy(model_config = INTv1_model_config,
-                               base_config = INTv1_base_config,
-                               param_config = INTv1_param_config,
-                               set_config = INTv1_set_config,
-                               closure_config = INTv1_closure_config,
-                               time_config = INTv1_time_config,
-                               verbose = TRUE)
-
-# In the examples above the `targets` store and model input files
-# will be written to a per-session temporary folder that will not
-# persist. In order to fully take advantage of the `targets`
-# package underpinning `teems`, `"model_name"` and `"base_dir"`
-# arguments allow for model directories to persist across sessions.
-
-custom_path <- teems_deploy(model_config = INTv1_model_config,
-                            base_config = INTv1_base_config,
-                            param_config = INTv1_param_config,
-                            set_config = INTv1_set_config,
-                            closure_config = INTv1_closure_config,
-                            time_config = INTv1_time_config,
-                            model_name = "custom_INT",
-                            base_dir = path.expand(path = "~"))
-
-# Example: Pre-model run directory layout assuming path.expand("~")
-# evaluates to /home/user
-# Any of the objects above in (/home/user/custom_INT/store/objects)
-# can be inspected using [`targets::tar_read()`]. For example, the
-# final model closure:
+# Multiple models can be retained by varying `base_dir` and/or
+# `model_name`
+ems_deploy(model_config = model_specs,
+           load_config = load_specs,
+           model_name = "my_second_persistent_model",
+           base_dir = "~")
+           
+# Any pipeline object can be inspected using 
+# [`targets::tar_read()`]. For example, the final model closure:
 targets::tar_read(name = final.closure,
-                  store = "/home/user/custom_INT/store")
+                  store = "store/path/in/diagnostic/output")
 }
 }
 \seealso{
@@ -158,5 +91,5 @@ targets::tar_read(name = final.closure,
 \code{\link[=ems_load]{ems_load()}} for generating the input to
 \code{"base_config"}.
 
-\code{\link[=ems_solve]{ems_solve()}} for loading the ouput of this function.
+\code{\link[=ems_solve]{ems_solve()}} for loading the output of this function.
 }
