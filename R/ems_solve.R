@@ -59,15 +59,19 @@
 #'   `TRUE`, the function is exited without running the solver. This
 #'   allows the user to close any R IDE or other programs prior to
 #' running from the terminal.
-#' @param ... A named list of input files necessary for an "in-situ"
-#'   model run. Names must correspond to "File" statements within the
-#'   model Tablo file. Elements correspond to file paths where these
-#'   files are found. No checks or modifications are conducted on
-#'   input files used in this manner. This mode does not support
-#'   partial provision of input file -- all model defined input files
-#'   as well as `"tab_file"`, `"closure_file"`, and `"shock_file"`
-#'   are required for in-situ model runs.
-#'
+#' @param suppress_outputs Logical length 1 (default is `FALSE`).
+#'   When `TRUE` solver outputs are not automatically converted
+#'   into structured data with [`ems_compose`].
+#' @param ... A named list of input files necessary for an
+#'   "in-situ" model run. Names must correspond to "File"
+#'   statements within the model Tablo file. Elements correspond
+#'   to file paths where these files are found. No checks or
+#'   modifications are conducted on input files used in this
+#'   manner. This mode does not support partial provision of
+#'   input file -- all model defined input files as well as
+#'   `"tab_file"`, `"closure_file"`, and `"shock_file"` are
+#'   required for in-situ model runs.
+#' 
 #'
 #' @seealso [`ems_compose()`] for retrieving model results.
 #'
@@ -125,6 +129,7 @@ ems_solve <- function(cmf_path = NULL,
                       laD = 200L,
                       laDi = 500L,
                       terminal_run = FALSE,
+                      suppress_outputs = FALSE,
                       ...)
 {
   UseMethod("ems_solve")
@@ -141,9 +146,10 @@ ems_solve.cmf <- function(cmf_path = NULL,
                           laD = 200L,
                           laDi = 500L,
                           terminal_run = FALSE,
+                          suppress_outputs = FALSE,
+                          n_timesteps = NULL,
                           ...)
 {
-
 call <- match.call()
 .check_docker(image_name = "teems",
               call = call)
@@ -151,33 +157,43 @@ timeID <- format(x = Sys.time(), "%H%M")
 paths <- .get_solver_paths(cmf_path = cmf_path,
                            timeID = timeID,
                            call = call)
-mod_arg <- .check_solver_arg(n_tasks = n_tasks,
-                             n_subintervals = n_subintervals,
-                             matrix_method = matrix_method,
-                             solution_method = solution_method,
-                             steps = steps,
-                             n_timesteps = attr(cmf_path, "n_timesteps"),
-                             paths = paths,
-                             call = call)
-cmd <- .construct_cmd(paths = paths,
-                      terminal_run = terminal_run,
-                      timeID = timeID,
-                      n_tasks = n_tasks,
-                      steps = steps,
-                      laA = laA,
-                      laDi = laDi,
-                      laD = laD,
-                      matsol = mod_arg[["matsol"]],
-                      solmed = mod_arg[["solmed"]],
-                      n_subintervals = mod_arg[["n_subintervals"]],
-                      n_timesteps = mod_arg[["n_timesteps"]],
-                      nesteddbbd = mod_arg[["nesteddbbd"]],
-                      enable_time = mod_arg[["enable_time"]])
+# n_timesteps can be carried as an attribute but better to deal with it in the solver
+mod_arg <- .validate_solver_args(n_tasks = n_tasks,
+                                 n_subintervals = n_subintervals,
+                                 matrix_method = matrix_method,
+                                 solution_method = solution_method,
+                                 steps = steps,
+                                 n_timesteps = n_timesteps,
+                                 paths = paths,
+                                 call = call)
+cmds <- .construct_cmd(
+  paths = paths,
+  terminal_run = terminal_run,
+  timeID = timeID,
+  n_tasks = n_tasks,
+  steps = steps,
+  laA = laA,
+  laDi = laDi,
+  laD = laD,
+  matsol = mod_arg$matsol,
+  solmed = mod_arg$solmed,
+  n_subintervals = mod_arg$n_subintervals,
+  n_timesteps = mod_arg$n_timesteps,
+  nesteddbbd = mod_arg$nesteddbbd,
+  enable_time = mod_arg$enable_time
+)
 # need a process running in parallel, grepping output for error and then kill appropriate PID
-if (identical(x = cmd, y = terminal_run)) {return(invisible(NULL))}
-.solve_model(exec_cmd = cmd[["exec"]],
-             sol_parse_cmd = cmd[["sol_parse"]],
-             paths = paths)
+if (isFALSE(cmds)) {return(invisible(NULL))}
+elapsed_time <- system.time(system(cmds$solve))
+.check_solver_log(elapsed_time = elapsed_time,
+                  solve_cmd = cmds$solve,
+                  paths = paths,
+                  call = call)
+system(cmds$sol_parse, ignore.stdout = TRUE)
+if (!suppress_outputs) {
+output <- .get_outputs(cmf_path = cmf_path)
+return(output)
+}
 return(invisible(NULL))
 }
 

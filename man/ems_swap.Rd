@@ -9,25 +9,29 @@ ems_swap(var, ...)
 \arguments{
 \item{var}{Character of length 1, model variable to swap.}
 
-\item{...}{One or more key-value pairs separated by commas. These correspond
-to element-specific swaps in the format SETi = "element" or SETi =
-c("element1", "element2") where i denotes the variable-specific index (see
-examples). Sets not specified are implicitly determined as uniform.}
+\item{...}{One or more key-value pairs separated by commas.
+These correspond to element- or subset-specific swaps in the
+format SETi = "component" or SETi = c("component1",
+"component2") where i denotes the variable-specific index
+(see examples). Sets not specified are implicitly determined
+as uniform.}
 }
 \value{
 A list with swap specifications.
 }
 \description{
-\code{ems_swap()} is a helper function that loads swaps, allowing
-for a change of endogenous/exogenous variable status. If a swap is
-specified using this function, the output is a required input to the
-\code{"swap_in"} or \code{"swap_out"} arguments of the \code{\link[=teems_model]{teems_model()}} function.
+\code{ems_swap()} is a helper function that loads
+swaps, allowing for a change of endogenous/exogenous
+variable status. If a swap is specified using this function,
+the output is a required input to the \code{"swap_in"} or
+\code{"swap_out"} arguments of the \code{\link[=teems_model]{teems_model()}} function.
 }
 \details{
-\code{ems_swap()} return values have no purpose used in isolation. The
-standard model-specific closure will be used if no swaps are specified.
-Note that full variable swaps can be directly inputted as a character
-string in \code{\link[=teems_model]{teems_model()}}.
+\code{ems_swap()} return values have no purpose used in
+isolation. The standard model-specific closure will be used
+if no swaps are specified. Note that full variable swaps can
+be directly inputted as a character string in
+\code{\link[=teems_model]{teems_model()}}.
 }
 \examples{
 # Full variable swaps
@@ -54,9 +58,10 @@ usa_multi_qfd_in <- ems_swap(var = "qfd",
                               
 }
 \seealso{
-\code{\link[=teems_query]{teems_query()}} to check exogenous/endogenous status within the
-standard model-specific closure as well as retrieve model variable details.
+\code{\link[=teems_query]{teems_query()}} to check exogenous/endogenous
+status within the standard model-specific closure as well as
+retrieve model variable details.
 
-\code{\link[=teems_shock]{teems_shock()}} for specification of shocks on exogenous
-variables.
+\code{\link[=teems_shock]{teems_shock()}} for specification of shocks on
+exogenous variables.
 }

@@ -2,18 +2,9 @@
 % Please edit documentation in R/ems_model.R
 \name{ems_model}
 \alias{ems_model}
-\title{\ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#experimental}{\figure{lifecycle-experimental.svg}{options: alt='[Experimental]'}}}{\strong{[Experimental]}} Load general model specifications}
+\title{Load general model specifications}
 \usage{
-ems_model(
-  tab_file,
-  var_omit = NULL,
-  closure_file = NULL,
-  swap_in = NULL,
-  swap_out = NULL,
-  shock_file = NULL,
-  shock = NULL,
-  notes = NULL
-)
+ems_model(tab_file, var_omit = NULL)
 }
 \arguments{
 \item{tab_file}{Character of length 1, path to a local Tablo model file or

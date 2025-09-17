@@ -5,7 +5,7 @@
 \title{\ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#experimental}{\figure{lifecycle-experimental.svg}{options: alt='[Experimental]'}}}{\strong{[Experimental]}}
 Specificy shocks}
 \usage{
-ems_shock(var, type = c("uniform", "custom", "scenario"), input, ...)
+ems_shock(var, type = c("uniform", "custom", "scenario"), ...)
 }
 \arguments{
 \item{var}{Character of length 1, the variable to be shocked.}
@@ -26,6 +26,9 @@ associated with tuples corresponding to unaggregated set elements. Values in
 format.
 }}
 
+\item{...}{One or more key-value pairs separated by commas corresponding to
+element-specific uniform shocks.}
+
 \item{input}{Format contingent on shock \code{"type"}.
 \itemize{
 \item \code{"uniform"}: numeric length 1, value of uniform shock.
@@ -38,9 +41,6 @@ data frame extension (e.g., tibble, data table. Must contain a column
 representing an actual value that will be converted into a
 percentage-change shock based on set and time step selection.
 }}
-
-\item{...}{One or more key-value pairs separated by commas corresponding to
-element-specific uniform shocks.}
 }
 \value{
 A list of shock configuration options.

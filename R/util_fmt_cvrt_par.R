@@ -7,8 +7,8 @@
 .convert_format.par <- function(input,
                                 target_format,
                                 coeff_extract) {
-  
-    param_conversion <- subset(x = coeff_conversion, data_type == "par")
+  browse()
+    # param_conversion <- subset(x = coeff_conversion, data_type == "par")
     if (identical(x = target_format, y = "v7.0")) {
       # don't see any drawback to using the regions from here rather than bringing forth the prior set object
       REG <- dimnames(x = purrr::pluck(.x = input, "RFLX", "data"))[["REG"]]
@@ -46,77 +46,77 @@
           return(header)
         }
       )
-      # add missing v7 parameters
-      set_ele <- list(
-        REG = REG,
-        ACTS = ACTS,
-        COMM = ACTS,
-        MARG = c("atp", "otp", "wtp")
-      )
+      # # add missing v7 parameters
+      # set_ele <- list(
+      #   REG = REG,
+      #   ACTS = ACTS,
+      #   COMM = ACTS,
+      #   MARG = c("atp", "otp", "wtp")
+      # )
 
-      missing_v7.0 <- unlist(x = subset(
-        x = param_conversion,
-        subset = {
-          is.na(x = v6.2header)
-        },
-        select = v7.0header
-      ))
-
-      # should pass in via fun rather than parent.frame
-      missing_v7.0 <- with(
-        data = param_conversion,
-        expr = {
-          lapply(
-            X = missing_v7.0,
-            FUN = function(nme) {
-              r_idx <- grep(pattern = nme, x = v7.0header)
-              sets <- with(
-                data = set_ele,
-                expr = {
-                  mget(x = v7.0set[r_idx][[1]])
-                }
-              )
-
-              if (is.element(el = nme, set = c("ESBG", "ESBS"))) {
-                value <- 1
-              } else if (identical(x = nme, y = "ETRQ")) {
-                value <- -5
-              } else if (is.element(el = nme, set = c("ESBC", "ESBQ"))) {
-                value <- 0
-              }
-
-              arr <- array(
-                data = value,
-                dim = lapply(X = sets, FUN = length),
-                dimnames = sets
-              )
-
-              list(
-                header = nme,
-                data = arr
-              )
-            }
-          )
-        }
-      )
-
-      names(x = missing_v7.0) <- sapply(
-        X = missing_v7.0,
-        FUN = function(x) {
-          x[["header"]]
-        }
-      )
+      # missing_v7.0 <- unlist(x = subset(
+      #   x = param_conversion,
+      #   subset = {
+      #     is.na(x = v6.2header)
+      #   },
+      #   select = v7.0header
+      # ))
+      # 
+      # # should pass in via fun rather than parent.frame
+      # missing_v7.0 <- with(
+      #   data = param_conversion,
+      #   expr = {
+      #     lapply(
+      #       X = missing_v7.0,
+      #       FUN = function(nme) {
+      #         r_idx <- grep(pattern = nme, x = v7.0header)
+      #         sets <- with(
+      #           data = set_ele,
+      #           expr = {
+      #             mget(x = v7.0set[r_idx][[1]])
+      #           }
+      #         )
+      # 
+      #         if (is.element(el = nme, set = c("ESBG", "ESBS"))) {
+      #           value <- 1
+      #         } else if (identical(x = nme, y = "ETRQ")) {
+      #           value <- -5
+      #         } else if (is.element(el = nme, set = c("ESBC", "ESBQ"))) {
+      #           value <- 0
+      #         }
+      # 
+      #         arr <- array(
+      #           data = value,
+      #           dim = lapply(X = sets, FUN = length),
+      #           dimnames = sets
+      #         )
+      # 
+      #         list(
+      #           header = nme,
+      #           data = arr
+      #         )
+      #       }
+      #     )
+      #   }
+      # )
+      # 
+      # names(x = missing_v7.0) <- sapply(
+      #   X = missing_v7.0,
+      #   FUN = function(x) {
+      #     x[["header"]]
+      #   }
+      # )
       input <- c(input, missing_v7.0)
     } else if (identical(x = target_format, y = "v6.2")) {
-      drop_headers <- subset(
-        x = param_conversion,
-        subset = {
-          is.na(x = v6.2header)
-        },
-        select = v7.0header
-      )[[1]]
-
-      input <- input[!is.element(el = names(x = input), set = drop_headers)]
+      # drop_headers <- subset(
+      #   x = param_conversion,
+      #   subset = {
+      #     is.na(x = v6.2header)
+      #   },
+      #   select = v7.0header
+      # )[[1]]
+      # 
+      # input <- input[!is.element(el = names(x = input), set = drop_headers)]
       # v7.0 to v6.2 on parameters involves summing over the additional (uniform) sets and adding zcgds
       input <- lapply(
         X = input,

@@ -2,15 +2,17 @@
 % Please edit documentation in R/ems_deploy.R
 \name{ems_deploy}
 \alias{ems_deploy}
-\title{\ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#experimental}{\figure{lifecycle-experimental.svg}{options: alt='[Experimental]'}}}{\strong{[Experimental]}}
-Loads and execute model-specifc \code{targets} pipeline}
+\title{Loads and execute model-specifc \code{targets} pipeline}
 \usage{
 ems_deploy(
-  model_config,
-  load_config,
-  model_name = "teems",
-  base_dir,
-  .testing = FALSE
+  data,
+  model,
+  write_dir = tools::R_user_dir("teems", "cache"),
+  shock = NULL,
+  closure_file = NULL,
+  swap_in = NULL,
+  swap_out = NULL,
+  shock_file = NULL
 )
 }
 \arguments{

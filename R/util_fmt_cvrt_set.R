@@ -5,6 +5,7 @@
 .convert_format.set <- function(input,
                                 set_extract,
                                 target_format) {
+  browser()
   if (target_format %=% "v7.0") {
     # change header names and duplicate H2/COMM for ACTS
     input <- lapply(

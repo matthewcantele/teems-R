@@ -97,12 +97,10 @@
 #' @export
 ems_shock <- function(var,
                       type = c("uniform", "custom", "scenario"),
-                      input,
                       ...)
 {
   if (missing(var)) {.cli_missing(var)}
   if (missing(type)) {.cli_missing(type)}
-  if (missing(input)) {.cli_missing(input)}
   class(type) <- rlang::arg_match(type)
   UseMethod("ems_shock", type)
 }

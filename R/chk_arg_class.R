@@ -5,6 +5,7 @@
 .check_arg_class <- function(args_list,
                              checklist,
                              call) {
+
   withCallingHandlers(
     purrr::pmap(
       list(

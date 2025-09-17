@@ -1,4 +1,3 @@
-#' `r lifecycle::badge("experimental")`
 #' Loads and execute model-specifc `targets` pipeline
 #'
 #' @description `ems_deploy()` creates and executes a
@@ -71,60 +70,115 @@
 #'                   store = "store/path/in/diagnostic/output")
 #' }
 #' @export
-ems_deploy <- function(model_config,
-                       load_config,
-                       model_name = "teems",
-                       base_dir,
-                       .testing = FALSE)
-{
-if (missing(model_config)) {.cli_missing(model_config)}
-if (missing(load_config)) {.cli_missing(load_config)}
-if (missing(base_dir)) {base_dir <- tools::R_user_dir("teems", "data")}
-call <- match.call()
-args_list <- mget(x = names(x = formals()))
-# check for missing arguments here (across inputs)
-teems_paths <- .path_ledger(base_dir = base_dir,
-                            model_name = model_name,
-                            call)
-# int_data <- .get_int_data(aux_data = data_specs[["aux_input"]],
-#                           intertemporal = model_specs[["intertemporal"]])
-targets <- .write_pipeline(model_config = model_config,
-                           load_config = load_config,
-                           model_name = model_name,
-                           set_map_files = set_map_files,
-                           metadata = load_config$metadata,
-                           teems_paths = teems_paths)
-call_hash_tbl <- .hash_table(model_config = model_config,
-                             load_config = load_config)
-.execute_pipeline(teems_paths = teems_paths,
-                  call_hash_tbl = call_hash_tbl,
-                  #tar_load_everything = tar_load_everything,
-                  .testing = .testing)
-# if (tar_load_everything) {
-#   targets::tar_load_everything(store = teems_paths[["store"]],
-#                                envir = .GlobalEnv)
-# }
-coefficient_names <- .process_tablo(tab_file = model_specs[["tab_file"]],
-                                    type = "coefficient")[["coefficient"]]
-gen_out <- .write_cmf(model_name = model_name,
-                      coefficient_names = coefficient_names,
-                      model_dir = teems_paths[["model"]],
-                      store_dir = teems_paths[["store"]],
-                      launchpad_dir = teems_paths[["launchpad"]])
-cmf_path <- gen_out[["cmf_path"]]
-if (model_specs$intertemporal) {
-n_timesteps <- as.integer(purrr::pluck(targets::tar_read(data_array,
-                                              store = teems_paths[["store"]]),
-                            .o_n_timestep_header(),
-                            "data"))
-attr(cmf_path, "n_timesteps") <- n_timesteps
-}
-class(cmf_path) <- "cmf"
-.pipeline_diagnostics(model_dir = teems_paths[["model"]],
-                      launchpad_dir = teems_paths[["launchpad"]],
-                      model_name = model_name,
-                      metadata = load_specs[["metadata"]],
-                      store_dir = teems_paths[["store"]],
-                      io_files = gen_out[["io_files"]])
-cmf_path
+ems_deploy <- function(data,
+                       model,
+                       write_dir = tools::R_user_dir("teems", "cache"),
+                       shock = NULL,
+                       closure_file = NULL,
+                       swap_in = NULL,
+                       swap_out = NULL,
+                       shock_file = NULL) {
+  if (missing(data)) {
+    .cli_missing(data)
+  }
+  if (missing(model)) {
+    .cli_missing(model)
+  }
+  call <- match.call()
+  args_list <- mget(x = names(x = formals()))
+  metadata <- attr(data, "metadata")
+  attr(metadata, "file") <- "metadata.rds"
+  sets <- .finalize_sets(
+    sets = data[purrr::map_lgl(data, inherits, "set")],
+    set_extract = subset(model, type == "Set"),
+    time_steps = attr(data, "time_steps"),
+    reference_year = metadata$reference_year,
+    call = call,
+    data_call = attr(data, "call")
+  )
+  v <- .validate_deploy_args(
+    a = args_list,
+    sets = sets,
+    call = call
+  )
+  closure <- .validate_closure(
+    closure = v$closure,
+    sets = sets,
+    var_extract = subset(model, type == "Variable"),
+    call = call
+  )
+  closure <- .finalize_closure(
+    swap_in = v$swap_in,
+    swap_out = v$swap_out,
+    closure = closure,
+    sets = sets,
+    var_extract = subset(model, type == "Variable"),
+    model_name = attr(model, "tab_file"),
+    call = call
+  )
+  if (!is.null(v$shock)) {
+    shocks <- .finalize_shocks(
+      shock = v$shock,
+      shock_file = v$shock_file,
+      closure = closure,
+      sets = sets,
+      var_extract = subset(model, type == "Variable")
+    )
+  } else {
+    shocks <- structure(NA,
+                        file = "null_shock.shf",
+                        class = c("shock", class(NA)))
+  }
+  data <- .finalize_data(
+    data = data,
+    sets = sets,
+    model = model,
+    write_dir = write_dir,
+    call = call
+  )
+  tab <- .finalize_tab(model = model)
+  cmf <- .finalize_cmf(
+    model = model,
+    shock_file = attr(shocks, "file"),
+    write_dir = v$write_dir
+  )
+  tab_path <- .ems_write(
+    input = tab,
+    write_dir = v$write_dir
+  )
+  closure_path <- .ems_write(
+    input = closure,
+    write_dir = v$write_dir
+  )
+  shock_path <- .ems_write(
+    input = shocks,
+    write_dir = v$write_dir
+  )
+  cmf_path <- .ems_write(input = cmf)
+  attr(cmf_path, "tab_path") <- tab_path
+  data_path <- lapply(data,
+    .ems_write,
+    write_dir = v$write_dir
+  )
+  dir.create(file.path(v$write_dir, "out", "sets"),
+    recursive = TRUE
+  )
+  dir.create(file.path(v$write_dir, "out", "coefficients"),
+    recursive = TRUE
+  )
+  dir.create(file.path(v$write_dir, "out", "variables", "bin"),
+    recursive = TRUE
+  )
+  .diagnostic_output(
+    tab_path = tab_path,
+    cmf_path = cmf_path,
+    closure_path = closure_path,
+    shock_path = shock_path,
+    data_path = unique(data_path),
+    sets = sets,
+    closure = closure,
+    shocks = v$shock,
+    metadata = metadata
+  )
+  cmf_path
 }

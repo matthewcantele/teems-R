@@ -8,6 +8,18 @@
 .check_set_mappings <- function(set_mappings,
                                 metadata,
                                 call) {
+  
+  if (is.null(metadata$data_format)) {
+    data_format <- switch(metadata$database_version,
+                          "v9" = "v6.2",
+                          "v10" = "v6.2",
+                          "v11" = "v7.0"
+    )
+  } else {
+    data_format <- metadata$data_format
+  }
+  
+  available_mappings <- purrr::pluck(mappings, metadata$database_version, data_format)
   ls_set_ele <- purrr::map2(
     set_mappings,
     names(set_mappings),
@@ -16,8 +28,7 @@
         set_map <- .check_input(
           file = set_map,
           valid_ext = "csv",
-          call = call,
-          internal = FALSE
+          call = call
         )
         set_ele <- .check_external_set_map(
           map_name = map_name,
@@ -28,8 +39,8 @@
       } else {
         set_ele <- .check_internal_set_map(
           map_name = map_name,
-          metadata = metadata,
           set_map = set_map,
+          available_mappings = available_mappings,
           call = call
         )
       }
@@ -43,7 +54,7 @@
       names(ls_set_ele),
       ls_set_ele,
       function(set_name, ele) {
-        ele <- unlist(ele)
+        ele <- sort(unlist(unique(ele[,2])))
         cli::cli_text("{set_name}: {.val {ele}}")
       }
     )

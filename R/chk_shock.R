@@ -4,7 +4,7 @@
 #' @keywords internal
 .check_shock <- function(shock,
                          var_extract,
-                         int_sets = NULL,
+                         int_sets,
                          call) {
 
   shock <- .validate_shock(shock = shock, call = call)
@@ -21,10 +21,11 @@
   UseMethod(".check_shock", shock)
 }
 
+#' @method .check_shock uniform
 #' @export
 .check_shock.uniform <- function(shock,
                                  var_extract,
-                                 int_sets = NULL,
+                                 int_sets,
                                  call) {
   shock <- .validate_shock(shock = shock, call = call)
   ls_mixed <- purrr::pluck(var_extract, "ls_mixed_idx", shock$var)
@@ -73,13 +74,14 @@
   return(shock)
 }
 
+#' @method .check_shock custom
 #' @export
 .check_shock.custom <- function(shock,
                                 var_extract,
-                                int_sets = NULL,
+                                int_sets,
                                 call) {
   shock <- .validate_shock(shock = shock, call = call)
-  shock <- .chk_cst_scen(
+  shock <- .check_cst_scen(
     shock = shock,
     var_extract = var_extract,
     int_sets = int_sets,
@@ -89,10 +91,11 @@
   return(shock)
 }
 
+#' @method .check_shock scenario
 #' @export
 .check_shock.scenario <- function(shock,
                                   var_extract,
-                                  int_sets = NULL,
+                                  int_sets,
                                   call) {
   shock <- .validate_shock(shock = shock, call = call)
   if (is.null(int_sets)) {
@@ -102,7 +105,7 @@
     )
   }
 
-  shock <- .chk_cst_scen(
+  shock <- .check_cst_scen(
     shock = shock,
     var_extract = var_extract,
     int_sets = int_sets,

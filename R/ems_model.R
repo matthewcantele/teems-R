@@ -1,4 +1,4 @@
-#' `r lifecycle::badge("experimental")` Load general model specifications
+#' Load general model specifications
 #'
 #' @description `ems_model()` loads general model specifications, conducts
 #'   pre-pipeline checks, and determines temporal dynamics. The output of this
@@ -90,18 +90,16 @@
 #'             
 #' @export
 ems_model <- function(tab_file,
-                      var_omit = NULL,
-                      closure_file = NULL,
-                      swap_in = NULL,
-                      swap_out = NULL,
-                      shock_file = NULL,
-                      shock = NULL,
-                      notes = NULL)
+                      var_omit = NULL)
 {
+  # add "auto_omit" arg and other substitution/replacement options
 if (missing(tab_file)) {.cli_missing(tab_file)}
 args_list <- mget(names(formals()))
 call <- match.call()
-config <- .validate_model_args(args_list = args_list,
-                               call = call)
-config
+v <- .validate_model_args(a = args_list,
+                          call = call)
+model <- .process_tablo(tab_file = v$tab_file,
+                        var_omit = v$var_omit,
+                        call = call)
+model
 }

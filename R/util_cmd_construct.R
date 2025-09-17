@@ -18,7 +18,7 @@
 
   docker_preamble <- paste(
     "docker run --rm --mount",
-    paste("type=bind", paste0("src=", paths[["run"]]), "dst=/opt/launchpad", sep = ","),
+    paste("type=bind", paste0("src=", paths$run), "dst=/opt/teems", sep = ","),
     paste0("teems", ":", .o_docker_tag()),
     "/bin/bash -c"
   )
@@ -27,9 +27,9 @@
     '"/opt/teems-solver/lib/mpi/bin/mpiexec',
     "-n", n_tasks,
     "/opt/teems-solver/solver/hsl",
-    "-cmdfile", paths[["docker_cmf"]]
+    "-cmdfile", paths$docker_cmf
   )
-  docker_diagnostic_out <- file.path(paths[["docker_run"]], "out", paste0("solver_out", "_", timeID, ".txt"))
+  docker_diagnostic_out <- file.path(paths$docker_run, "out", paste0("solver_out", "_", timeID, ".txt"))
   solver_param <- paste(
     "-matsol", matsol,
     if (identical(x = solmed, y = "Mmid")) {
@@ -56,35 +56,23 @@
     "| tee",
     paste0(docker_diagnostic_out, '"')
   )
-  exec_cmd <- paste(exec_preamble, solver_param)
+
+  solve_cmd <- paste(exec_preamble, solver_param)
   sol_parse_cmd <- paste(docker_preamble, '"make -C /opt/teems-parser"')
+
   if (terminal_run) {
-    cat(exec_cmd, file = file.path(paths[["run"]], "model_exec.txt"))
+    cat(solve_cmd, file = file.path(paths$run, "model_exec.txt"))
     hsl <- "hsl"
-    diag_out <- paths[["diag_out"]]
-    cmf_path <- paths[["cmf"]]
-    .cli_action(action = "inform",
-                msg = "{.arg terminal_run} mode has been selected enabling 
-                model runs outside of your R IDE or R script. The following 
-                steps are necessary to solve the model and parse outputs.")
-    
-    cli::cli_ol(items = c("Run the following command at your OS terminal: 
-                {.val {exec_cmd}}",
-                          "If errors are present in the terminal output during 
-                          an ongoing run, it is possible to stop the relevant 
-                          {.val {hsl}} process early according to your 
-                          OS-specific system activity monitor.",
-                          "Error and singularity indicators will be present in 
-                          the model diagnostic output: {.val {diag_out}}.",
-                          "If no errors or singularities are detected, run the 
-                          following command to convert binary outputs: 
-                          {.val {sol_parse_cmd}}.",
-                          "The {.arg cmf_path} path to use as a value within 
-                          {.fun teems::teems_parse} is {.path {cmf_path}}."))
-    #clipr::write_clip(content = cmd)
-    return(terminal_run)
+    diag_out <- paths$diag_out
+    cmf_path <- paths$cmf
+    .cli_action(solve_info$terminal_run,
+                action = "inform",
+                append = solve_info$terminal_run)
+    eval(solve_info$t_run_append)
+    return(FALSE)
   }
-  cmd <- list(exec = exec_cmd,
+  
+  cmd <- list(solve = solve_cmd,
               sol_parse = sol_parse_cmd)
   
   return(cmd)

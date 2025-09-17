@@ -35,6 +35,7 @@
       call = call
     )
   }
+  browser()
   set_ele <- list(sort(unique(purrr::pluck(set_mapping, 2))))
   names(set_ele) <- map_name
   attr(set_ele, "set_mapping_file") <- set_map

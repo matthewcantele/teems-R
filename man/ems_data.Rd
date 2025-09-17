@@ -2,15 +2,16 @@
 % Please edit documentation in R/ems_data.R
 \name{ems_data}
 \alias{ems_data}
-\title{\ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#experimental}{\figure{lifecycle-experimental.svg}{options: alt='[Experimental]'}}}{\strong{[Experimental]}} Modify data inputs}
+\title{Modify data inputs}
 \usage{
 ems_data(
   dat_input,
   par_input,
   set_input,
   aux_input = NULL,
-  tab_file = NULL,
-  target_format = NULL,
+  unaggregated_input = NULL,
+  aggregated_input = NULL,
+  convert_format = FALSE,
   time_steps = NULL,
   ...
 )
@@ -29,14 +30,6 @@ directory or path to a GTAP HAR file. Input containing
 auxillary coefficient data. Coefficients will be sorted into
 parameter and non-parameter lists.}
 
-\item{tab_file}{Character of length 1, path to a local Tablo model file or
-selection of an internal Tablo file. Currently supported internal Tablo
-model files can be viewed with ().}
-
-\item{target_format}{Character of length 1, default \code{NULL}. In
-the case of database conversion, either "v6.2" or "v7.0" as
-the desired format.}
-
 \item{time_steps}{Integer vector of variable length with
 initial value 0 or reference year corresponding to database
 employed (default is \code{NULL}). Input format can be either the
@@ -44,6 +37,10 @@ chronological years of steps including initial reference
 year or steps from t0. For example, \code{c(2017, 2018, 2020, 2022)} is identical to \code{c(c(0, 1, 3, 5))}.}
 
 \item{...}{Future extension}
+
+\item{target_format}{Character of length 1, default \code{NULL}. In
+the case of database conversion, either "v6.2" or "v7.0" as
+the desired format.}
 }
 \value{
 A list ready for input into the \code{"ems_input"} argument

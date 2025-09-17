@@ -2,68 +2,51 @@
 #' 
 #' @keywords internal
 #' @noRd
-.tablo_coeff <- function(tab_extract,
+.tablo_coeff <- function(extract,
+                         qual,
                          call) {
-
-  coeff <- subset(
-    x = tab_extract,
-    subset = {
-      is.element(
-        el = tolower(x = type),
-        set = "coefficient"
-      )
-    },
-    select = -type
+browser()
+  coeff <- subset(extract, tolower(type) %in% "coefficient")
+  coeff$remainder <- purrr::map_chr(
+    coeff$remainder,
+    function(r) {
+      if (!grepl("#", r)) {
+        r <- paste(r, "# NA #")
+      }
+      return(r)
+    }
   )
 
-  # check that label is available for each coefficient
-  if (any(!grepl("#", coeff[["remainder"]]))) {
-    .cli_action(msg = "One or more variables or coefficients within the provided
-                Tablo file is missing label - add # NA # if descriptive 
-                label is not available.",
-                action = "abort",
-                call = call)
-  }
-
-  coeff[["label"]] <- trimws(x = unlist(x = purrr::map(.x = sapply(
-      X = coeff[["remainder"]],
-      FUN = strsplit, split = "#",
-      USE.NAMES = FALSE
-    ), 2)))
-
-
-  coeff[["remainder"]] <- trimws(x = unlist(x = purrr::map(.x = sapply(
-    X = coeff[["remainder"]],
-    FUN = strsplit, split = "#"
-  ), 1)))
-
-  # qualifiers
-  # additional regex necessary for variables with parts that match below
-  qual <- c(
-    "nonzero_by_zero",
-    "zero_by_zero",
-    "\\bchange\\b",
-    "linear",
-    "orig_level",
-    "ge [[:digit:]]",
-    "gt [[:digit:]]",
-    "integer",
-    "parameter",
-    "initial",
-    "\\breal\\b",
-    "levels"
+  coeff[["label"]] <- purrr::map_chr(
+    coeff$remainder,
+    function(r) {
+      trimws(purrr::map_chr(strsplit(r, "#"), 2))
+    }
   )
 
-  # first parenthetic enclosure which may include a qualifier
-  first_enclosure <- sapply(X = strsplit(x = coeff[["remainder"]], ")"), "[[", 1)
 
-  coeff[["qualifier_list"]] <- ifelse(test = grepl(
-    pattern = paste(qual, collapse = "|"),
-    x = first_enclosure,
+  coeff[["remainder"]] <- purrr::map_chr(
+    coeff$remainder,
+    function(r) {
+      trimws(purrr::map_chr(strsplit(r, "#"), 1))
+    }
+  )
+
+  first_enclosure <- purrr::map_chr(
+    coeff$remainder,
+    function(r) {
+      purrr::map_chr(strsplit(r, ")"), 1)
+    }
+  )
+
+
+  coeff[["qualifier_list"]] <- ifelse(grepl(
+    paste(qual, collapse = "|"),
+    first_enclosure,
     ignore.case = TRUE
   ),
-  yes = paste0(first_enclosure, ")"),
-  no = NA
+  paste0(first_enclosure, ")"),
+  NA
   )
 
   coeff[["remainder"]] <- .advance_remainder(remainder = coeff[["remainder"]],

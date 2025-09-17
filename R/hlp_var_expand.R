@@ -2,7 +2,7 @@
 #' 
 #' @keywords internal
 #' @noRd
-.expand_var <- function(var_names = NULL,
+.dep_expand_var <- function(var_names = NULL,
                         set_names = NULL,
                         set_elements = NULL,
                         var_extract,

@@ -3,7 +3,7 @@ Title: Trade and Environment Equilibrium Modeling System
 Version: 0.0.0.95
 Authors@R: 
     person("Matthew", "Cantele",
-    email = "m.cantele@unimelb.edu.au",
+    email = "matthew.cantele@protonmail.com",
     role = c("aut", "cre"),
     comment = c(ORCID = "0000-0003-3729-1764"))
 Description: A comprehensive modeling system for preparing and running all aspects of a 
@@ -20,16 +20,11 @@ Imports:
     abind,
     cli,
     data.table,
-    dplyr,
-    lifecycle,
     purrr,
-    qs2,
     rlang,
-    targets,
     tibble,
     tools,
-    utils,
-    uuid
+    utils
 Suggests: 
     knitr,
     rmarkdown,

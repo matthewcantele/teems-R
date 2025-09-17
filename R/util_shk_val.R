@@ -2,8 +2,8 @@
 #' @keywords internal
 .validate_shock <- function(shock,
                             call) {
-  if (!.is_shock(shock)) {
-    if (!is.list(shock) || !.is_shock(shock[[1]])) {
+  if (!inherits(shock, "shock")) {
+    if (!is.list(shock) || !inherits(shock[[1]], "shock")) {
       .cli_action(
         shk_err$not_a_shk,
         action = "abort",

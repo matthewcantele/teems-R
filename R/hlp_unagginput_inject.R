@@ -3,7 +3,7 @@
 #' 
 #' @keywords internal
 #' @noRd
-.inject_unagg_input <- function(ls_data,
+.inject_unagg_input <- function(tib_data,
                                 unaggregated_input) {
   for (header in seq_along(unaggregated_input)) {
     dat <- unaggregated_input[header]

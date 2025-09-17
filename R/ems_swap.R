@@ -1,29 +1,32 @@
 #' Load swaps
 #'
-#' @importFrom uuid UUIDgenerate
-#'
-#' @description `ems_swap()` is a helper function that loads swaps, allowing
-#'   for a change of endogenous/exogenous variable status. If a swap is
-#'   specified using this function, the output is a required input to the
-#'   `"swap_in"` or `"swap_out"` arguments of the [`teems_model()`] function.
+#' @description `ems_swap()` is a helper function that loads
+#'   swaps, allowing for a change of endogenous/exogenous
+#'   variable status. If a swap is specified using this function,
+#'   the output is a required input to the `"swap_in"` or
+#'   `"swap_out"` arguments of the [`teems_model()`] function.
 #'
 #' @param var Character of length 1, model variable to swap.
-#' @param ... One or more key-value pairs separated by commas. These correspond
-#'   to element-specific swaps in the format SETi = "element" or SETi =
-#'   c("element1", "element2") where i denotes the variable-specific index (see
-#'   examples). Sets not specified are implicitly determined as uniform.
+#' @param ... One or more key-value pairs separated by commas.
+#'   These correspond to element- or subset-specific swaps in the
+#'   format SETi = "component" or SETi = c("component1",
+#'   "component2") where i denotes the variable-specific index
+#'   (see examples). Sets not specified are implicitly determined
+#'   as uniform.
 #'
 #' @return A list with swap specifications.
 #'
-#' @details `ems_swap()` return values have no purpose used in isolation. The
-#'   standard model-specific closure will be used if no swaps are specified.
-#'   Note that full variable swaps can be directly inputted as a character
-#'   string in [`teems_model()`].
+#' @details `ems_swap()` return values have no purpose used in
+#'   isolation. The standard model-specific closure will be used
+#'   if no swaps are specified. Note that full variable swaps can
+#'   be directly inputted as a character string in
+#'   [`teems_model()`].
 #'
-#' @seealso [`teems_query()`] to check exogenous/endogenous status within the
-#'   standard model-specific closure as well as retrieve model variable details.
-#' @seealso [`teems_shock()`] for specification of shocks on exogenous
-#'   variables.
+#' @seealso [`teems_query()`] to check exogenous/endogenous
+#'   status within the standard model-specific closure as well as
+#'   retrieve model variable details.
+#' @seealso [`teems_shock()`] for specification of shocks on
+#'   exogenous variables.
 #'
 #' @examples
 #' # Full variable swaps
@@ -53,20 +56,17 @@ ems_swap <- function(var,
                      ...)
 {
 if (!missing(...)) {
-  swap_ele <- list(...)
-  swap_sets <- names(swap_ele)
-  } else {
-  swap_ele <- list(NA)
-  swap_sets <- NA
+  comp <- list(...)
+  breadth <- "partial"
+  swap <- list(var = var,
+               comp = comp)
+} else {
+  breadth <- "full"
+  swap <- list(var = var)
 }
-swap <- list(var = var,
-             swap_sets = swap_sets,
-             swap_ele = swap_ele)
 call <- match.call()
-swap <- structure(swap,
-                  call = call,
-                  call_id = uuid::UUIDgenerate(),
-                  swap = TRUE)
+attr(swap, "call") <- call
+class(swap) <- c("ems", breadth, class(swap))
 swap <- list(swap)
 swap
 }

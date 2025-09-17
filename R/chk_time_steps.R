@@ -4,7 +4,7 @@
                               time_steps,
                               call) {
 
-  if (!time_steps[1] %=% 0) {
+  if (!as.numeric(time_steps[1]) %=% 0) {
     if (!time_steps[1] %=% t0) {
       .cli_action(data_wrn$time_steps,
                   action = "warn",

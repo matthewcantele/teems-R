@@ -15,6 +15,7 @@ ems_solve(
   laD = 200L,
   laDi = 500L,
   terminal_run = FALSE,
+  suppress_outputs = FALSE,
   ...
 )
 }
@@ -85,14 +86,19 @@ from MA48B/BD because LA is ..."}
 allows the user to close any R IDE or other programs prior to
 running from the terminal.}
 
-\item{...}{A named list of input files necessary for an "in-situ"
-model run. Names must correspond to "File" statements within the
-model Tablo file. Elements correspond to file paths where these
-files are found. No checks or modifications are conducted on
-input files used in this manner. This mode does not support
-partial provision of input file -- all model defined input files
-as well as \code{"tab_file"}, \code{"closure_file"}, and \code{"shock_file"}
-are required for in-situ model runs.}
+\item{suppress_outputs}{Logical length 1 (default is \code{FALSE}).
+When \code{TRUE} solver outputs are not automatically converted
+into structured data with \code{\link{ems_compose}}.}
+
+\item{...}{A named list of input files necessary for an
+"in-situ" model run. Names must correspond to "File"
+statements within the model Tablo file. Elements correspond
+to file paths where these files are found. No checks or
+modifications are conducted on input files used in this
+manner. This mode does not support partial provision of
+input file -- all model defined input files as well as
+\code{"tab_file"}, \code{"closure_file"}, and \code{"shock_file"} are
+required for in-situ model runs.}
 }
 \value{
 File path to a CMF file necessary to execute

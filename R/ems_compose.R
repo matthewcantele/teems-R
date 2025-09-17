@@ -1,4 +1,4 @@
-#' `r lifecycle::badge("experimental")` Compose model results
+#' Compose model results
 #'
 #' @description `ems_compose()` retrieves and processes results
 #'   from a solved model run. Results are parsed according to the
@@ -12,7 +12,6 @@
 #'   includes all). Choices:
 #'   * `"variable"`: Percentage change values for model variables
 #'   * `"coefficient"`: Absolute values for model coefficients
-#'   * `"set"`: Model sets
 #'   * `"inputdata"`: Merged pre- and post-model basedata values
 #' @param name Character vector, a subset of the selected type
 #'   filtered by name.
@@ -35,29 +34,47 @@
 #'   to the specified type.
 #' @export
 ems_compose <- function(cmf_path,
-                        type = c("variable", "coefficient", "set", "inputdata"),
-                        name = NULL)
-{
-call <- match.call()
-type <- rlang::arg_match(arg = type)
-paths <- .get_postmodel_paths(cmf_path = cmf_path,
-                              call = call)
-comp_extract <- .retrieve_tab_comp(tab_path = paths[["tab"]],
-                                   type = type,
-                                   call = call)
-sets <- .check_sets(var_paths = paths[["var"]],
-                    model_dir = paths[["model"]],
-                    call = call)
-int <- .is_intertemporal(launchpad_dir = paths[["launchpad"]],
-                         model_dir = paths[["model"]],
-                         #metadata_path = paths[["metadata"]],
-                         sets = sets[["postmodel"]])
-output <- .retrieve_output(type = type,
-                           comp_extract = comp_extract,
-                           name = name,
-                           paths = paths,
-                           sets = sets,
-                           int = int,
-                           call = call)
-output
+                        which = c("all", "variable", "coefficient"),
+                        name = NULL) {
+
+  call <- match.call()
+  type <- rlang::arg_match(arg = which)
+  paths <- .get_output_paths(
+    cmf_path = cmf_path,
+    which = which,
+    call = call
+  )
+  sets <- .check_sets(
+    bin_csv_paths = paths$bin_csv,
+    model_dir = paths$model,
+    set_path = paths$sets,
+    call = call
+  )
+
+  comp_extract <- .retrieve_tab_comp(
+    tab_path = paths[["tab"]],
+    which = which,
+    call = call
+  )
+
+  if (any(purrr::map_lgl(sets, function(s){
+    isTRUE(attr(s, "intertemporal"))}))) {
+    timesteps <- .get_timesteps(paths,
+      cmf_path,
+      timestep_header = .o_timestep_header()
+    )
+  } else {
+    timesteps <- NULL
+  }
+
+  output <- .retrieve_output(
+    type = type,
+    comp_extract = comp_extract,
+    name = name,
+    paths = paths,
+    sets = sets,
+    time_steps = timesteps,
+    call = call
+  )
+  output
 }

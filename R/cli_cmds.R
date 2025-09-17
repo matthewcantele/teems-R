@@ -28,7 +28,7 @@
   )
 
   formatted_msg <- unlist(formatted_msg)
-
+  
   if (!is.null(url)) {
     cli_env <- new.env(parent = caller_env)
     url <- utils::URLencode(URL = url)

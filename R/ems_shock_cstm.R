@@ -1,3 +1,6 @@
+#' @importFrom rlang trace_back
+#' 
+#' @method ems_shock custom
 #' @export
 ems_shock.custom <- function(var,
                              type,
@@ -9,8 +12,9 @@ ems_shock.custom <- function(var,
                 action = "abort",
                 call = call)
   }
-  args_list <- mget(names(formals()))
-  args_list["..."] <- NULL
-  config <- .val_cust_shk(args_list = args_list, call = call)
+  shock <- mget(names(formals()))
+  shock["..."] <- NULL
+  config <- .val_cust_shk(shock = shock,
+                          call = call)
   config
 }

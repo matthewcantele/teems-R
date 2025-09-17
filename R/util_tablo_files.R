@@ -5,7 +5,7 @@
 #' @noRd
 .tablo_files <- function(tab_extract,
                          call) {
-
+browser()
   files <- subset(tab_extract, tolower(type) %in% "file")
 
   files[["names"]] <- trimws(purrr::map_chr(

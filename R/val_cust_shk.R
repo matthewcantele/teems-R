@@ -1,10 +1,10 @@
 #' @keywords internal
 #' @noRd
-.val_cust_shk <- function(args_list,
+.val_cust_shk <- function(shock,
                           call) {
   
-  args_list <- .val_cst_scen_shk(args_list = args_list,
-                                 call = call)
+  shock <- .val_cst_scen_shk(shock = shock,
+                             call = call)
 
-  return(args_list)
+  return(shock)
 }

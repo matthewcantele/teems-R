@@ -1,10 +1,12 @@
 #' @importFrom rlang list2 trace_back
-#'
+#' @method ems_shock uniform
+#' 
 #' @export
 ems_shock.uniform <- function(var,
                               type,
-                              input,
+                              value,
                               ...) {
+
   call <- rlang::trace_back()$call[[1]]
   if (!missing(...)) {
     subset <- rlang::list2(...)
@@ -17,14 +19,14 @@ ems_shock.uniform <- function(var,
       )
     }
   } else {
-    subset <- NA
+    subset <- NULL
   }
-  args_list <- list(
+  shock <- list(
     var = var,
     type = type,
-    input = input,
+    input = value,
     subset = subset
   )
-  config <- .val_uni_shk(args_list, call = call)
+  config <- .val_uni_shk(shock = shock, call = call)
   config
 }

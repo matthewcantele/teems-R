@@ -3,10 +3,10 @@
 #' 
 #' @noRd
 #' @keywords internal
-.chk_cst_scen <- function(shock,
-                          var_extract,
-                          int_sets,
-                          call) {
+.check_cst_scen <- function(shock,
+                            var_extract,
+                            int_sets,
+                            call) {
 
   ls_mixed <- purrr::pluck(var_extract, "ls_mixed_idx", shock$var)
 
@@ -27,25 +27,26 @@
     } else {
       set_check <- ls_mixed
     }
+    
+  } else {
+    set_check <- ls_mixed
+  }
 
-    if (!all(shock$set %in% set_check)) {
-      errant_set <- setdiff(shock$set, set_check)
-      l_errant_set <- length(errant_set)
-      var_name <- shock$var
-      .cli_action(
-        shk_err$invalid_set,
-        action = c("abort", "inform", "inform", "inform"),
-        url = NULL,
-        hyperlink = NULL,
-        call = call
-      )
-    }
+  if (!all(shock$set %in% set_check)) {
+    errant_set <- setdiff(shock$set, set_check)
+    l_errant_set <- length(errant_set)
+    var_name <- shock$var
+    .cli_action(
+      shk_err$invalid_set,
+      action = c("abort", "inform", "inform", "inform"),
+      url = NULL,
+      hyperlink = NULL,
+      call = call
+    )
   }
 
   if (!set_check %=% shock$set) {
-    value <- data.table::fread(shock$input)
-    data.table::setcolorder(value, c(set_check, "Value"))
-    data.table::fwrite(value, shock$input)
+    data.table::setcolorder(shock$input, c(set_check, "Value"))
     shock$set <- set_check
   }
 
