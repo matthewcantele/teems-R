@@ -1,6 +1,5 @@
 #' @importFrom tibble tibble as_tibble
 #' @importFrom purrr map_chr
-#' @importFrom dplyr full_join
 #' @importFrom cli cli_h1 cli_dl cli_fmt
 #' 
 #' @keywords internal

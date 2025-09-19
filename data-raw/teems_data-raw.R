@@ -4,7 +4,7 @@ targets::tar_config_set(store = "./data-raw/_targets")
 
 # Set target options:
 targets::tar_option_set(
-  packages = c("data.table", "usethis", "purrr", "tabulapdf", "dplyr", "fs"),
+  packages = c("data.table", "usethis", "purrr", "tabulapdf"),
   format = "qs",
   cue = tar_cue("always")
 )
@@ -27,6 +27,7 @@ list(
   tar_target(
     mapping_files,
     {
+      browser()
       list.files("../teems-mappings", pattern = "\\.csv", recursive = TRUE, full.names = TRUE)
     }
   ),
@@ -40,12 +41,14 @@ list(
   ),
   # tab related ------------------------------------------------------
   tar_target(
-    tab_files,
+    tab_files,{
+      browser()
     list.files("\\.tab",
       "../teems-models",
       full.names = T,
       recursive = T
     )
+    }
   ),
   tar_target(
     tab_names,

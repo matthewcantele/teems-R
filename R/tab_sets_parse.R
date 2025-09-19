@@ -197,15 +197,6 @@
   sets$definition <- lapply(sets$definition, trimws)
   names(sets$definition) <- sets$name
 
-
-  # sets$operator <- dplyr::case_when(
-  #   grepl(pattern = "UNION", sets$definition, ignore.case = TRUE) ~ "union",
-  #   grepl(pattern = "\\+", sets$definition) ~ "+",
-  #   grepl(pattern = "\\-", sets$definition) ~ "-",
-  #   grepl(pattern = "\\INTERSECT", sets$definition, ignore.case = TRUE) ~ "intersect",
-  #   TRUE ~ NA
-  # )
-  
   sets$operator <- ifelse(grepl("UNION", sets$definition, ignore.case = TRUE), "union",
                           ifelse(grepl("\\+", sets$definition), "+",
                                  ifelse(grepl("\\-", sets$definition), "-",
