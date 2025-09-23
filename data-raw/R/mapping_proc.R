@@ -1,20 +1,16 @@
 # set mappings #################################################################
 # mapping data by database version, set, and mapping
 # Define the function to process the mappings
-process_mappings <- function(path,
+process_mappings <- function(mapping_files,
                              db_version,
                              data_format) {
 
   ls_mappings <- list()
   for (v in db_version) {
     for (d in data_format) {
-      set_names <- list.files(path = file.path("data-raw", "mappings", v, d))
+      set_names <- unique(basename(dirname(grep(file.path(v, d), mapping_files, value = TRUE))))
       for (s in set_names) {
-        set_mappings <- list.files(
-          path = file.path("data-raw", "mappings", v, d, s),
-          recursive = TRUE,
-          full.names = TRUE
-        )
+        set_mappings <- grep(file.path(v, d, s), mapping_files, value = TRUE)
 
         # Read the files into a list of data frames and rename columns
         dt_list <- lapply(

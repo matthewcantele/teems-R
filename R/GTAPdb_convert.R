@@ -1,14 +1,14 @@
 #' @keywords internal
 #' @noRd
 .convert_GTAPdb <- function(i_data) {
-browser()
-  UseMethod(".convert_GTAP")
+  UseMethod(".convert_GTAPdb")
 }
 
 #' @method .convert_GTAPdb v6.2
 #' @keywords internal
 #' @noRd
-.convert_GTAPdb <- function(i_data) {
+#' @export
+.convert_GTAPdb.v6.2 <- function(i_data) {
   browser()
   missing_headers <- .construct_missing(i_data = i_data)
   i_data <- lapply(i_data, .convert_format)
@@ -22,8 +22,10 @@ browser()
 #' @method .convert_GTAPdb v7.0
 #' @keywords internal
 #' @noRd
-.convert_GTAPdb <- function(i_data) {
+#' @export
+.convert_GTAPdb.v7.0 <- function(i_data) {
   browser()
+  i_data <- lapply(i_data, .header2v6)
   # v7.0 to v6.2 on base involves changing names, adding CGDS, and other op
   # get rid of abind
   # r_idx <- match(names(i_data), coeff_conversion$v7.0header)

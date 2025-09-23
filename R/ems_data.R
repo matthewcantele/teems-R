@@ -26,10 +26,10 @@
 #'   2022)` is identical to `c(c(0, 1, 3, 5))`.
 #' @param ... Future extension
 #'
-#' @return A list ready for input into the `"ems_input"` argument
-#'   of [`ems_load()`]
+#' @return A list ready for input into the `"data"` argument
+#'   of [`ems_deploy()`]
 #' 
-#' @seealso [`ems_load()`] for using the output of this function.
+#' @seealso [`ems_deploy()`] for using the output of this function.
 #' 
 #' @examples
 #' \dontrun{

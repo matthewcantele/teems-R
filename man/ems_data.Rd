@@ -43,8 +43,8 @@ the case of database conversion, either "v6.2" or "v7.0" as
 the desired format.}
 }
 \value{
-A list ready for input into the \code{"ems_input"} argument
-of \code{\link[=ems_load]{ems_load()}}
+A list ready for input into the \code{"data"} argument
+of \code{\link[=ems_deploy]{ems_deploy()}}
 }
 \description{
 \code{ems_data()} prepares data for various
@@ -83,5 +83,5 @@ GTAP_INT <- ems_data(dat_input = "path/to/v7_data/v11c/flexAgg11c17/gsdfdat.har"
 }           
 }
 \seealso{
-\code{\link[=ems_load]{ems_load()}} for using the output of this function.
+\code{\link[=ems_deploy]{ems_deploy()}} for using the output of this function.
 }
