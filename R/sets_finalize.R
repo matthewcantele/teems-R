@@ -1,5 +1,6 @@
 #' @importFrom data.table data.table fsetdiff funion fintersect
 #' @importFrom purrr pmap map map_chr map_lgl
+#' @importFrom stats na.omit
 #' 
 #' @keywords internal
 #' @noRd
@@ -10,6 +11,13 @@
                            call,
                            data_call) {
 
+  if (!all(stats::na.omit(set_extract$header) %in% names(sets))) {
+    m_map <- setdiff(stats::na.omit(set_extract$header), names(sets))
+   .cli_action(data_err$missing_mapping,
+               action = "abort",
+               call = data_call) 
+  }
+  
   intertemporal <- if (any(grepl(
     "\\(intertemporal\\)",
     set_extract$qualifier_list

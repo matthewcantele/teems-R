@@ -80,7 +80,7 @@ ems_data <- function(dat_input,
   if (missing(set_input)) {
     .cli_missing(set_input)
   }
-  
+
   args_list <- mget(x = names(x = formals()))
   args_list$set_mappings <- list(...)
   args_list$... <- NULL
@@ -89,80 +89,37 @@ ems_data <- function(dat_input,
     a = args_list,
     call = call
   )
-  
-  i_data <- .load_input_data(dat_input = v$dat_input,
-                             par_input = v$par_input,
-                             set_input = v$set_input,
-                             aux_input = v$aux_input,
-                             call = call)
+
+  i_data <- .load_input_data(
+    dat_input = v$dat_input,
+    par_input = v$par_input,
+    set_input = v$set_input,
+    aux_input = v$aux_input,
+    call = call
+  )
 
   if (convert_format) {
-      i_data <- .convert_GTAPdb(i_data = i_data)
+    i_data <- .convert_GTAPdb(i_data = i_data)
   }
-  set_mappings <- .load_mappings(set_mappings = v$set_mappings,
-                                 time_steps = time_steps,
-                                 metadata = attr(i_data, "metadata"),
-                                 call = call)
-  # coeff_extract <- .process_tablo(
-  #   tab_file = args_list$tab_file,
-  #   type = "coefficient",
-  #   call = call
-  # )
-  # 
-  # set_extract <- .process_tablo(
-  #   tab_file = args_list$tab_file,
-  #   type = "set",
-  #   call = call
-  # )$sets
   
-  # ls_data <- list(
-  #   dat = args_list$dat,
-  #   par = args_list$par,
-  #   set = args_list$set
-  # )
-  
+  set_mappings <- .load_mappings(
+    set_mappings = v$set_mappings,
+    time_steps = time_steps,
+    metadata = attr(i_data, "metadata"),
+    call = call
+  )
+
   # if (!is.null(args_list$aux_input)) {
   #   ls_data <- .distribute_aux(tab_file = args_list$tab_file,
   #                              ls_aux = args_list$aux,
   #                              ls_data = ls_data)
   # }
-  # 
-  # if (!is.null(args_list$target_format)) {
-  # if (purrr::pluck(args_list, "metadata", "data_format") %=% args_list$target_format) {
-  #   .cli_action(
-  #     data_err$invalid_convert,
-  #     action = "abort",
-  #     call = call
-  #   )
-  # }
-  #   ls_data <- .convert_db(
-  #     tab_file = args_list$tab_file,
-  #     ls_data = ls_data,
-  #     set_extract = set_extract,
-  #     coeff_extract = coeff_extract,
-  #     metadata = args_list$metadata,
-  #     target_format = args_list$target_format
-  #   )
-  # } else {
-  #   attr(ls_data, "metadata") <- args_list$metadata
-  # }
-  # 
-  # if (!is.null(args_list$time_steps)) {
 
-  #   ls_data <- .inject_time(
-  #     ls_data = ls_data,
-  #     time_steps = args_list$time_steps,
-  #     tab_file = args_list$tab_file,
-  #     set_extract = set_extract,
-  #     coeff_extract = coeff_extract,
-  #     metadata = args_list$metadata,
-  #     call
-  #   )
-  # }
-
-  i_data <- .process_data(i_data = i_data,
-                          set_mappings = set_mappings,
-                          call = call)
+  i_data <- .process_data(
+    i_data = i_data,
+    set_mappings = set_mappings,
+    call = call
+  )
 
   i_data
 }

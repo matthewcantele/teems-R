@@ -15,6 +15,9 @@
     1
   )]
 
+  # data <- lapply(data,
+  #                .custom_mod,
+  #                sets = sets)
   if (any(grepl("\\(intertemporal\\)", sets$qualifier_list))) {
     int_sets <- subset(
       sets,
@@ -77,6 +80,7 @@
     }
 
     if (!expected %=% nrow(dt)) {
+      browser()
       .cli_action(data_err$data_set_mismatch,
         action = "abort",
         call = call

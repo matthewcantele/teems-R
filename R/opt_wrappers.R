@@ -39,3 +39,7 @@
 .o_accuracy_threshold <- function() {
   ems_option_get("accuracy_threshold")
 }
+
+.o_expand_ETRE <- function() {
+  ems_option_get("expand_ETRE")
+}

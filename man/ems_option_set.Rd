@@ -52,6 +52,16 @@ Docker tag to specify the which Docker image is use.}
 converted to a percentage. 4 digit precision will be
 compared against this threshold, generating a warning if it
 is not met.}
+
+\item{ETREtoENDWS}{Logical of length 1 (default is \code{TRUE}). If
+\code{FALSE}, no custom modifications to the ETRE (ETRAE) data
+header are carried out. When \code{TRUE}, the ETRE header data is
+filtered by sluggish elements. ETRE header elements are not
+consistent across databases regarding inclusion of
+non-sluggish endowments. Model files immediately compatible
+must use the sluggish endowment name for the ETRE header
+(ENDWS_COMM/ENDWS) instead of the general endowment
+name (ENDW_COMM/ENDW).}
 }
 \description{
 placeholder

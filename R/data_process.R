@@ -6,6 +6,9 @@
                           set_mappings,
                           call) {
   metadata <- attr(i_data, "metadata")
+  i_data <- lapply(i_data,
+                   .custom_mod,
+                   i_data = i_data)
   i_data <- .array2DT(i_data = i_data)
   i_data <- .weight_param(
     i_data = i_data,

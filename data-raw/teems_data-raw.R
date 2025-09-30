@@ -136,27 +136,6 @@ list(
     "./data-raw/Corong and Tsigas - 2017 - The Standard GTAP Model, Version 7.pdf",
     format = "file"
   ),
-  tar_target(set_table, {
-    tibble::tibble(
-      v6.2_upper = c(
-        "TRAD_COMM",
-        "PROD_COMM",
-        "ENDW_COMM",
-        "MARG_COMM",
-        "ALLTIME"
-      ),
-      v6.2_mixed = c(
-        "TRAD_COMMi",
-        "PROD_COMMj",
-        "ENDW_COMMi",
-        "MARG_COMMm",
-        "ALLTIMEt"
-      ),
-      v7.0_upper = c("COMM", "ACTS", "ENDW", "MARG", "ALLTIME"),
-      v7.0_mixed = c("COMMc", "ACTSs", "ENDWe", "MARGm", "ALLTIMEt")
-    )
-  }),
-  
   # tables here are not even concordance, just semi related lists
   tar_target(set_conversion, {
     set_table <- tabulapdf::extract_tables(file = GTAPv7_manual, pages = 83)
@@ -304,7 +283,8 @@ list(
       invalid_time_step = "One or more {.arg time_steps} does not progress into the future.",
       data_set_mismatch = "The expected number of data entries on {.field {class(dt)[1]}} ({.val {expected}}) is not equal to the number found ({.val {nrow(dt)}}).",
       missing_tsteps = "{.arg time_steps} have not been provided to an intertemporal model. See {.fun teems::ems_data}.",
-      nonreq_tsteps = "{.arg time_steps} have been provided yet no intertemporal sets have been detected in the provided model. See {.fun teems::ems_data}."
+      nonreq_tsteps = "{.arg time_steps} have been provided yet no intertemporal sets have been detected in the provided model. See {.fun teems::ems_data}.",
+      missing_mapping = "Some model sets that are read as headers are missing mappings: {.field {m_map}}."
     )
   }),
   tar_target(data_wrn, {
@@ -341,6 +321,9 @@ list(
         "If duplicate sets are desired, multiple Read statements should be implemented (e.g., Set SET_A # example set A # maximum size 5 read elements from file GTAPSETS header \"H2\";Set SET_B # example set B # maximum size 5 read elements from file GTAPSETS header \"H2\";)"
       )
     )
+  }),
+  tar_target(model_wrn, {
+    list(ETRE = "The {.arg ETREtoENDW} value for {.fun teems::ems_option_get()} is set to `TRUE` however no dedicated sluggish endowment set has been detected for {.field ETRE}.")
   }),
   tar_target(deploy_err, {
     list(invalid_write_dir = "The path provided for {.arg write_dir}, {.path {a$write_dir}}, does not exist.")
@@ -500,7 +483,6 @@ list(
       # `GTAP-INTv2`,
       param_weights,
       internal_cls,
-      set_table,
       set_conversion,
       coeff_conversion,
       gen_info,

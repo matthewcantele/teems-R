@@ -38,6 +38,16 @@
 #'   converted to a percentage. 4 digit precision will be
 #'   compared against this threshold, generating a warning if it
 #'   is not met.
+#' @param expand_ETRE Logical of length 1 (default is `TRUE`). If
+#'   `FALSE`, no expansion to the ETRE (ETRAE) data header are
+#'   carried out. When `TRUE`, if ETRE header data does not
+#'   contain the full endowment set, missing tuples will be added
+#'   with value -1e-05. The sluggish endowment set will be
+#'   replace with the general endowment set. ETRE header elements
+#'   are not consistent across databases regarding inclusion of
+#'   non-sluggish endowments, leading to issues with the ETRAE
+#'   coefficient which is read-in with the full set of
+#'   endowments.
 #' @export
 ems_option_set <- function(...) {
   dots <- list(...)
@@ -48,7 +58,17 @@ ems_option_set <- function(...) {
   }
   
   # Validate argument names
-  valid_names <- c("verbose", "ndigits", "check_shock_status", "timestep_header", "n_timestep_header", "full_exclude", "docker_tag", "margin_sectors", "accuracy_threshold")
+  valid_names <- c("verbose",
+                   "ndigits",
+                   "check_shock_status",
+                   "timestep_header",
+                   "n_timestep_header",
+                   "full_exclude",
+                   "docker_tag",
+                   "margin_sectors",
+                   "accuracy_threshold",
+                   "expand_ETRE")
+  
   invalid_names <- setdiff(names(dots), valid_names)
   if (length(invalid_names) > 0) {
     stop("Invalid option names: ", paste(invalid_names, collapse = ", "))
@@ -95,6 +115,10 @@ ems_option_set <- function(...) {
     ems_options$set_accuracy_threshold(dots$accuracy_threshold)
   }
   
+  if ("expand_ETRE" %in% names(dots)) {
+    ems_options$set_expand_ETRE(dots$expand_ETRE)
+  }
+  
   # Validate all options after setting
   ems_options$validate()
   
@@ -121,6 +145,7 @@ ems_option_get <- function(name = NULL) {
          docker_tag = ems_options$get_docker_tag(),
          margin_sectors = ems_options$get_margin_sectors(),
          accuracy_threshold = ems_options$get_accuracy_threshold(),
+         expand_ETRE = ems_options$get_expand_ETRE(),
          stop("Unknown option: ", name)
   )
 }

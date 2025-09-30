@@ -15,7 +15,7 @@
                    data_format = metadata$data_format)
   set <- .read_har(con = set_input,
                    data_format = metadata$data_format)
-  
+
   if (!inherits(dat, "dat")) {
     inferred_type <- attr(dat, "data_type")
     .cli_action(data_err$invalid_dat_har,

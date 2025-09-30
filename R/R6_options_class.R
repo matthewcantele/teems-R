@@ -17,6 +17,7 @@ options_class <- R6::R6Class(
     docker_tag = NULL,
     margin_sectors = NULL,
     accuracy_threshold = NULL,
+    expand_ETRE = NULL,
 
     # Initialize method
     initialize = function(verbose = NULL,
@@ -28,7 +29,8 @@ options_class <- R6::R6Class(
                           full_exclude = NULL,
                           docker_tag = NULL,
                           margin_sectors = NULL,
-                          accuracy_threshold = NULL) {
+                          accuracy_threshold = NULL,
+                          expand_ETRE = NULL) {
       self$verbose <- verbose
       self$ndigits <- ndigits
       self$check_shock_status <- check_shock_status
@@ -39,6 +41,7 @@ options_class <- R6::R6Class(
       self$docker_tag <- docker_tag
       self$margin_sectors <- margin_sectors
       self$accuracy_threshold <- accuracy_threshold
+      self$expand_ETRE <- expand_ETRE
     },
     
     # Export all options as a list
@@ -53,7 +56,8 @@ options_class <- R6::R6Class(
         full_exclude = self$get_full_exclude(),
         docker_tag = self$get_docker_tag(),
         margin_sectors = self$get_margin_sectors(),
-        accuracy_threshold = self$get_accuracy_threshold()
+        accuracy_threshold = self$get_accuracy_threshold(),
+        expand_ETRE = self$get_expand_ETRE()
       )
     },
     
@@ -69,6 +73,7 @@ options_class <- R6::R6Class(
       self$set_docker_tag(list$docker_tag)
       self$set_margin_sectors(list$margin_sectors)
       self$set_accuracy_threshold(list$accuracy_threshold)
+      self$set_expand_ETRE(list$expand_ETRE)
     },
     
     # Reset all options to NULL
@@ -83,6 +88,7 @@ options_class <- R6::R6Class(
       self$docker_tag <- NULL
       self$margin_sectors <- NULL
       self$accuracy_threshold <- NULL
+      self$expand_ETRE <- NULL
     },
     
     # Getter methods with defaults (using %|||% operator)
@@ -124,6 +130,10 @@ options_class <- R6::R6Class(
     
     get_accuracy_threshold = function() {
       self$accuracy_threshold %|||% 0.8
+    },
+    
+    get_expand_ETRE = function() {
+      self$expand_ETRE %|||% TRUE
     },
     
     # Setter methods with validation
@@ -197,6 +207,13 @@ options_class <- R6::R6Class(
       self$accuracy_threshold <- accuracy_threshold
     },
     
+    set_expand_ETRE = function(expand_ETRE) {
+      if (!is.null(expand_ETRE)) {
+        self$validate_expand_ETRE(expand_ETRE)
+      }
+      self$expand_ETRE <- expand_ETRE
+    },
+    
     # Validation methods
     validate_verbose = function(verbose) {
       if (!is.logical(verbose) || length(verbose) != 1 || is.na(verbose)) {
@@ -258,6 +275,12 @@ options_class <- R6::R6Class(
       }
     },
     
+    validate_expand_ETRE = function(expand_ETRE) {
+      if (!is.logical(expand_ETRE) || length(expand_ETRE) != 1 || is.na(expand_ETRE)) {
+        cli::cli_abort("{.arg expand_ETRE} must be TRUE or FALSE.")
+      }
+    },
+    
     # Validate all current options
     validate = function() {
       self$validate_verbose(self$get_verbose())
@@ -270,6 +293,7 @@ options_class <- R6::R6Class(
       self$validate_docker_tag(self$get_docker_tag())
       self$validate_margin_sectors(self$get_margin_sectors())
       self$validate_accuracy_threshold(self$get_accuracy_threshold())
+      self$validate_expand_ETRE(self$get_expand_ETRE())
     }
   )
 )
@@ -286,7 +310,8 @@ options_new <- function(verbose = NULL,
                         full_exclude = NULL,
                         docker_tag = NULL,
                         margin_sectors = NULL,
-                        accuracy_threshold = NULL) {
+                        accuracy_threshold = NULL,
+                        expand_ETRE = NULL) {
   options_class$new(
     verbose = verbose,
     ndigits = ndigits,
@@ -297,7 +322,8 @@ options_new <- function(verbose = NULL,
     full_exclude = full_exclude,
     docker_tag = docker_tag,
     margin_sectors = margin_sectors,
-    accuracy_threshold = accuracy_threshold
+    accuracy_threshold = accuracy_threshold,
+    expand_ETRE = expand_ETRE
   )
 }
 
@@ -310,7 +336,8 @@ options_init <- function(verbose = NULL,
                          full_exclude = NULL,
                          docker_tag = NULL,
                          margin_sectors = NULL,
-                         accuracy_threshold = NULL) {
+                         accuracy_threshold = NULL,
+                         expand_ETRE = NULL) {
   options_new(
     verbose = verbose,
     ndigits = ndigits,
@@ -321,7 +348,8 @@ options_init <- function(verbose = NULL,
     full_exclude = full_exclude,
     docker_tag = docker_tag,
     margin_sectors = margin_sectors,
-    accuracy_threshold
+    accuracy_threshold = accuracy_threshold,
+    expand_ETRE = expand_ETRE
   )
 }
 
