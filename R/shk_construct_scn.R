@@ -1,5 +1,5 @@
 #' @importFrom data.table fread CJ setnames fsetdiff
-#' @importFrom purrr pluck
+#' @importFrom purrr pluck map
 #' @importFrom tibble tibble
 #' @importFrom rlang abort
 #' 
@@ -11,70 +11,57 @@
                                       closure,
                                       sets,
                                       ...) {
-  # one final vet with different int col
-  value <- data.table::fread(raw_shock$input)
-  full_set_ele <- with(sets$full_ele, mget(raw_shock$ls_upper))
-  template_shk <- do.call(data.table::CJ, c(full_set_ele, sorted = FALSE))
-  time_set_upper <- intersect(raw_shock$ls_upper, subset(sets, intertemporal, name)[[1]])
-  # time_set_ele <- purrr::pluck(sets, "mapped_ele", time_set_upper)
-  CYRS <- attr(sets, "CYRS")
-  # CYRS <- tibble::tibble(
-  #   YEAR = CYRS,
-  #   time_set_ele
-  # )
 
+  if (inherits(raw_shock$input, "character")) {
+    value <- data.table::fread(raw_shock$input)
+  } else {
+    value <- data.table::as.data.table(raw_shock$input)
+  }
+
+  value <- subset(value, Year %in% attr(sets, "CYRS")$Value)
+  list2env(.year2time_set(raw_shock = raw_shock,
+                          sets = sets,
+                          value = value,
+                          call = call),
+           envir = environment())
+
+
+  set_ele <- purrr::map(with(sets$mapping, mget(raw_shock$ls_upper)), 1)
+  template_shk <- do.call(data.table::CJ, c(set_ele, sorted = FALSE))
+  data.table::setnames(template_shk, new = raw_shock$ls_mixed)
+  
   if (.o_check_shock_status()) {
-    r_idx <- match(template_shk[[time_set_upper]], CYRS[[time_set_upper]])
-    template_shk[[time_set_upper]] <- CYRS$Value[r_idx]
-    data.table::setnames(template_shk, new = raw_shock$set)
-
-    #fsetequal
-    if (!nrow(data.table::fsetdiff(template_shk, value[, !"Value"])) %=% 0L) {
+    if (!data.table::fsetequal(template_shk, value[, !"Value"])) {
       missing_tuples <- data.table::fsetdiff(template_shk, value[, !"Value"])
       n_missing_tuples <- nrow(missing_tuples)
-      missing_tuples <- capture.output(print(missing_tuples))[-c(1, 2)]
-      error_fun <- substitute(.cli_action(
+      missing_tuples <- capture.output(print(missing_tuples))[-c(1:3)]
+      .cli_action(
         shk_err$scen_missing_tup,
         action = c("abort", "inform"),
-        call = call
-      ))
-
-      error_var <- substitute(variables <- list(
-        missing_tuples = missing_tuples,
-        n_missing_tuples = n_missing_tuples
-      ))
-
-      error_inputs <- .pipeline_error(
-        error_var = error_var,
-        error_fun = error_fun,
-        call_id = attr(raw_shock, "call_id")
+        call = attr(raw_shock, "call")
       )
-
-      rlang::abort(error_inputs)
     }
   }
-  value <- subset(value, Year %in% CYRS$Value)
-  time_set <- raw_shock$ls_mixed[match(time_set_upper, raw_shock$ls_upper)]
-  r_idx <- match(value$Year, CYRS$Value)
-  value$Year <- CYRS[[time_set_upper]][r_idx]
-  data.table::setnames(value, "Year", time_set)
-  r_idx <- match("Year", raw_shock$set)
-  raw_shock$set[r_idx] <- time_set
-  value <- .preagg_map(dt = value, sets = sets)
-  mapped_sets <- setdiff(colnames(value), "Value")
-  value <- value[, .(Value = sum(Value)), by = mapped_sets]
 
-  # int_col <- setdiff(
-  #   colnames(value)[unlist(value[, lapply(.SD, is.integer)])],
-  #   "Value"
-  # )
-  non_int_col <- setdiff(
-    colnames(value),
-    c(time_set, "Value")
-  )
+  class(value) <- c("dat", class(value))
+  data.table::setnames(value, raw_shock$ls_mixed, raw_shock$ls_upper)
+  value <- .aggregate_data(dt = value,
+                           sets = sets$mapping,
+                           ndigits = .o_ndigits())
 
+  int_sets <- subset(sets,
+                     qualifier_list == "(intertemporal)",
+                     name,
+                     1)
+  
+  # some grep should be which
+  int_col <- which(colnames(value) %in% int_sets)
+  data.table::setnames(value, raw_shock$ls_upper, raw_shock$ls_mixed)
+  non_int_col <- colnames(value)[-c(int_col, ncol(value))]
+  int_col <- colnames(value)[int_col]
+  
   value[, Value := {
-    baseline <- Value[get(time_set) == 0]
+    baseline <- Value[get(int_col) == 0]
     (Value - baseline) / baseline * 100
   }, by = non_int_col]
 

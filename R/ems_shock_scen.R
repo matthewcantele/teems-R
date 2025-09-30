@@ -6,6 +6,7 @@ ems_shock.scenario <- function(var,
                                type,
                                input,
                                ...) {
+
   call <- rlang::trace_back()$call[[1]]
   if (!missing(...)) {
     .cli_action(shk_err$unneeded_dots,

@@ -354,7 +354,7 @@ list(
       cst_scen_val_file = "The last column in the loaded file {.file {input}} must be a {.field Value} column.",
       cst_scen_val_df = "{.obj_type_friendly {input}} supplied as a shock must have {.field Value} as the last column.",
       scen_year_file = "No {.field Year} column was found in the loaded file {.file {input}}.",
-      scen_year_df = "{.obj_type_friendly {input}} supplied as a scenario shock must have {.field Year} as the last column.",
+      scen_year_df = "{.obj_type_friendly {input}} supplied as a scenario shock must have a column designating {.field Year} consistent with selected time steps.",
       uni_named_lst = "{.arg ...} must consist of named pairs in the format {.code SETi = set_element}",
       unneeded_dots = "{.arg ...} are only utilized for shock type {.val uniform}.",
       not_a_shk = "The value provided to {.arg shock} is not an object created with {.fun teems::emsshock}.",
