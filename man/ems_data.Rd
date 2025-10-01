@@ -2,33 +2,30 @@
 % Please edit documentation in R/ems_data.R
 \name{ems_data}
 \alias{ems_data}
-\title{Modify data inputs}
+\title{Load and prepare data inputs}
 \usage{
 ems_data(
   dat_input,
   par_input,
   set_input,
-  aux_input = NULL,
-  unaggregated_input = NULL,
-  aggregated_input = NULL,
-  convert_format = FALSE,
   time_steps = NULL,
+  aux_input = NULL,
+  convert_format = FALSE,
   ...
 )
 }
 \arguments{
 \item{dat_input}{Character of length 1, file name in working
 directory or path to a GTAP data "dat" HAR file. Input
-containing base coefficient data.}
+containing basedata coefficient data.}
 
 \item{par_input}{Character of length 1, file name in working
 directory or path to a GTAP parameter "par" HAR file. Input
 containing parameter coefficient data.}
 
-\item{aux_input}{Character of length 1, file name in working
-directory or path to a GTAP HAR file. Input containing
-auxillary coefficient data. Coefficients will be sorted into
-parameter and non-parameter lists.}
+\item{set_input}{Character of length 1, file name in working
+directory or path to a GTAP set "set" HAR file. Input
+containing set elements and attributes.}
 
 \item{time_steps}{Integer vector of variable length with
 initial value 0 or reference year corresponding to database
@@ -36,50 +33,77 @@ employed (default is \code{NULL}). Input format can be either the
 chronological years of steps including initial reference
 year or steps from t0. For example, \code{c(2017, 2018, 2020, 2022)} is identical to \code{c(c(0, 1, 3, 5))}.}
 
-\item{...}{Future extension}
+\item{aux_input}{Under development. Character of length 1,
+file name in working directory or path to a GTAP HAR file.
+Input containing auxillary coefficient data. Coefficients
+will be sorted into parameter and non-parameter lists.}
 
-\item{target_format}{Character of length 1, default \code{NULL}. In
-the case of database conversion, either "v6.2" or "v7.0" as
-the desired format.}
+\item{convert_format}{Logical of length 1 (default is
+\code{FALSE}). If \code{TRUE}, bidirectional conversion of data between
+GTAP v6.2 and v7.0 formats will be carried out.}
+
+\item{...}{A named pairlist assigning either externally
+provided mappings (path to CSV) or internally available
+mappings to model sets that are read in (not constructed via
+any set operation defined in the model file). See
+\href{https://github.com/teems-org/teems-mappings/}{teems-mappings}
+for internally available mappings and formatting for
+user-provided mappings.}
 }
 \value{
-A list ready for input into the \code{"data"} argument
-of \code{\link[=ems_deploy]{ems_deploy()}}
+A list of data.tables ready for input into the
+\code{"data"} argument of \code{\link[=ems_deploy]{ems_deploy()}}
 }
 \description{
-\code{ems_data()} prepares data for various
-non-standard models including intertemporal runs as well as
-converts GTAP databases between v6.2 and v7.0 formats.
+\code{ems_data()} loads and prepares data for use
+within a CGE model run as well as converts GTAP databases
+between v6.2 and v7.0 formats.
 }
 \examples{
 \dontrun{
-# Data format conversions
+# Static models (no data conversion)
+v62_data <- ems_data(dat_input = "path/to/v62_data/v10A/flexagg10AY14/gsddat.har",
+                     par_input = "path/to/v62_data/v10A/flexagg10AY14/gsdpar.har",
+                     set_input = "path/to/v62_data/v10A/flexagg10AY14/gsdset.har",
+                     REG = "big3",
+                     TRAD_COMM = "macro_sector",
+                     ENDW_COMM = "labor_agg")
+
+v70_data <- ems_data(dat_input = "path/to/v7_data/v11c/flexAgg11c17/gsdfdat.har",
+                     par_input = "path/to/v7_data/v11c/flexAgg11c17/gsdfpar.har",
+                     set_input = "path/to/v7_data/v11c/flexAgg11c17/gsdfset.har",
+                     REG = "AR5",
+                     COMM = "agriculture",
+                     ACTS = "agriculture",
+                     ENDW = "labor_diff")
+                     
+# Data format conversion
 v62_data <- ems_data(dat_input = "path/to/v7_data/v11c/flexAgg11c17/gsdfdat.har",
                      par_input = "path/to/v7_data/v11c/flexAgg11c17/gsdfpar.har",
                      set_input = "path/to/v7_data/v11c/flexAgg11c17/gsdfset.har",
-                     tab_file = "GTAPv6.2",
-                     target_format = "v6.2")
+                     REG = "WB7",
+                     COMM = "manufacturing",
+                     ACTS = "manufacturing",
+                     ENDW = "full")
 
-v7_data <- ems_data(dat_input = "path/to/v62_data/v10A/flexagg10AY14/gsddat.har",
-                    par_input = "path/to/v62_data/v10A/flexagg10AY14/gsdpar.har",
-                    set_input = "path/to/v62_data/v10A/flexagg10AY14/gsdset.har",
-                    tab_file = "GTAPv7.0",
-                    target_format = "v7.0")
-
-# Intertemporal modification (GTAP-REv1)
-GTAP_RE <- ems_data(dat_input = "path/to/v7_data/v11c/flexAgg11c17/gsdfdat.har",
-                    par_input = "path/to/v7_data/v11c/flexAgg11c17/gsdfpar.har",
-                    set_input = "path/to/v7_data/v11c/flexAgg11c17/gsdfset.har",
-                    tab_file = "GTAP-REv1",
-                    time_steps = c(2017, 2018, 2019, 2020))
+# Intertemporal model (explicit time steps)
+data <- ems_data(dat_input = "path/to/v62_data/v10A/flexagg10AY14/gsddat.har",
+                 par_input = "path/to/v62_data/v10A/flexagg10AY14/gsdpar.har",
+                 set_input = "path/to/v62_data/v10A/flexagg10AY14/gsdset.har",
+                 REG = "WB23",
+                 TRAD_COMM = "services",
+                 ENDW_COMM = "labor_agg",
+                 time_steps = c(0, 1, 2, 3, 4, 6, 8, 10, 12, 14, 16))
  
-# Intertemporal modification with data format conversion (GTAP-INTv1)
-GTAP_INT <- ems_data(dat_input = "path/to/v7_data/v11c/flexAgg11c17/gsdfdat.har",
-                     par_input = "path/to/v7_data/v11c/flexAgg11c17/gsdfpar.har",
-                     set_input = "path/to/v7_data/v11c/flexAgg11c17/gsdfset.har",
-                     tab_file = "GTAP-INTv1",
-                     target_format = "v6.2",
-                     time_steps = c(0, 1, 2, 3))                          
+# Intertemporal model (chronological time steps)
+data <- ems_data(dat_input = "path/to/v7_data/v11c/flexAgg11c17/gsdfdat.har",
+                 par_input = "path/to/v7_data/v11c/flexAgg11c17/gsdfpar.har",
+                 set_input = "path/to/v7_data/v11c/flexAgg11c17/gsdfset.har",
+                 REG = "R32",
+                 COMM = "medium",
+                 ACTS = "medium",
+                 ENDW = "labor_diff",
+                 time_steps = c(2017, 2018, 2020, 2022, 2024, 2026, 2028, 2030))                       
 }           
 }
 \seealso{

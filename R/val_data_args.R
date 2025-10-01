@@ -17,11 +17,11 @@
     dat_input = "character",
     par_input = "character",
     set_input = "character",
-    aux_input = c("NULL", "character"),
-    unaggregated_input = c("NULL", "character", "list"),
-    aggregated_input = c("NULL", "character", "list"),
-    convert_format = "logical",
     time_steps = c("NULL", "numeric"),
+    aux_input = c("NULL", "character"),
+    # unaggregated_input = c("NULL", "character", "list"),
+    # aggregated_input = c("NULL", "character", "list"),
+    convert_format = "logical",
     set_mappings = "list"
   )
 

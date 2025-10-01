@@ -1,14 +1,13 @@
 Package: teems
 Title: Trade and Environment Equilibrium Modeling System
-Version: 0.0.0.95
+Version: 0.0.0.96
 Authors@R: 
     person("Matthew", "Cantele",
     email = "matthew.cantele@protonmail.com",
     role = c("aut", "cre"),
     comment = c(ORCID = "0000-0003-3729-1764"))
 Description: A comprehensive modeling system for preparing and running all aspects of a 
-    Computable General Equilibrium (CGE) model using GTAP data and 'targets' 
-    pipeline software. The package converts HAR files, parses TABLO model 
+    Computable General Equilibrium (CGE) model. The package converts HAR files, parses TABLO model 
     files, calculates aggregation-specific parameter values, aggregates data to 
     set specifications, compiles shocks and closures, and solves the model 
     according to a wide variety of parameters. 

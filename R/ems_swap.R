@@ -4,7 +4,7 @@
 #'   swaps, allowing for a change of endogenous/exogenous
 #'   variable status. If a swap is specified using this function,
 #'   the output is a required input to the `"swap_in"` or
-#'   `"swap_out"` arguments of the [`teems_model()`] function.
+#'   `"swap_out"` arguments of the [`ems_deploy()`] function.
 #'
 #' @param var Character of length 1, model variable to swap.
 #' @param ... One or more key-value pairs separated by commas.
@@ -20,12 +20,9 @@
 #'   isolation. The standard model-specific closure will be used
 #'   if no swaps are specified. Note that full variable swaps can
 #'   be directly inputted as a character string in
-#'   [`teems_model()`].
+#'   [`ems_deploy()`].
 #'
-#' @seealso [`teems_query()`] to check exogenous/endogenous
-#'   status within the standard model-specific closure as well as
-#'   retrieve model variable details.
-#' @seealso [`teems_shock()`] for specification of shocks on
+#' @seealso [`ems_shock()`] for specification of shocks on
 #'   exogenous variables.
 #'
 #' @examples

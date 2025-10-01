@@ -24,14 +24,14 @@ A list with swap specifications.
 swaps, allowing for a change of endogenous/exogenous
 variable status. If a swap is specified using this function,
 the output is a required input to the \code{"swap_in"} or
-\code{"swap_out"} arguments of the \code{\link[=teems_model]{teems_model()}} function.
+\code{"swap_out"} arguments of the \code{\link[=ems_deploy]{ems_deploy()}} function.
 }
 \details{
 \code{ems_swap()} return values have no purpose used in
 isolation. The standard model-specific closure will be used
 if no swaps are specified. Note that full variable swaps can
 be directly inputted as a character string in
-\code{\link[=teems_model]{teems_model()}}.
+\code{\link[=ems_deploy]{ems_deploy()}}.
 }
 \examples{
 # Full variable swaps
@@ -58,10 +58,6 @@ usa_multi_qfd_in <- ems_swap(var = "qfd",
                               
 }
 \seealso{
-\code{\link[=teems_query]{teems_query()}} to check exogenous/endogenous
-status within the standard model-specific closure as well as
-retrieve model variable details.
-
-\code{\link[=teems_shock]{teems_shock()}} for specification of shocks on
+\code{\link[=ems_shock]{ems_shock()}} for specification of shocks on
 exogenous variables.
 }

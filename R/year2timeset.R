@@ -1,4 +1,4 @@
-#' @importFrom purrr pluc
+#' @importFrom purrr pluck
 #' @importFrom data.table setnames
 #' 
 #' @noRd
