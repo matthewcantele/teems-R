@@ -21,9 +21,9 @@ First uninstall any previous versions
 remove.packages("teems")
 ```
 
-Install the latest release "v0.0.0.94" using {remotes}
+Install the latest release "v0.0.0.96" using {remotes}
 ```R
-remotes::install_github("matthewcantele/teems-R@v0.0.0.95")
+remotes::install_github("matthewcantele/teems-R@v0.0.0.96")
 ```
 The installation may fail, citing "there is no package called ...". Install those packages and try again.
 
