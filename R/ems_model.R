@@ -56,47 +56,7 @@
 #'     "tgm",
 #'     "tid",
 #'     "tim"))
-#' numeraire_shock <- ems_shock(var = "pfactwld",
-#'                              type = "uniform",
-#'                              value = 0.5)
-#' # internal Tablo file "GTAPv7.0" with standard variable omissions and 
-#' # standard closure implicitly selected
-#' ems_model(tab_file = "GTAPv7.0", 
-#'           var_omit = c("atall", "avaall", "tfe", "tfd", "tfm", "tgd", "tgm", 
-#'                        "tpdall", "tpmall", "tid", "tim"),
-#'           shock = numeraire_shock)
-#'             
-#' # Mixed multiple swaps and shocks
-#' qfd_shk <- ems_shock(var = "qfd",
-#'                      type = "uniform",
-#'                      input = 1,
-#'                      REGr = "lam",
-#'                      ACTSa = "crops")
-#' 
-#' yp_in <- ems_swap(var = "yp")
-#' dppriv_out <- ems_swap(var = "dppriv")
-#' 
-#' yp_shk <- ems_shock(var = "yp",
-#'                     type = "uniform",
-#'                     input = 1)
-#' 
-#' ems_model(
-#'   tab_file = "GTAP-REv1",
-#'   var_omit = c(
-#'     "atall",
-#'     "avaall",
-#'     "tfe",
-#'     "tfm",
-#'     "tgd",
-#'     "tgm",
-#'     "tid",
-#'     "tim"
-#'   ),
-#'   shock = list(qfd_shk, yp_shk),
-#'   swap_in = list("qfd", yp_in),
-#'   swap_out = list("tfd", dppriv_out)
-#' )
-#'             
+#'     
 #' @export
 ems_model <- function(tab_file,
                       var_omit = NULL)
