@@ -62,9 +62,9 @@
 #'                      par_input = "path/to/v7_data/v11c/flexAgg11c17/gsdfpar.har",
 #'                      set_input = "path/to/v7_data/v11c/flexAgg11c17/gsdfset.har",
 #'                      REG = "WB7",
-#'                      COMM = "manufacturing",
-#'                      ACTS = "manufacturing",
-#'                      ENDW = "full")
+#'                      TRAD_COMM = "manufacturing",
+#'                      ENDW_COMM = "full",
+#'                      convert_format = TRUE)
 #'
 #' # Intertemporal model (explicit time steps)
 #' data <- ems_data(dat_input = "path/to/v62_data/v10A/flexagg10AY14/gsddat.har",
