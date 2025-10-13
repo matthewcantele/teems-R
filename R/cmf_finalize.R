@@ -4,22 +4,18 @@
 #' @noRd
 .finalize_cmf <- function(model,
                           shock_file,
+                          tab_file,
+                          cls_file,
                           write_dir) {
   input_names <- paste0(unique(subset(model, !is.na(file), file, 1)))
   input_files <- file.path(write_dir, paste0(input_names, ".txt"))
   names(input_files) <- input_names
 
-  if (inherits(attr(model, "tab_file"), "internal")) {
-    tab_path <- file.path(write_dir, paste0(attr(model, "tab_file"), ".tab"))
-    cls_path <- file.path(write_dir, paste0(attr(model, "tab_file"), ".cls"))
-    cmf_path <- file.path(write_dir, paste0(attr(model, "tab_file"), ".cmf"))
-  } else if (inherits(attr(model, "tab_file"), "external")) {
-    tab_path <- file.path(write_dir, attr(model, "tab_file"))
-    cls_path <- sub("\\.tab", "\\.cls", tab_path)
-    cmf_path <- sub("\\.tab", "\\.cmf", tab_path)
-  }
-  
+  tab_path <- file.path(write_dir, tab_file)
+  cls_path <- file.path(write_dir, cls_file)
+  cmf_path <- sub("\\.tab", "\\.cmf", tab_path)
   shf_path <- file.path(write_dir, shock_file)
+  
   cmf_comp <- c(
     paste("tabfile", paste0("\"", tab_path, "\"", ";")),
     paste("closure", paste0("\"", cls_path, "\"", ";")),

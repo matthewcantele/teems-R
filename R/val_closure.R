@@ -10,7 +10,7 @@
                               sets,
                               var_extract,
                               call) {
-
+  closure_file <- attr(closure, "file")
   closure <- .classify_cls(closure = closure,
                            sets = sets)
 
@@ -35,5 +35,6 @@
     }
   }
 
+  attr(closure, "file") <- closure_file
   return(closure)
 }

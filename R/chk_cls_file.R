@@ -11,6 +11,7 @@
   if (is.null(closure_file)) {
     if (inherits(tab_file, "internal")) {
     closure <- internal_cls[[tab_file]]
+    closure_file <- paste0(tab_file, ".cls")
     } else {
       .cli_action(cls_err$no_cls,
                   action = "abort",
@@ -18,6 +19,7 @@
     }
   } else {
     closure <- readLines(closure_file)
+    closure_file <- basename(closure_file)
   }
 
   closure <- tail(head(closure, -3), -1)
@@ -31,6 +33,7 @@
       call = call
     )
   }
-
+  
+  attr(closure, "file") <- closure_file
   return(closure)
 }

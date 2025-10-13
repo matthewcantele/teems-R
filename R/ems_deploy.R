@@ -107,7 +107,6 @@ ems_deploy <- function(data,
     closure = closure,
     sets = sets,
     var_extract = subset(model, type == "Variable"),
-    model_name = attr(model, "tab_file"),
     call = call
   )
   if (!is.null(v$shock)) {
@@ -131,9 +130,12 @@ ems_deploy <- function(data,
     call = call
   )
   tab <- .finalize_tab(model = model)
+
   cmf <- .finalize_cmf(
     model = model,
     shock_file = attr(shocks, "file"),
+    tab_file = attr(tab, "file"),
+    cls_file = attr(closure, "file"),
     write_dir = v$write_dir
   )
   tab_path <- .ems_write(

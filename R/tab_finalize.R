@@ -51,7 +51,7 @@
   if (inherits(attr(model, "tab_file"), "internal")) {
     attr(tab, "file") <- paste0(attr(model, "tab_file"), ".tab")
   } else {
-    attr(tab, "file") <- attr(input, "tab_file")
+    attr(tab, "file") <- basename(attr(model, "tab_file"))
   }
 
   class(tab) <- c("tab", class(tab))
