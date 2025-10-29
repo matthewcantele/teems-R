@@ -2,8 +2,8 @@
 #' 
 #' @keywords internal
 #' @noRd
-.tablo_maths <- function(tab_extract,
-                         call) {
+.parse_tab_maths <- function(tab_extract,
+                             call) {
 
   maths <- subset(tab_extract, tolower(type) %in% c("equation", "formula"))
 
@@ -108,12 +108,12 @@
   )
   
   maths[["full_set"]] <- sapply(X = maths[["remainder"]],
-                                FUN = .cleave_math,
+                                FUN = .cleave_maths,
                                 pos = 2L,
                                 USE.NAMES = FALSE)
   
   maths[["math"]] <- sapply(X = maths[["remainder"]],
-                            FUN = .cleave_math,
+                            FUN = .cleave_maths,
                             pos = 3L,
                             USE.NAMES = FALSE)
 

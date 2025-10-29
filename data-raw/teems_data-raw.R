@@ -325,6 +325,9 @@ list(
   tar_target(model_wrn, {
     list(ETRE = "The {.arg ETREtoENDW} value for {.fun teems::ems_option_get()} is set to `TRUE` however no dedicated sluggish endowment set has been detected for {.field ETRE}.")
   }),
+  tar_target(model_err, {
+    list(unsupported_tab = "Unsupported Tablo declarations detected: {.val {unsupported}}.")
+  }),
   tar_target(deploy_err, {
     list(invalid_write_dir = "The path provided for {.arg write_dir}, {.path {a$write_dir}}, does not exist.")
   }),
@@ -491,6 +494,8 @@ list(
       gen_url,
       data_wrn,
       data_err,
+      model_wrn,
+      model_err,
       load_err,
       deploy_err,
       shk_err,

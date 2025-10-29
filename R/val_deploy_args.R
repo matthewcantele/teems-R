@@ -6,11 +6,11 @@
   checklist <- list(
     data = "list",
     model = "data.frame",
-    write_dir = "character",
     shock = c("NULL", "list"),
-    closure_file = c("NULL", "character"),
     swap_in = c("NULL", "character", "list"),
     swap_out = c("NULL", "character", "list"),
+    write_dir = "character",
+    closure_file = c("NULL", "character"),
     shock_file = c("NULL", "character")
   )
   
@@ -48,6 +48,7 @@
   }
   
   if (!is.null(a$shock)) {
+    a$shock <- .expand_ele(input = a$shock)
     a$shock <- lapply(
       a$shock,
       .check_shock,
@@ -74,6 +75,7 @@
   )
 
   if (!is.null(a$swap_in)) {
+    a$swap_in <- .expand_ele(input = a$swap_in, nested = TRUE)
     a$swap_in <- lapply(a$swap_in,
       .check_swap,
       var_extract = subset(a$model, type %in% "Variable"),
@@ -83,6 +85,7 @@
   }
 
   if (!is.null(a$swap_out)) {
+    a$swap_out <- .expand_ele(input = a$swap_out, nested = TRUE)
     a$swap_out <- lapply(a$swap_out,
       .check_swap,
       var_extract = subset(a$model, type %in% "Variable"),

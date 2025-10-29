@@ -14,7 +14,7 @@
       var_extract = var_extract
     )
   } else {
-    shock <- .usr_shk(shock_file = shock_file)
+    shock <- .usr_shock(shock_file = shock_file)
   }
 
   class(shock) <- c("shock", class(shock))

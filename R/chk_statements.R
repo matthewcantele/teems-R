@@ -38,7 +38,7 @@
   state_decl <- unique(x = sapply(X = strsplit(x = statements, split = " ", perl = TRUE), "[[", 1))
   if (any(!is.element(el = tolower(x = state_decl), set = tolower(x = ok_state)))) {
     unsupported <- state_decl[is.element(el = tolower(x = state_decl), set = tolower(x = ok_state))]
-    .cli_action(msg = "Unsupported Tablo declarations detected: {.val {unsupported}}.",
+    .cli_action(model_err$unsupported_tab,
                 action = "abort",
                 call = call)
   }

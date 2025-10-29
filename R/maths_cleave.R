@@ -2,7 +2,7 @@
 #'
 #' @keywords internal
 #' @noRd
-.cleave_math <- function(text, pos) {
+.cleave_maths <- function(text, pos) {
   pattern <- "^((?:[^() ]|\\([^)]*\\))*) (.*)$"
   return_comp <- regmatches(x = text,
                             m = regexec(pattern = pattern,
@@ -19,7 +19,6 @@
   #       paren_count <- paren_count - 1
   #     }
   #     
-  #     # When we're at balanced parentheses and find a space, this is our split point
   #     if (paren_count == 0 && chars[i] == " " && i > 1 && chars[i-1] == ")") {
   #       left_part <- substr(text, 1, i-1)
   #       right_part <- substr(text, i+1, nchar(text))

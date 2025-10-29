@@ -211,7 +211,6 @@
   return(input)
 }
 
-#' @importFrom abind abind
 #' @method .header2v6 ISEP
 #' @keywords internal
 #' @noRd
@@ -232,7 +231,7 @@
   a_idx <- match(arr_names, names(CGDS_dimnames))
   CGDS_data <- aperm(CGDS_data, a_idx)
   ACTS_dim <- which(arr_names %in% "ACTS")
-  input <- abind::abind(arr, CGDS_data, along = ACTS_dim)
+  input <- .abind(arr, CGDS_data, along = ACTS_dim)
   names(dimnames(input)) <- arr_names
   class(input) <- unique(c(classes, class(input)))
   input <- .names_rename(input = input)

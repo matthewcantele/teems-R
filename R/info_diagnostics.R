@@ -26,7 +26,7 @@
     if (elapsed_time < 60) {
       elapsed_time <- sprintf("%.2fs", elapsed_time)
     } else if (elapsed_time < 3600) {
-      elapsed_time <- sprintf("%dm %02ds", floor(elapsed_time / 60), elapsed_time %% 60)
+      elapsed_time <- sprintf("%dm %02ds", floor(elapsed_time / 60), floor(elapsed_time %% 60))
     } else {
       elapsed_time <- sprintf("%dh %02dm", floor(elapsed_time / 3600), floor((elapsed_time %% 3600) / 60))
     }
@@ -35,7 +35,7 @@
       action = "inform"
     )
 
-    if (accurate_4 < a_threshold) {
+    if (round(accurate_4, 2) < a_threshold) {
       a_threshold <- sprintf("%.0f%%", a_threshold * 100)
       .cli_action(solve_wrn$accuracy,
         action = c("warn", "inform"),

@@ -78,8 +78,8 @@
 
   ls_mixed <- purrr::pluck(var_extract, "ls_mixed_idx", swap$var)
 
-  if (!all(names(swap$comp) %in% ls_mixed)) {
-    non_exist_set <- setdiff(names(swap$comp), ls_mixed)
+  if (!all(names(swap$subset) %in% ls_mixed)) {
+    non_exist_set <- setdiff(names(swap$subset), ls_mixed)
     var_name <- swap$var
     .cli_action(
       swap_err$invalid_set,
@@ -88,10 +88,10 @@
     )
   }
 
-  swap$comp <- withCallingHandlers(
+  swap$subset <- withCallingHandlers(
     purrr::map2(
-      swap$comp,
-      names(swap$comp),
+      swap$subset,
+      names(swap$subset),
       function(comp, nm) {
         valid_ele <- with(sets$ele, get(.dock_tail(nm)))
         valid_subsets <- with(sets$subsets, get(.dock_tail(nm)))
@@ -122,16 +122,16 @@
   )
 
   ls_upper <- purrr::pluck(var_extract, "ls_upper_idx", swap$var)
-  m_mixed <- setdiff(ls_mixed, names(swap$comp))
+  m_mixed <- setdiff(ls_mixed, names(swap$subset))
   ls_missing_sets <- as.list(m_mixed)
   names(ls_missing_sets) <- m_mixed
-  swap$comp <- c(swap$comp, ls_missing_sets)
-  r_idx <- match(ls_mixed, names(swap$comp))
-  swap$comp <- swap$comp[r_idx]
-  swap$comp <- purrr::pmap_chr(
+  swap$subset <- c(swap$subset, ls_missing_sets)
+  r_idx <- match(ls_mixed, names(swap$subset))
+  swap$subset <- swap$subset[r_idx]
+  swap$subset <- purrr::pmap_chr(
     list(
-      names(swap$comp),
-      swap$comp,
+      names(swap$subset),
+      swap$subset,
       ls_upper
     ),
     function(nm, c, u) {
@@ -148,7 +148,7 @@
   swap <- paste0(
     swap$var,
     "(",
-    paste0(swap$comp, collapse = ","),
+    paste0(swap$subset, collapse = ","),
     ")"
   )
 

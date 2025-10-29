@@ -1,7 +1,7 @@
 #' @noRd
 #' @keywords internal
-.validate_shock <- function(shock,
-                            call) {
+.unpack_shock <- function(shock,
+                          call) {
   if (!inherits(shock, "shock")) {
     if (!is.list(shock) || !inherits(shock[[1]], "shock")) {
       .cli_action(

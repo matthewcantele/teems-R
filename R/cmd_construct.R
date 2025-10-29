@@ -14,8 +14,6 @@
                            matsol,
                            steps,
                            enable_time) {
-  #system("docker run --rm --mount type=bind,src=/home/mpc/teems_runs/null/GTAP-INTv1_v10/launchpad,dst=/home/launchpad teems:beta /bin/bash -c \"/home/teems-solver/lib/mpi/bin/mpiexec -n 1 /home/teems-solver/solver/hsl -cmdfile /home/launchpad/GTAP-INTv1_v10.cmf -matsol 0 -step1 2 -step2 4 -step3 8 -regset REG -enable_time -nsubints 1 -solmed Mmid -nesteddbbd 0  -presol 1 -laA 300 -laDi 500 -laD 200 -maxthreads 1 | tee /home/launchpad/out/solver_out_1736.txt\"")
-
   docker_preamble <- paste(
     "docker run --rm --mount",
     paste("type=bind", paste0("src=", paths$run), "dst=/opt/teems", sep = ","),
@@ -45,7 +43,7 @@
     "-solmed", solmed,
     "-nesteddbbd", nesteddbbd,
     if (identical(x = matsol, y = 3)) {
-      paste('-ndbbd_bl_rank', n_timesteps)
+      paste("-ndbbd_bl_rank", n_timesteps)
     },
     "-presol", 1,
     "-laA", laA,
@@ -66,14 +64,17 @@
     diag_out <- paths$diag_out
     cmf_path <- paths$cmf
     .cli_action(solve_info$terminal_run,
-                action = "inform",
-                append = solve_info$terminal_run)
+      action = "inform",
+      append = solve_info$terminal_run
+    )
     eval(solve_info$t_run_append)
     return(FALSE)
   }
-  
-  cmd <- list(solve = solve_cmd,
-              sol_parse = sol_parse_cmd)
-  
+
+  cmd <- list(
+    solve = solve_cmd,
+    sol_parse = sol_parse_cmd
+  )
+
   return(cmd)
 }

@@ -43,7 +43,7 @@
     new_slice_dimnames <- dimnames(arr)
     new_slice_dimnames[[dim_index]] <- missing_entries
     new_slice <- array(-1e-05, new_dims, new_slice_dimnames)
-    arr <- abind::abind(arr, new_slice, along = dim_index)
+    arr <- .abind(arr, new_slice, along = dim_index)
     names(dimnames(arr)) <- names(new_slice_dimnames)
     names(dimnames(arr))[dim_index] <- endw_name
     class(arr) <- unique(c(classes, class(arr)))

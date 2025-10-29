@@ -16,34 +16,16 @@ variable \code{"var"} or variable elements (using \code{...}) at the
 specified \code{"value"}.
 \item \code{"custom"}: a user-specified granular shock applied to
 variable \code{"var"} and aggregated set-specific variable tuples
-according to percentage-change values specified in
-\code{"input"}.
+according to percentage-change values.
 \item \code{"scenario"}: a user-specified granular shock for temporally dynamic
 models applied to variable \code{"var"} and unaggregated tuples
 according to values specified in \code{"input"}. \code{"scenario"}
 shocks must encompass all values associated with tuples
 corresponding to unaggregated set elements. Values in
-\code{"input"} must be actual values and will be converted into
-percentage-change format.
 }}
 
-\item{...}{One or more key-value pairs separated by commas
-corresponding to element-specific uniform shocks.}
-
-\item{input}{Format contingent on shock \code{"type"}.
-\itemize{
-\item \code{"uniform"}: numeric length 1, value of uniform shock.
-\item \code{"custom"}: character length 1, path to a csv file; a data frame or data
-frame extension (e.g., tibble, data table. Must contain
-"Value" as last column representing percentage-change shocks
-to each respective tuple.
-\item \code{"scenario"}: character length 1, path to a csv file; a data frame or
-data frame extension (e.g., tibble, data table. Must contain
-a column "Year" corresponding to selected time steps and
-"Value" as last column representing an actual value that
-will be converted into a percentage-change shock based on
-set and time step selection.
-}}
+\item{...}{Additional subsetting options passed to
+\code{\link[=ems_shock.uniform]{ems_shock.uniform()}}.}
 }
 \value{
 A list of shock configuration options.
@@ -65,23 +47,14 @@ no change to the underlying base data.
 \examples{
 #' # See \href{https://github.com/teems-org/teems-scripts}{teems-scripts}
 # for the full range of shock types.
-
-# S3 method for type 'uniform'
-# fully uniform: all variable elements receive the same shock value
-afeall_full <- ems_shock(var = "afeall",
-                         type = "uniform",
-                         value = 2)
-
-# partially uniform: applied only to the "chn" element in set REGr (REG)
-# Note that set designations must consiste of the concatenation of the
-# standard set (e.g., REG) and variable-specific index (e.g., r).
-afeall_chn <- ems_shock(var = "afeall",
-                        type = "uniform",
-                        REGr = "chn",
-                        value = 2)
-
 }
 \seealso{
+\code{\link[=ems_shock.uniform]{ems_shock.uniform()}} for \code{"uniform"} shocks.
+
+\code{\link[=ems_shock.custom]{ems_shock.custom()}} for \code{"custom"} shocks.
+
+\code{\link[=ems_shock.scenario]{ems_shock.scenario()}} for \code{"scenario"} shocks.
+
 \code{\link[=ems_deploy]{ems_deploy()}} for loading the output of this
 function.
 

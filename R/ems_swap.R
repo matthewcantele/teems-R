@@ -50,20 +50,27 @@
 #'                               
 #' @export
 ems_swap <- function(var,
-                     ...)
-{
+                     ...) {
 if (!missing(...)) {
-  comp <- list(...)
+  subset <- list(...)
   breadth <- "partial"
-  swap <- list(var = var,
-               comp = comp)
+  if (any(lengths(subset) > 1)) {
+    depth <- "multi"
+  } else {
+    depth <- "single"
+  }
+  swap <- list(
+    var = var,
+    subset = subset
+  )
 } else {
   breadth <- "full"
   swap <- list(var = var)
+  depth <- "single"
 }
 call <- match.call()
 attr(swap, "call") <- call
-class(swap) <- c("ems", breadth, class(swap))
+class(swap) <- c("ems", depth, breadth, class(swap))
 swap <- list(swap)
 swap
 }

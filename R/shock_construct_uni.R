@@ -4,7 +4,7 @@
                                      closure,
                                      var_extract,
                                      sets) {
-  # another method here?
+
   if (attr(raw_shock, "full_var")) {
     if (.o_check_shock_status()) {
       if (!raw_shock$var %in% closure$full_var) {
@@ -42,13 +42,14 @@
       names(raw_shock$subset) <- sub("Year", time_set, names(raw_shock$subset))
     }
 
-    upper_ss <- .dock_tail(names(raw_shock$subset))
+    mixed_ss <- names(raw_shock$subset)
 
     withCallingHandlers(
       purrr::map2(
         raw_shock$subset,
-        upper_ss,
+        mixed_ss,
         function(ele, ele_set) {
+          ele_set <- .dock_tail(ele_set)
           recognized_ele <- purrr::pluck(sets, "ele", ele_set)
           if (!ele %in% recognized_ele) {
             .cli_action(
@@ -64,7 +65,7 @@
       }
     )
 
-    r_idx <- match(upper_ss, raw_shock$ls_upper)
+    r_idx <- match(mixed_ss, raw_shock$ls_mixed)
     if (!raw_shock$ls_upper %=% NA) {
       shock_LHS <- raw_shock$ls_upper
       shock_LHS[r_idx] <- paste0('"', raw_shock$subset, '"')

@@ -72,6 +72,7 @@
                                  var_extract,
                                  sets,
                                  call) {
+
   entry_mixed <- sub(")", "", purrr::pluck(strsplit(cls_entry, "\\("), 1, 2))
   entry_mixed <- strsplit(entry_mixed, ",")[[1]]
   var_sets <- purrr::pluck(var_extract, "ls_upper_idx", attr(cls_entry, "var_name"))

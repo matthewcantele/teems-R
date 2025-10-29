@@ -11,13 +11,7 @@
                                       closure,
                                       sets,
                                       ...) {
-
-  if (inherits(raw_shock$input, "character")) {
-    value <- data.table::fread(raw_shock$input)
-  } else {
-    value <- data.table::as.data.table(raw_shock$input)
-  }
-
+  value <- raw_shock$input
   value <- subset(value, Year %in% attr(sets, "CYRS")$Value)
   list2env(.year2time_set(raw_shock = raw_shock,
                           sets = sets,

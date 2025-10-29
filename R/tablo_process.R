@@ -47,7 +47,7 @@
   )
 
   if (.o_verbose()) {
-    math_extract <- .tablo_maths(
+    math_extract <- .parse_tab_maths(
       tab_extract = extract,
       call = call
     )

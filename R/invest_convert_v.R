@@ -21,7 +21,7 @@
   CGDS_dim <- CGDS_dim[a_idx]
   CGDS_data <- array(CGDS_data, CGDS_dim, CGDS_dimnames)
   bind_dim <- which(names(CGDS_dimnames) %in% "ACTS")
-  input <- abind::abind(input, CGDS_data, along = bind_dim)
+  input <- .abind(input, CGDS_data, along = bind_dim)
   names(dimnames(input)) <- arr_names
   return(input)
 }
